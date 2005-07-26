@@ -1,5 +1,7 @@
-2005-06-09  Rob Savoye  <rob@cree.welcomehome.org>
+2005-07-25  Rob Savoye  <rob@cree.moongulch.net>
 
+	* sim/Makefile.am: Add MYSQL_LIBS to LDADD.
+	* */Makefile.in: All regenerated.
 	* Initial checkin.
 	
 

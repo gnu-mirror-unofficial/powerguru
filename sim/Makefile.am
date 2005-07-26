@@ -26,7 +26,7 @@ noinst_PROGRAMS = osim # xsim
 INCLUDES = -I$(top_srcdir)/lib 
 
 osim_SOURCES = fakeuart.cc fakeuart.h osim.cc
-osim_LDADD =  $(PGURU)
+osim_LDADD =  $(PGURU) $(MYSQL_LIBS)
 osim_DEPENDENCIES = $(PGURU)
 
 
