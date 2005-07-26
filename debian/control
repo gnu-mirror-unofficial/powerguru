@@ -1,0 +1,13 @@
+Source: powerguru
+Section: devel
+Priority: optional
+Maintainer: Rob Savoye <senecass.com>
+Standards-Version: 2.5.0.0
+
+Package: powerguru
+Architecture: all
+Depends: dpkg (>=1.2.1)
+Description: A monitoring and control program for power devices.
+	Powerguru is an program for monitoring, data logging, and controlling
+	your inverter, charger controller, or power meter.
+

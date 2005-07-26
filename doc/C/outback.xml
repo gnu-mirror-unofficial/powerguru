@@ -1,0 +1,948 @@
+<sect2 id="Outback Power Systems">
+  <title>Outback Power Systems</title>
+  
+  <mediaobject>
+    <imageobject>
+      <imagedata fileref="images/mx60.png" format="png"/>
+    </imageobject>
+  </mediaobject>
+  
+  <para>
+    Unlike the Xantrex products, the Outback products support a real
+    protocol with real flow control. 
+  </para>
+
+  <sect3 id="Serial Port">
+    <title>Serial Port</title>
+
+    <para>
+      The Outback serial port runs at 19200 baud, 8 data bits, no
+      parity, and 1 stop bit. Outback appears to use real UARTs, thank
+      you! 
+    </para>
+    
+    <sect4 id="Flow Control">
+      <title>Flow Control</title>
+      <para>
+	Flow control to an Outback product is done via the DTR and RTS
+	pins on the serial cable. This is a non-standard way to control
+	the flow of data, but it works. For data to flow, the DTR pin
+	must be held HIGH (on), and the RTS pin must be held LOW
+	(off). Toggling either DTR or RTS pins achieves the same effect,
+	but I've been using the DTR pin myself. To get a clean
+	connection, you'll also want to turn off any XON/XOFF types of
+	flow control.
+      </para>
+      
+      <para>
+	I have also noticed that there are no serial communications
+	programs that run under Unix that can handle this style of flow
+	control. Both <ulink
+	type="http://www.columbia.edu/kermit/">Kermit</ulink> and 
+	<ulink type="http://alioth.debian.org/projects/minicom/">Minicom</ulink>
+	only support the standard ways of flow control, and don't let
+	you selectively turn off or on the serial port pins. On Windows
+	I've been told that the only program that does this correctly is called 
+	<ulink type="http" url="http://bray.velenje.cx/avr/terminal/">
+	  Terminal</ulink> I added a "console" mode to PowerGuru so I
+	  can use my own software rather than depend on 3rd party
+	  software that doesn't do the trick.
+      </para>
+    </sect4>
+  </sect3>
+  
+  <sect3 id="MX Message Frame">
+    <title>MX Message Frame</title>
+    
+    <para>
+      An MX status message frame is comprised of 49 ASCII numerical
+      characters. A newline used to signify the start of a
+      frame and carriage return is used to signify the end of the
+      frame. These are the only two non ASCII in a message.
+    </para>
+
+    <para>
+      On my MX60 (bought roughly 2003), the address field is always
+      wrong. On my unit it says '0', as if it were an FX
+      inverter. Maybe this is because I don't have an FX inverter, I
+      have a Xantrex (Trace) 4024. I plan to put an FX inverter in the
+      <ulink type="http" url="http://www.senecass.com/lab.html">Solar
+      Lab</ulink>, but right now I'm still dealing with saving up the
+      cash for one...
+    </para>
+
+    <para>
+      
+    </para>
+
+
+    <programlisting>
+      0,00,32,30,000,128,00,00,000,00,265,002,140,039
+      0,00,32,30,000,128,00,00,000,00,265,002,140,039
+      0,00,32,30,000,128,00,00,000,00,265,002,140,039
+      0,00,32,30,000,128,00,00,000,00,265,002,140,039
+      0,00,32,30,000,128,00,00,000,00,265,002,140,039
+      0,00,32,30,000,128,00,00,000,00,265,002,140,039
+      0,00,32,30,000,128,00,00,000,00,265,002,140,039
+      0,00,32,30,000,128,00,00,000,00,265,002,140,039
+      0,00,32,30,000,128,00,00,000,00,265,002,140,039
+      0,00,32,30,000,128,00,00,000,00,265,002,140,039
+      0,00,32,30,000,128,00,00,000,00,265,002,140,039
+      0,00,32,30,000,128,00,00,000,00,265,002,140,039
+      0,00,32,30,000,128,00,00,000,00,265,002,140,039
+      0,00,32,30,000,128,00,00,000,00,265,002,140,039
+      0,00,32,30,000,128,00,00,000,00,265,002,140,039
+      0,00,32,30,000,128,00,00,000,00,265,002,140,039
+    </programlisting>
+    
+    <para>
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1">
+	  <colspec colname="col1"/>
+	  <colspec colname="col2"/>
+	  <colspec colname="col3"/>
+	  <colspec colname="col4"/>
+	  <thead>
+	    <row rowsep="1">
+	      <entry valign="top" align="center">
+		<para>Index</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>Byte Value</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>Data Field</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>Description</para>
+	      </entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>1</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>10</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>Message Start Frame</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>
+		  This is an New Line character denoting the
+		  start of the status page. 
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>2</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>MX address</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>The MX address is an ASCII 'A' for unit 0, and
+		an ASCII 'B' to 'K' for the other 9 units.</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>3</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+ 	      <entry valign="top" align="center">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>4</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>Unused</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>ASCII Zero characters are used to fill unused fields.</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>5</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>6</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>7</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>Charger current</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>
+		  Range 00-99. This is the current the charger is
+		  putting into the batteries. 1 amp increments are used.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>8</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>9</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>10</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>PV current</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>
+		  Range 00-99. The current coming from the
+		  photovoltaic panels. 1 amp increments are used.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>11</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>12</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>13</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>PV Input Voltage</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>
+		  Range 000-256. This is the voltage coming from the
+		  photovoltaic panels to the charge controller.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>14</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>15</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>16</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>17</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>Daily Kilowatt Hours</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>
+		  Range 000-999. This is the daily kilowatt hours used
+		  since daybreak.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>18</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>19</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>20</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+
+	    <!-- 
+		 FIXME: Use this to make an entry span multiple columns
+		 namest="col2" nameend="col3"	    
+	    -->
+	    <row>
+	      <entry valign="top" align="center">
+		<para>21</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>Unused</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>ASCII Zero characters are used to fill unused fields.</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>22</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>23</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>24</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>MX Aux Mode</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>
+		 Range 00-99. This is the current  Auxilary Mode. The
+		 value is used to do a tabke lookuop for the mode.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>25</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>26</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>27</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>Error Modes</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>
+		  Range 000-256. The Error Mode is currently
+		  unimplemented in the MX.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>28</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>29</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>30</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>31</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>MX Charger Mode</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>
+		  Range 00-99. The MX Charger Mode is used to do a
+		  table lookup for the mode.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>32</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>33</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>34</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>Battery Voltage</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>
+		  Range 000-999. The Battery Voltage is a 3 digit
+		  floating point number with the last digit as the
+		  fraction. So 251 volts becomes 25.1
+		  volts. Resolution is 0.1V for 12V, 0.2 for 24V, and
+		  0.4 for 48V systems.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>35</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>36</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>37</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>38</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>Unused</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>ASCII Zero characters are used to fill unused fields.</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>39</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>40</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>41</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>42</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>Unused</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>ASCII Zero characters are used to fill unused fields.</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>43</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>45</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>46</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>Checksum</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>
+		  Range 000-999. The Message checksum is calculated be
+		  adding all the digits of the message together, one
+		  at a time.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>47</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>49</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>13</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Send of Frame</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>
+		  The end of the message frame is a Carriage Return.
+		</para>
+	      </entry>
+	    </row>
+	    	    
+	  </tbody>
+	</tgroup>
+      </informaltable>
+    </para>
+
+    <sect4 id="MX Message Data Tables">
+      <title>MX Message Data Tables</title>
+      
+      <para>
+	There are a few tables used to lookup values from the
+	messages. Error codes are not implemented at this time, but
+	the Auxilary and Charger Mode data fields both need to be
+	looked up from a tables.
+      </para>
+
+      <sect5 id="MX Auxilary Modes">
+	<title>MX Auxilary Modes</title>
+      
+	<para>
+	  The Auxilary mode is the current mode running on the MX.
+	</para>
+	
+	<para>
+	  <informaltable frame="all">
+	    <tgroup cols="2" colsep="1" rowsep="1">
+	      <colspec colname="col1"/>
+	      <colspec colname="col2"/>
+	      <thead>
+		<row rowsep="1">
+		  <entry valign="top" align="center">
+		    <para>Value</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Mode</para>
+		  </entry>
+		</row>
+	      </thead>
+	      <tbody>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"00"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Disabled.</para>
+		  </entry>
+		</row>
+		<row>
+		<entry valign="top" align="center">
+		  <para>"01"</para>
+		</entry>
+		<entry valign="top" align="center">
+		  <para>Diversion.</para>
+		</entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"02"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Remote</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"03"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Manual</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"04"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Vent Fan</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"05"</para>
+		  </entry>
+		  <entry vaign="top" align="center">
+		    <para>PV Trigger</para>
+		  </entry>
+		</row>	    	  
+	      </tbody>
+	    </tgroup>
+	  </informaltable>
+	</para>
+      </sect5>
+      
+      <sect5 id="MX Charger Modes">
+	<title>MX Charger Modes</title>
+
+	<para>
+	  The Charger mode is the current operating mode of the charger.
+	</para>
+	
+	<para>
+	  <informaltable frame="all">
+	    <tgroup cols="2" colsep="1" rowsep="1">
+	      <colspec colname="col1"/>
+	      <colspec colname="col2"/>
+	      <thead>
+		<row rowsep="1">
+		  <entry valign="top" align="center">
+		    <para>Value</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Mode</para>
+		  </entry>
+		</row>
+	      </thead>
+	      <tbody>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"00"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Disabled.</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"01"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Float.</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"02"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Bulk</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"03"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Aborb</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"04"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>EQ</para>
+		  </entry>
+		</row>
+	      </tbody>
+	    </tgroup>
+	  </informaltable>
+	</para>
+      </sect5>
+    </sect4>
+    
+
+
+    <para>
+      FIXME: add much more content!!!
+    </para>
+    
+  </sect3>
+</sect2>
+

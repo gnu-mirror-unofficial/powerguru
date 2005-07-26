@@ -1,0 +1,43 @@
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+                   "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd"
+[
+  <!ENTITY legal SYSTEM "legal.xml">
+  <!ENTITY appversion "0.1">
+  <!ENTITY manrevision "0.1">
+  <!ENTITY date "April 2005">
+  <!ENTITY app "<application>PowerGuru</application>">
+  <!ENTITY appname "Power Guru">
+  <!ENTITY version "2.0">
+  <!ENTITY protodoc SYSTEM "protocol.xml"> 
+  <!ENTITY maindoc SYSTEM "protocol.xml">
+]
+>
+
+<refentry id="pgd">
+<refmeta>
+<refentrytitle>pgd</refentrytitle>
+<manvolnum>1</manvolnum>
+</refmeta>
+
+<!-- the refname becomes the output name of the man page -->
+<refnamediv>
+<refname>pgd</refname>
+<refpurpose>communicate with the devices</refpurpose>
+</refnamediv>
+
+
+<refsynopsisdiv><title>Synopsis</title>
+<synopsis>
+pgd (options)... (file)...
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+<para>Run the powerguru daemon.
+
+</para>
+<!--...-->
+</refsect1>
+<!--...-->
+</refentry>
+

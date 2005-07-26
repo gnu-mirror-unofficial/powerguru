@@ -1,0 +1,216 @@
+-- Process this file with snmptranslate or mib2c
+--
+--  Copyright (C) 2005 Free Software Foundation, Inc.
+--
+--  This program is free software; you can redistribute it and/or modify
+--  it under the terms of the GNU General Public License as published by
+--  the Free Software Foundation; either version 2 of the License, or
+--  (at your option) any later version.
+--
+--  This program is distributed in the hope that it will be useful,
+--  but WITHOUT ANY WARRANTY; without even the implied warranty of
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+--  GNU General Public License for more details.
+--
+--  You should have received a copy of the GNU General Public License
+--  along with this program; if not, write to the Free Software
+--  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+POWERGURU-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    INTEGER, INTEGER				FROM SNMPv2-SMI
+    enterprises					FROM RFC1155-SMI
+    MODULE-COMPLIANCE, OBJECT-GROUP		FROM SNMPv2-CONF;
+
+--
+-- This is the MIB node for a generic power device
+--
+powerguru MODULE-IDENTITY
+    LAST-UPDATED "200507200000Z"
+    ORGANIZATION "Seneca Software & Solar, Inc"
+    CONTACT-INFO
+	"This MIB is new, and still under development.
+
+         postal:   Seneca Software & Solar, Inc
+                   PO Box 36
+                   Rollinsville, CO 80474
+
+         email:    xantrex@senecass.com or outback@senecass.com
+        "
+    DESCRIPTION
+	"The PowerGuru MIB."
+    REVISION	 "200507200000Z"
+    DESCRIPTION
+	"This is the default value for net-snmp."
+    ::= { enterprises 8072 }
+
+--
+-- Commands that get sent to the power device. Not all commands are
+-- supported by all power devices.
+--
+powerGuruDataLog OBJECT-TYPE
+    SYNTAX	INTEGER
+    MAX-ACCESS	read-write
+    STATUS	current
+    DESCRIPTION
+	"Start data logging the device."
+    ::= { powerguru 1 }
+
+powerGuruRevision OBJECT-TYPE
+    SYNTAX	OCTET BINARY (SIZE(4))
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"Get the revision number of the software on the device, if possible."
+    ::= { powerguru 2 }
+
+powerGuruUnitAddress OBJECT-TYPE
+    SYNTAX	INTEGER
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"This is the address of the power device. This is basically
+	just an index into an array, zero being the default."
+    ::= { powerguru 3 }
+
+powerGuruChargeAmps OBJECT-TYPE
+    SYNTAX	INTEGER (SIZE(0..99))
+    UNITS	"1 amp"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"This is the current in amps the charger is putting into the
+	batteries."
+    ::= { powerguru 4 }
+
+powerGuruPVAmps OBJECT-TYPE
+    SYNTAX	INTEGER (SIZE(0..99))
+    UNITS	"1 amp"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"This is the current in amps the photovoltaic panels are
+        putting into the charge controller."
+    ::= { powerguru 5 }
+
+powerGuruPVVolts OBJECT-TYPE
+    SYNTAX	INTEGER (SIZE(0..256))
+    UNITS	"1 volt"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"This is the voltage the photovoltaic panels are putting into
+	the charge controller."
+    ::= { powerguru 6 }
+
+powerGuruDailyKW OBJECT-TYPE
+    SYNTAX	INTEGER (SIZE(0..999))
+    UNITS	"1 kilowatt"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"This is the daily kilowatt hours used since daybreak, if the
+	device stores this data."
+    ::= { powerguru 7 }
+
+powerGuruAuxMode OBJECT-TYPE
+    SYNTAX	INTEGER {
+			DISABLED(0),
+			DIVERSION(1),
+			REMOTE(2),
+			MANUAL(3),
+			VENTFAN(4),
+			PVTRIGGER(5)
+		}
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"This is the current auxilary mode. A table lookup must be
+        done to get the value."
+    ::= { powerguru 8 }
+
+powerGuruErrorMode OBJECT-TYPE
+    SYNTAX	INTEGER (SIZE(0..256))
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"This is the current Error mode. A table lookup must be
+        done to get the vaue. This is currently unimplemented on the
+        MX series."
+    ::= { powerguru 9 }
+
+powerGuruChargerMode OBJECT-TYPE
+    SYNTAX	INTEGER {
+			SILENT(0),
+			FLOAT(1),
+			BULK(2),
+			ABSORB(3),
+			EQ(4)
+		}
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"This is the current Charger mode. A table lookup must be
+        done to get the vaue."
+    ::= { powerguru 10 }
+
+powerGuruBatteryVolts OBJECT-TYPE
+    SYNTAX	INTEGER (SIZE(0..999))
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"This is the current voltage of the batteries."
+    ::= { powerguru 11 }
+
+powerGuruLoadAmps OBJECT-TYPE
+    SYNTAX	INTEGER (SIZE(0..99))
+    UNITS	"1 amp"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"This is the current in amps the inverter is delivering to loads."
+    ::= { powerguru 12 }
+
+powerGuruACBuyAmps OBJECT-TYPE
+    SYNTAX	INTEGER (SIZE(0..99))
+    UNITS	"1 amp"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"This is the current in amps the inverter is taking from the
+	AC input and delivering to the batteries and pass-through
+	loads."
+    ::= { powerguru 13 }
+
+powerGuruACInputVolts OBJECT-TYPE
+    SYNTAX	INTEGER (SIZE(0..256))
+    UNITS	"1 volt"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"This is the voltage on the AC input terminals."
+    ::= { powerguru 14 }
+
+powerGuruACOutputVolts OBJECT-TYPE
+    SYNTAX	INTEGER (SIZE(0..256))
+    UNITS	"1 volt"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"This is the voltage on the AC output terminals."
+    ::= { powerguru 15 }
+
+powerGuruACSellAmps OBJECT-TYPE
+    SYNTAX	INTEGER (SIZE(0..99))
+    UNITS	"1 amp"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+	"This is the current in amps the inverter is delivering to the
+        batteries from the AC input."
+    ::= { powerguru 16 }
+
+-- Whew!
+END

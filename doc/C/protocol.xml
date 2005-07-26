@@ -1,0 +1,2602 @@
+    <sect3 id="User Menus">
+      <title>User Menus</title>
+      <para>This is a list of all the User menus. Most users menus
+        don't change anything about how the inverter operates but the
+        time of day setting, and the generator timers. Most of these
+        menues are informational </para>
+
+
+      <sect4 id="Inverter Mode">
+        <title>Inverter Mode</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Inverter
+OFF SRCH ON  CHG</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>Enumeration</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the inverter mode. Off is self
+	      explanatory. Search mode puts the inverter in a power-saving
+	      mode, and only comes out when the load is over the
+	      search limit. (usually 16 watts)</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>CHG avail. only
+in FLT mode.</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Press red or
+setpoint button</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>to move cursor.
+Move cursor to</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Inverter OFF to
+resetOverCurrent</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+
+      </sect4>
+
+      <sect4 id="Generator Mode">
+        <title>Generator Mode</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Generator
+OFF AUTO ON  EQ</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>Enumeration</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the generator mode. Auto is for Auto
+	      Start, and EQ is for equalizing batteries.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Gen under/over
+speed</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Generator start
+error</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Generator sync
+error</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Load Amp Start
+ready</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Voltage Start
+ready</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Exercise Start
+ready</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Move cursor to
+GEN OFF to reset</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>generator error.
+	</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>If no start in 6
+trys then error.</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>If Gen starts &amp;
+runs for 5 min</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>then stops the
+inverter will</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>not attempt
+restart until</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>gen auto start
+conditions are</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+
+      </sect4>
+
+      <sect4 id="Trace Engineering">
+        <title>Trace Engineering</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Press reset now
+for defaults</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>Enumeration</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the generator mode. Auto is for Auto
+	      Start, and EQ is for equalizing batteries.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Revision 4.10</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>5916 195th St NE
+Arlington, WA</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>98223 USA</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Ph  360-435-8826
+Fax 360-435-2229</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+
+      </sect4>
+
+
+      <sect4 id="Meters">
+        <title>Meters</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Inverter/charger
+amps AC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>The amount of current the inverter (or when it's
+	    in charging mode) is putting out.</para>
+	  </entry>
+	</row>
+    
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Input
+amps AC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>The amount of current that the inverter is receiving
+            from a power source, like the generator.</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Load 
+amps AC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is the amount of current that is being used by
+	    AC devices.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Battery actual
+volts DC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is the actual voltage in DC of the battery bank.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Battery TempComp
+volts DC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is the temperature compensation voltage in DC.</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Inverter
+volts AC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is the AC output voltage of the interter.</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Grid (AC1)
+volts AC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is the AC input voltage of the power grid
+            (assuming you have a grid intertie system).</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Generator (AC2)
+volts AC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is the AC input voltage from the generator.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Read Frequency
+Hertz</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is the frequency in Hertz of the inverter. In
+	    the US, this should be around 60.</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>AC1 &amp; AC2  volts
+valid only when</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>inverter synced
+to that input.</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Batt volt actual
+is used for</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>LBCO,HBCO,LBX,
+LBCI,sell volts</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>and gen starting</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Batt volt temp
+comp is used for</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>float,bulk,eq &amp;
+aux relays</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+
+      </sect4>
+
+      <sect4 id="Error Causes">
+        <title>Error Causes</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Over Current
+        </literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>Boolean</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is ON when the inverter is putting out too much
+	    current</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Transformer
+overtemp</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>Boolean</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is on when the inverters transformer is too hot.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Heatsink
+overtemp</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>Boolean</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is ON when the heat sink is too hot.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>High Battery
+voltage</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>Boolean</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is ON when the batteries are over voltage.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Low Battery
+voltage</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>Boolean</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is ON when the batteries are low.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>AC source wired
+to output</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>Boolean</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is ON when you have a wiring problem.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>External error
+(stacked)</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>Boolean</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is ON when there is an error in stacked inverters.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Generator start
+error</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>Boolean</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is ON when there is an error in starting the generator.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Generator sync
+error</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>Boolean</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>If this is ON, there is a power problem with your generator.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Gen under/over
+speed</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>Boolean</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is ON when the generator is over or under speed.</para>
+	  </entry>
+	</row>
+
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+
+      </sect4>
+
+
+      <sect4 id="Time of Day">
+        <title>Time of Day</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Clock hour
+</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>time</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the hours part of the current time.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Clock minute
+</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>time</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the hours part of the current time.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Clock second
+</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>time</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the seconds part of the current time.</para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+      </sect4>
+
+      <sect4 id="Generator Timer">
+        <title>Generator Timer</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Start Quiet
+time  h:m</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>time</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is the the start of the time period when the
+	      when your generator won't be started automatically.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>End Quiet
+time  h:m</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>time</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is the the end of the time period when your generator
+	     won't be started automatically.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>inverter synced
+to that input.</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Gen doesnt run
+during quiet</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>time unless batt
+volts is less</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>than LBCO volts
+for 30 seconds</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>or load > load
+start amps.</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>To defeat timers
+set start = end</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>If exercise days
+set to 1 then</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>gen will always
+start @ endquiet</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+
+      </sect4>
+
+      <sect4 id="END USER MENU">
+        <title>END USER MENU</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>END USER MENU</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This means you are at the end of the user
+	      menus. Inverter Setup must be pressed to get to the
+	      Setup menu.</para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+
+      </sect4>
+    </sect3>
+
+    <sect3 id="Setup Menus">
+      <title>Setup Menus</title>
+      <para>This is a list of all the setup menus. Unlike the user
+        menus, you should know what you are doing before you change
+        any of these values. If something goes wrong, reset your
+        inverter to the factory defaults.</para>
+
+      <sect4 id="Inverter Setup">
+        <title>Inverter Setup</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Grid Usage
+FLT SELL SLT LBX</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>Enumeration</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the grid usage.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Low battery
+cut out VDC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the low battery cut out voltage.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set LBCO delay
+minutes</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the LBCO delay.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Low battery
+cut in VDC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>Boolean</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the low battery cut in voltage.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set High battery
+cut out VDC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the high battery cut out voltage.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set search
+watts</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the wattage that determines when the
+	      inverter comes out of search mode, and turns on.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set search
+spacing</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the search watts increment/decrement
+	      increment, which must be a multiple of 16.</para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+      </sect4>
+
+      <sect4 id="Battery Charging">
+        <title>Battery Charging</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Bulk
+volts DC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This is the amount one must reach before selling
+              power.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Absorbtion   
+time h:m</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>time</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the absorbtion time.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Float        
+volts DC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the float voltage.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Equalize     
+volts DC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the equalization voltage.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Equalize    
+time h:m</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>time</para>
+	  </entry>
+	  <entry valign="top">
+	    <para></para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Max Charge   
+amps  AC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the maximum charging current.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Temp Comp    
+LeadAcid NiCad</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>Enumeration</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This ets the type of the battery, so temperature
+              compensation works.</para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+      </sect4>
+
+      <sect4 id="AC Inputs">
+        <title>AC Inputs</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Grid (AC1)   
+amps AC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the Grid current input.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Gen (AC2)    
+amps  AC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets tge generator current input.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Input lower  
+limit VAC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the lower input voltage.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Input upper  
+limit VAC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the upper input voltage.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>In SELL mode AC1
+input VAC limits</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>fixed at 88% to
+110% of nominal.</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+      </sect4>
+
+      <sect4 id="Gen Auto Start setup">
+        <title>Gen Auto Start setup</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Load Start   
+amps AC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the voltage for when the generator should
+              come on to help with a high load.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Load Start   
+delay min</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the delay in fractions of a minute for the
+              generator to delay when starting.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Load Stop    
+delay min</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>This sets the delay in fractions of a minute for the
+              generator to delay when stopping.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set 24 hr start  
+volts DC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para></para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set 2  hr start  
+volts DC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para></para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set 15 min start 
+volts DC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para></para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Read LBCO 30 sec 
+start VDC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para></para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Exercise    
+period days</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para></para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Exercise     
+period days</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Exercise to
+0 to defeat</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>See menu 9 to    
+set LBCO</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+      </sect4>
+
+      <sect4 id="Gen starting details">
+        <title>Gen starting details</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set RY7 Function 
+GlowStop Run</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>Enumeration</para>
+	  </entry>
+	  <entry valign="top">
+	    <para></para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Gen warmup   
+seconds</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para></para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Pre Crank    
+seconds</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para></para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Max Cranking 
+seconds</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para></para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Post Crank   
+seconds</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para></para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+      </sect4>
+
+      <sect4 id="Auxilary Relays R9 R10 R11">
+        <title>Auxilary Relays R9 R10 R1</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Relay 9
+volts DC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Set the voltage for when relay 9 should turn
+              on.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>R9 Hysteresis
+volts DC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Set the hysteresis level for relay 9.</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Relay 10
+volts DC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Set the voltage for when relay 9 should turn
+              on.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>R10 Hysteresis   
+volts DC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Set the hysteresis level for relay 9.</para>
+	  </entry>
+	</row>
+
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Relay 11
+volts DC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Set the voltage for when relay 9 should turn
+              on.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>R11 Hysteresis   
+volts DC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Set the hysteresis level for relay 9.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>close on batt &gt;
+setpoint</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>open  on batt &lt;
+setpoint - Hys</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>relays have 2
+second delay on</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>close, 0.1 sec
+delay on open</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+      </sect4>
+
+      <sect4 id="Bulk Charge Trigger Timer">
+        <title>Bulk Charge Trigger Timer</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Start Bulk
+time</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>time</para>
+	  </entry>
+	  <entry valign="top">
+	    <para></para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>To disable timer
+set to 00:00</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>If grid timer
+active set bulk</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>time after start
+charge time.</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>In SLT mode dont
+disable this</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>timer. It is the
+daily chg time.</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+      </sect4>
+
+      <sect4 id="Low Battery Transfer (LBX)">
+        <title>Low Battery Transfer (LBX)</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Low Battery 
+transferVDC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para></para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Low battery
+cut in  VDC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para></para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>See menu 9 to
+enable LBX mode</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Make sure LBX is
+above LBCO volts</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+      </sect4>
+
+      <sect4 id="Battery Selling">
+        <title>Battery Selling</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Battery Sell
+volts DC </literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>float</para>
+	  </entry>
+	  <entry valign="top">
+	    <para></para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Max Sell
+amps AC</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>integer</para>
+	  </entry>
+	  <entry valign="top">
+	    <para></para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>See menu 9 to
+enable SELL mode</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+      </sect4>
+
+      <sect4 id="Grid Usage Timer">
+        <title>Grid Usage Timer</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set Start Charge
+time</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>time</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Set the start time for charging the batteries.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Set End Charge
+time</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para></para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Set the time to stop charging the batteries.</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>After Start
+Charge time:</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>SELL mode
+charges battery</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>FLT mode
+charges battery</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>After End Charge
+time:</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>SELL mode sells
+battery to AC1</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>FLT mode drops
+AC1 and inverts</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>timer on  when
+start &lt;&gt;> end</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>timer off when
+start = end</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Sell and float
+modes use timer.</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>SLT and LBX mode
+ignore timer.</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+      </sect4>
+
+      <sect4 id="Information file battery">
+        <title>Grid Usage Timer</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>Batt temp comp
+changes battery</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>voltage reading
+away from actual</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>HBCO resets at:
+6v/48,3v/24 and</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>1.5v/12v under
+HBCO</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>LowBattTransfer
+used in LBX, FLT</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>modes only. Goes
+back to battery </literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>at LowBattCutIn.
+(aka LBCI)</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>For LBX mode set
+float&amp;bulk volts</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>below LBCI so
+charger won't</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>cycle batteries
+up and down and</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>set LBCO below
+LBX</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>Information message</para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+      </sect4>
+
+      <sect4 id="END SETUP MENU">
+        <title>END SETUP MENU</title>
+	<para>These are the messages as displayed by the inverter:</para>
+
+	<para>
+	<informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1">
+	<colspec colname="COLSPEC3" colwidth="45.00*"/>
+	<colspec colname="COLSPEC4" colwidth="25.00*"/>
+	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<thead>
+	  <row rowsep="1">
+	    <entry valign="top">
+	      <para>Menu Item</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Data Type</para>
+	    </entry>
+	    <entry valign="top">
+	      <para>Description</para>
+	    </entry>
+	  </row>
+	</thead>
+	<tbody>
+
+	<row>
+	  <entry valign="top" align="center">
+	    <literallayout>END SETUP MENU</literallayout>
+	  </entry>
+	  <entry valign="top" align="center">
+	    <para>none</para>
+	  </entry>
+	  <entry valign="top">
+	    <para>You are at the end of the setup menu items, and have
+              to press menu heading down top continue.</para>
+	  </entry>
+	</row>
+
+	</tbody>
+	</tgroup>
+	</informaltable>
+      </para>
+      </sect4>
+
+    </sect3>
+
