@@ -1,0 +1,23 @@
+2005-05-27
+  Currently I'd ignore the src directory. This is the support code for the
+barely started Glade2 GUI. I postponed this to make powerguru have a
+separete backend and GUI, rather than the way I was doing it with TraceGUI.
+
+  Not much works but datalogging to a MySQL database someplace. I've got
+broadband, so I write my data to my server at work. I've just started the PHP
+pages to plot the data. These are in the web directory, but once again, barely
+started.
+
+  This originally started life as TraceGUI, but I got distracted rebuilding
+my entire houses's power system, GTK1 and Glade1 went to 2.0 releases that were
+incompatable enough with the previous versions to make upgrading slow. Then
+Trace became Xantrex, and I bought an Outback MX-60...
+
+  I got the idea to make a tiny backend so it would run on a 12VDC,
+Linux based motherboard like a Nexus, a Via, or a Soekris. This would do
+datalogging directly and support an SNMP connection to execute remote commands.
+This way I could have multiple front ends, a command line interface, a
+graphical one, and a web based one. Ideally I'd even like one that's written
+in QT or Java so I can run it on my Zaurus 6000-L.
+
+	- rob -
