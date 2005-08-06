@@ -110,6 +110,12 @@
       <para>&appname; is a tool for remotely controlling Xantrex and
       Outback Power Systems products. In my case, an old Trace 4024 and
       an Outback MX-60.
+
+	<mediaobject>
+	  <imageobject>
+	    <imagedata fileref="images/domes.png" format="png"/>
+	  </imageobject>
+	</mediaobject>  
       </para>
 
       <para>This all started when I bought a fixer upper, off-grid
@@ -315,7 +321,6 @@
    </para>
 
   </sect1>
-
 
   <!-- ============= Application License ============================= -->
 
