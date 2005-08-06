@@ -36,8 +36,10 @@ public:
   enum state_e { UNSET, OPEN, RAW, CLOSED };
 
   void Open (void);
-  void OpenInChannel (std::string &channel);
-  void OpenOutChannel (std::string &channel);
+  void OpenInChannel (std::string channel);
+  void OpenInChannel (void);
+  void OpenOutChannel (std::string channel);
+  void OpenOutChannel (void);
   void Close (void);
   void Reset (void);
   

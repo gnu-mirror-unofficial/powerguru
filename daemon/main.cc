@@ -67,37 +67,45 @@ int curses = 0;
 
 int
 main(int argc, char *argv[]) {
-    int c, i, ch, ret;
-    int logopen = 0;
+    int c, i;
     ErrCond Err;
     string item, str;
-    char *filespec;
-    int menuhead = 0;
-    int menuitem = 0;
-    char buffy[100];
+    const char *filespec;
     MenuItem ti;
     string value, display;
-    int intval;
-    float fltval;
-    bool console = false;
-    bool setitem = false;
-    bool getitem = false;
-    bool echo = false;
-    bool monitor = false;
-    bool poll = false;
-    bool outbackmode = false;
-    bool xantrexmode = false;
-    bool use_db = true;
-    bool snmp = false;
-    bool background = false;    
+    bool console;
+    bool setitem;
+    bool getitem;
+    bool echo;
+    bool monitor;
+    bool poll;
+    bool outbackmode;
+    bool xantrexmode;
+    bool use_db;
+    bool snmp;
+    bool background;
     Database pdb;
-    struct sigaction act;
     XantrexUI ui;
+    //    Console con;
 
     if (argc == 1) {
       //usage(argv[0]);
     }
 
+    // Set the option flags to default values. We do it this way to
+    // shut up GCC complaining they're not used.
+    console = false;
+    setitem = false;
+    getitem = false;
+    echo = false;
+    monitor = false;
+    poll = false;
+    outbackmode = false;
+    xantrexmode = false;
+    use_db = true;
+    snmp = false;
+    background = false;    
+    
     // Load the database config variable so they can be overridden by
     // the command line arguments.
     RCinitFile config;
@@ -226,12 +234,12 @@ main(int argc, char *argv[]) {
     }
 #endif
 
-    // Open a console for user input
-    Console con;
-    con.Open();
-    
     // Talk to an Outback Power Systems device
     if (outbackmode) {
+      Console con;
+      // Open a console for user input
+      con.Open();
+    
       con.Puts("PowerGuru - Outback Mode\r\n");
       //outback outdev("/dev/pts/7");
       outback outdev(filespec);
@@ -244,9 +252,14 @@ main(int argc, char *argv[]) {
         
       }
       exit(0);
+      con.Reset();
+      con.Close();
     }
 
     if (xantrexmode) {
+      Console con;
+      // Open a console for user input
+      con.Open();
       if (poll) {
         // Open the serial port
         try {
@@ -282,7 +295,7 @@ main(int argc, char *argv[]) {
         }
       }
       con.Reset();
-      con.Close();
+      con.Close();      
     }
 }
 
@@ -294,10 +307,10 @@ alarm_handler2 (int sig)
   DEBUGLOG_REPORT_FUNCTION;
   ostringstream oss;
   struct sigaction  act;
-  int ch;
-  struct errcond err;
-  
 #if 0
+  int ch;
+  struct errcond Err;
+  
 #if 1
   // If there is keyboard input, stop looking for the old
   // output.

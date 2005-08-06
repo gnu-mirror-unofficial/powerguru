@@ -51,12 +51,12 @@ string &
 XantrexUI::ReadSerial(void)
 {
   int ret;
-  int retries = 1;
-  
   //DEBUGLOG_REPORT_FUNCTION;
   memset(buffy, 0, 100);
 
-#if 0
+#if 0 
+  int retries = 1;
+  
   while (retries--) {
     if (ret = Read((char *)&buffy, 99) < 0) {
       //dbglogfile << "FIXME: " << retries << "\t" << buffy << endl;
@@ -94,7 +94,7 @@ XantrexUI::GetLabel() {
 string &
 XantrexUI::WriteSerial(const char *buf, int nbytes)
 {
-  int ret, ch;
+  int ret;
   
   //DEBUGLOG_REPORT_FUNCTION;
   memset(buffy, 0, 100);
@@ -276,6 +276,9 @@ XantrexUI::SetPointMinus(void)
   Write("-", 1);
   Read((char *)&buffy, 100);
   dbglogfile << buffy << endl;
+
+  menudisp = buffy;
+  return menudisp;
 }
 
 string &
@@ -287,6 +290,9 @@ XantrexUI::SetPointPlus(void)
   Write("+", 1);
   Read((char *)&buffy, 100);
   dbglogfile << buffy << endl;
+
+  menudisp = buffy;
+  return menudisp;
 }
 
 string &
@@ -298,6 +304,9 @@ XantrexUI::Inverter(void)
   Write("|", 1);
   Read((char *)&buffy, 100);
   dbglogfile << buffy << endl;
+
+  menudisp = buffy;
+  return menudisp;
 }
 
 string &
@@ -309,6 +318,9 @@ XantrexUI::Generator(void)
   Write("G", 1);
   Read((char *)&buffy, 100);
   dbglogfile << buffy << endl;
+
+  menudisp = buffy;
+  return menudisp;
 }
 
 string &
@@ -337,6 +349,9 @@ XantrexUI::LedStatus(void)
   Write("?", 1);
   Read((char *)&buffy, 100);
   dbglogfile << buffy << endl;
+
+  menudisp = buffy;
+  return menudisp;  
 }
 
 string &
@@ -348,6 +363,9 @@ XantrexUI::Version(void)
   Write("V", 1);
   Read((char *)&buffy, 100);
   dbglogfile << buffy << endl;
+
+  menudisp = buffy;
+  return menudisp;
 }
 
 string &
@@ -359,6 +377,9 @@ XantrexUI::SetTerminalMode(void)
   Write("T", 1);
   Read((char *)&buffy, 100);
   dbglogfile << buffy << endl;
+
+  menudisp = buffy;
+  return menudisp;
 }
 
 #if 0
@@ -411,7 +432,8 @@ retcode_t
 XantrexUI::SetFloatValue(float )
 {
   DEBUGLOG_REPORT_FUNCTION;
-
+  cerr << "ERROR: unimplemented!" << endl;
+  return ERROR;
 }
 
 float
@@ -426,6 +448,9 @@ retcode_t
 XantrexUI::SetIntValue(int x)
 {
   DEBUGLOG_REPORT_FUNCTION;
+
+  cerr << "ERROR: unimplemented!" << endl;
+  return ERROR;
 }
 
 int
@@ -552,9 +577,8 @@ string &
 XantrexUI::GotoMenuItem(int mh, int mi)
 {
   DEBUGLOG_REPORT_FUNCTION;
-  char buffy[100];
   string tmpstr;
-  int i, j, ret;
+  int i;
   MenuItem item;
   
   GotoMenuStart();
@@ -637,8 +661,6 @@ XantrexUI::PollMeters(int loops)
       ptr1++;
     }
 
-    int iii = 1;
-    
     meters.push_back(downdata);
 
 #if 1
@@ -691,7 +713,7 @@ XantrexUI::PollMeters(int loops)
 std::string &
 XantrexUI::CleanUpData(std::string &str)
 {
-  int i;
+  unsigned int i;
 
   menudisp.erase();
   for (i=0; i< str.length(); i++) {
@@ -1115,7 +1137,6 @@ void
 XantrexUI::DumpAliases (void)
 {
   DEBUGLOG_REPORT_FUNCTION;
-  int i;
   
   vector< vector< MenuItem > >::iterator mh;
   vector< MenuItem >::iterator it;
@@ -1161,7 +1182,6 @@ MenuItem &
 XantrexUI::GetItem(int x, int y)
 {
    DEBUGLOG_REPORT_FUNCTION;
-   int i, j;
    vector< vector< MenuItem > >::iterator mh;
    vector< MenuItem >::iterator it;
    vector< MenuItem > arg;
@@ -1175,6 +1195,8 @@ XantrexUI::GetItem(int x, int y)
        }
      }
    }
+
+   return *it;                  // FIXME: This probably isn't what we want
 }
 
 #if 0
@@ -1486,5 +1508,7 @@ XantrexUI::exportMeterData(meter_data_t *data)
   // software can handle this  the same way.
   data->hertz = 60;
 #endif
+
+  return data;
 }
 

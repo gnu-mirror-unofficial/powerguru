@@ -39,11 +39,13 @@ dnl   elif test "$prefix" != "xNONE"; then
 dnl     SNMP_CFLAGS="-I$prefix/include"
 dnl   fi
 
-  AC_MSG_CHECKING(for NET-SNMP headers)
+  AC_MSG_CHECKING(for NET-SNMP headers and flags)
   no_snmp=""
 
   if test "x$SNMP_CFLAGS" = "x" ; then
-    SNMP_CFLAGS=`net-snmp-config --cflags`
+    dnl The -Wstrict-prototypes flags is for C/ObjC code only, and
+    dnl this project is all written in C++.
+    SNMP_CFLAGS=`net-snmp-config --cflags | sed -e 's: -Wstrict-prototypes::' `
     AC_MSG_RESULT($SNMP_CFLAGS)
   fi
 

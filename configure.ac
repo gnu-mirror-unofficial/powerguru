@@ -57,11 +57,14 @@ AC_CHECK_HEADERS([stdarg.h])
 AC_CHECK_HEADERS([syslog])
 
 AC_ISC_POSIX
-AC_PROG_CC
+AC_PROG_CXX
 AM_PROG_CC_STDC
 AC_HEADER_STDC
 
 AC_PROG_LIBTOOL
+dnl We only use these defnitions if we want to dynamically load
+dnl shared libraries from our application code.
+
 dnl Look for libltdl, which we use for dealing with shared libraries
 dnl AC_LIBTOOL_DLOPEN
 dnl AC_LIBLTDL_CONVENIENCE
@@ -84,6 +87,10 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"powerguru", [Gettext package.])
 
 AM_PATH_MYSQL
 AM_PATH_SNMP
+
+dnl link to the images so we can browse the HTML output before
+dnl installing it.
+AC_LINK_FILES(doc/C/images,doc/C/images)
 
 AC_OUTPUT([
 Makefile

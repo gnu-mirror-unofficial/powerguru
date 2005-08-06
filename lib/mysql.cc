@@ -184,6 +184,8 @@ Database::queryInsert(const char *query)
     
     return false;
   }
+  
+  return false;
 }
 
   
@@ -194,9 +196,9 @@ Database::queryResults(const char *query)
 
     MYSQL_RES	*result;
     MYSQL_ROW	row;
-    MYSQL_FIELD *fields;
+    //    MYSQL_FIELD *fields;
     int         nrows;
-    int         i, res;
+    unsigned int i, res;
 
     dbglogfile << "Query is: " << query << endl;
 
@@ -239,6 +241,9 @@ Database::queryResults(const char *query)
     }
 
     mysql_free_result(result);
+
+    // FIXME: return something intelligent here
+    return (void *)0;
 }
 
 bool
@@ -248,7 +253,7 @@ Database::queryInsert(vector<meter_data_t *> data)
 
   struct tm      *ttm;
   struct timeval tp;
-  int            i;
+  unsigned int   i;
   //char           query[QUERYLEN];
   //char           *ptr;
 #ifdef __STDC_HOSTED__
@@ -330,15 +335,28 @@ Database::queryInsert(meter_data_t *data)
   
   // FIXME: For now source is the facility
   // Build the query string to insert the data
-  sprintf(query, "INSERT INTO meters () VALUES ('%d','%s','%0.4d-%0.2d-%d %0.2d:%0.2d:%0.2d','%d','%d','%f','%f','%f','%f','%d','%f','%d','%d','%f','%d','%f')",
+  sprintf(query, "INSERT INTO meters () VALUES ( \
+        '%d',                   // Unit address (int)\
+        '%s',                   // Device Type enum)\
+        '%d-%d-%d %d:%d:%d',    // timestamp\
+        '%d',                   // Charger Amps (int)\
+        '%d',                   // AC Load Amps (int)\
+        '%f',                   // Battery Volts (float)\
+        '%f',                   // AC Volts Out (float)\
+        '%f',                   // AC1 Volts In (float)\
+        '%f',                   // AC2 Volts In (float)\
+        '%d',                   // PV Amps In (int)\
+        '%f',                   // PV Volts In (float)\
+        '%f',                   // Buy Amps (int)\
+        '%f',                   // Sell Amps (int)\
+        '%f',                   // Dail Kwh (float)\
+        '%d',                   // Frequency in Hertz (int)\
+        '%f'                    // Battery Temperature Compenation (float)\
+        )",
+          //  sprintf(query, "INSERT INTO meters () VALUES ('%d','%s','%0.4d-%0.2d-%d %0.2d:%0.2d:%0.2d','%d','%d','%f','%f','%f','%f','%d','%f','%f','%f','%d','%f','%f')",
           data->unit,
           type,
-          ttm->tm_year,
-          ttm->tm_mon,
-          ttm->tm_mday,
-          ttm->tm_hour,
-          ttm->tm_min,
-          ttm->tm_sec,
+          ttm->tm_year,ttm->tm_mon,ttm->tm_mday,ttm->tm_hour,ttm->tm_min,ttm->tm_sec,
           data->charge_amps,
           data->ac_load_amps,
           data->battery_volts,
@@ -346,7 +364,7 @@ Database::queryInsert(meter_data_t *data)
           data->ac1_volts_in,
           data->ac2_volts_in,
           data->pv_amps_in,
-          //          data->pv_volts_in,
+          data->pv_volts_in,
           data->buy_amps,
           data->sell_amps,
           data->daily_kwh,

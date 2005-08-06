@@ -107,13 +107,15 @@
     </para>
     <sect2 id="betterintro">
       <title>What is &appname; ?</title>
-      <para>&appname; is a tool for remotely controlling Xantrex and
-      Outback Power Systems products. In my case, an old Trace 4024 and
+      <para>&appname; is a tool for remotely controlling
+      <ulink type="http" url="http://www.xantrex.com">Xantrex</ulink>
+      and <ulink type="http" url="http://www.outbackpower.com">Outback
+      Power Systems</ulink> products. In my case, an old Trace 4024 and
       an Outback MX-60.
 
 	<mediaobject>
 	  <imageobject>
-	    <imagedata fileref="images/domes.png" format="png"/>
+	    <imagedata fileref="images/domes.png"/>
 	  </imageobject>
 	</mediaobject>  
       </para>
@@ -121,10 +123,9 @@
       <para>This all started when I bought a fixer upper, off-grid
 	house... Like many projects, this one seems to have fallen
 	into my lap, more than it was a concious idea. Over time, the
-	concept has evolved into an actual product in
-	development. That project, <ulink type="http"
-	url="http://www.senecass.com/abelmon">AbelMon</ulink>, is a
-	much larger project, and this application
+	concept has evolved into an actual product in development.
+	That project, <ulink type="http" url="http://www.senecass.com/abelmon">
+	AbelMon</ulink>, is a much larger project, and this application
 	<application>&appname;</application>, is part of that project
 	spun off into a standalone application.</para>
 
@@ -141,16 +142,16 @@
     <title>PowerGuru Overview</title>
 
     <para>
-      PowerGuru is an interface to your Inverter or charge
+      PowerGuru is an interface to your inverter or charge
       controller. It's main purpose is to handle the low-level
       work of reading and writing from these devices. At this level
       PowerGuru is an SDK for C,C++, or Java programers to work with
-      Xantrex and Outback products.
+      Xantrex and Outback Power Systems products.
     </para>
 
     <para>
       The backend of PowerGuru is a daemon that runs all the time and
-      is connected via serial ports to your power production
+      is connected via serial ports or USB to your power production
       equipment. This daemon handles all the ugly work of interfacing
       with each device. The daemon has two modes, one is data-logging
       mode, and the other is a command mode.

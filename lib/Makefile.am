@@ -24,6 +24,7 @@ AUTOMAKE_OPTIONS =
 #LIBLTDL = @LIBLTDL@
 # __USLC__ makes MySQL++ use the std namespace
 AM_CXXFLAGS = -g -D__USLC__
+AM_CPPFLAGS = -Wall
 
 lib_LTLIBRARIES = libpguru.la
 
@@ -113,3 +114,7 @@ uninstall-libLTLIBRARIES:
 	  $(LIBTOOL) --mode=uninstall rm -f "$(DESTDIR)$(pkglibdir)/$$p"; \
 	done
 
+# Rebuild with GCC 4.x Mudflap support
+mudflap:
+	@echo "Rebuilding with GCC Mudflap support"
+	$(MAKE) CXXFLAGS="$(CXXFLAGS) -fmudflap" LDFLAGS="$(LDFLAGS) -lmudflap"

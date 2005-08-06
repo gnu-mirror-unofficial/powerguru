@@ -52,21 +52,19 @@ Console::~Console (void) {
 void
 Console::Open (void) {
   // Open a console for the end user to type at. We default to stdio (cin)
-  string str = "stdin";
+  //  string str = "stdin";
   
-  OpenInChannel(str);
+  OpenInChannel();
   
-  str = "stdout";
+  //  str = "stdout";
 
   // Open a the output channel for the console. We default to stdio (cout)
-  OpenOutChannel(str);
+  OpenOutChannel();
 }
 
 void
-Console::OpenInChannel (std::string &x) {
-  struct sigaction saio;
-
-  if (x == "stdin") {
+Console::OpenInChannel (string channel) {
+  if (channel == "stdin") {
     inchannel.fhandle = stdin;
     inchannel.filespec = "stdin";
     state = Console::OPEN;
@@ -76,6 +74,8 @@ Console::OpenInChannel (std::string &x) {
   signal (SIGINT, signal_handler);
   signal (SIGQUIT, signal_handler);
 #else
+  struct sigaction saio;
+
   // FIXME: we want to trap ^C on the console, but this doesn't seem to work
   saio.sa_handler = signal_handler;
   saio.sa_mask = 0;
@@ -91,13 +91,46 @@ Console::OpenInChannel (std::string &x) {
 }
 
 void
-Console::OpenOutChannel (std::string &x) {
-  if (x == "stdout") {
+Console::OpenInChannel (void) {
+  inchannel.fhandle = stdin;
+  inchannel.filespec = "stdin";
+  state = Console::OPEN;
+
+#if 1
+  signal (SIGINT, signal_handler);
+  signal (SIGQUIT, signal_handler);
+#else
+  struct sigaction saio;
+
+  // FIXME: we want to trap ^C on the console, but this doesn't seem to work
+  saio.sa_handler = signal_handler;
+  saio.sa_mask = 0;
+  saio.sa_flags = 0;
+  saio.sa_restorer = 0;
+
+  sigaction(SIGIO, &saio, 0);
+#endif
+
+  fcntl(fileno(inchannel.fhandle), F_SETOWN, getpid());
+
+  MakeRaw(fileno(inchannel.fhandle));
+}
+
+void
+Console::OpenOutChannel (string channel) {
+  if (channel == "stdout") {
     outchannel.fhandle = stdout;
     outchannel.filespec = "stdout";
     state = Console::OPEN;
   }
   //    MakeRaw(fileno(outchannel.fhandle));
+}
+
+void
+Console::OpenOutChannel (void) {
+  outchannel.fhandle = stdout;
+  outchannel.filespec = "stdout";
+  state = Console::OPEN;
 }
 
 // Reset the input channel to be where it was when we started

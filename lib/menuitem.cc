@@ -232,7 +232,8 @@ void
 MenuItem::Dump(void)
 {
   //  DEBUGLOG_REPORT_FUNCTION;
- 
+
+#if 0
   string str0[] = {
     "NONE",
     "MENUHEAD",
@@ -246,6 +247,7 @@ MenuItem::Dump(void)
     "CLOCK",
     "ENUM"
   };
+#endif
 
   if (type <= ENUM) {
     dbglogfile << " Label is: \"" << label << "\"" << endl;
@@ -327,7 +329,6 @@ std::string &
 MenuItem::SetDisplay(std::string &label, int x)
 {
   DEBUGLOG_REPORT_FUNCTION;
-  struct sigaction  act;
   ostringstream oss;
 
   oss.clear();
@@ -357,7 +358,6 @@ std::string &
 MenuItem::SetDisplay(std::string &label, bool x)
 {
   DEBUGLOG_REPORT_FUNCTION;
-  struct sigaction  act;
   ostringstream oss;
   
   oss.clear();
@@ -382,7 +382,6 @@ std::string &
 MenuItem::SetDisplay(std::string &label, float x)
 {
   DEBUGLOG_REPORT_FUNCTION;
-  struct sigaction  act;
   ostringstream oss;
   
   oss.clear();

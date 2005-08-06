@@ -73,7 +73,13 @@
 // 
 //     * destroys the semaphore; no threads should be waiting on the
 //     semaphore if its destruction is to succeed.
-// 
+//
+
+
+// This shuts up warnings about virtual functions. We don't care,
+// because this isn't implemented yet.
+//#warning "Unimplemented"
+#pragma GCC system_header
 
 extern "C" {
 #include <stdio.h>

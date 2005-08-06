@@ -103,6 +103,10 @@ ErrCond::SetMsg (int x, const char *s) {
 ostream&
 ErrCond::operator << (ostream & (&)(ostream &)) {
   //  ClearErr();
+  cerr << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
+  // FIXME: This return value is tottaly bogus, and exists only to
+  // shut up GCC until this actually gets implemented.
+  return cout;
 }
 
 ErrCond& 
@@ -123,7 +127,7 @@ ErrCond&
 ErrCond::operator << (void *x)
 {
   char buf[10];
-  sprintf ((char *)&buf, "0x%x", x);
+  sprintf ((char *)&buf, "%p", x);
   emsg += buf;
   return *this;
 }

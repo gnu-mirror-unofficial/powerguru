@@ -33,6 +33,7 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <iostream>
 
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
@@ -52,6 +53,8 @@ extern "C" {
 #endif
 
 #define RETSIGTYPE void
+
+using namespace std;
 
 SnmpClient::SnmpClient()
 {
@@ -79,12 +82,16 @@ SnmpClient::open(std::string init, std::string mibname)
   _mibtree = read_mib(mibname.c_str());
 
   _pdu = snmp_pdu_create(SNMP_MSG_GET);
+
+  return SUCCESS;
 }
 
 retcode_t
 SnmpClient::close(void)
 {
   //snmp_close(_handle);
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+  return ERROR;
 }
 
 struct snmp_pdu *
@@ -92,9 +99,9 @@ SnmpClient::read(std::string mibnode)
 {
   struct variable_list *vars;
   oid id_oid[MAX_OID_LEN];
-  oid serial_oid[MAX_OID_LEN];
+  //  oid serial_oid[MAX_OID_LEN];
+  //  size_t serial_len = MAX_OID_LEN;
   size_t id_len = MAX_OID_LEN;
-  size_t serial_len = MAX_OID_LEN;
   int status;                             
 
   // read_objid("XANTREX-MIB::xantrex.0", id_oid, &id_len);
@@ -108,6 +115,8 @@ SnmpClient::read(std::string mibnode)
   }
   
   snmp_free_pdu(_response);
+
+  return _response;             // FIXME: this may be incorrect
 }
 
 
@@ -129,8 +138,6 @@ SnmpDaemon::~SnmpDaemon()
 
 retcode_t
 SnmpDaemon::main(bool background) {
-  int syslog = 0; // change this if you want to use syslog
-
   // print log errors to syslog or stderr
   snmp_enable_stderrlog();
   snmp_debug_init();  
@@ -208,5 +215,7 @@ SnmpDaemon::process(void)
   if (count > 0) {
     snmp_read(&readfds);
   }
+
+  return SUCCESS;
 }
 

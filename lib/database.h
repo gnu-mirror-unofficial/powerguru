@@ -39,6 +39,9 @@
 #error "You need to install MySQL!"
 #endif
 
+// This shuts up warnings about these constants not being used.
+#pragma GCC system_header
+
 static const char *DBTABLE = "powerguru";
 static const char *DBNAME  = "powerguru";
 static const char *DBUSER  = "powerguru";
@@ -51,19 +54,16 @@ typedef enum { NO_DEVICE, MX_OUTBACK, FX_OUTBACK, SW_XANTREX } device_t;
 
 typedef struct
 {
-  int unit;                     // The unit number for the device
+  int   unit;                   // The unit number for the device
   device_t type;                // The type of the device
-  int charge_amps;              // The amperage being put into the batteries
-  int ac_load_amps;             // The load in amps
+  int   charge_amps;            // The amperage being put into the batteries
+  int   ac_load_amps;           // The load in amps
   float battery_volts;          // Actual Battery Voltage
-  float tempcomp_volts;         // Battery Voltage temperate
-                                // compensated. Xantrex Only.
   float ac_volts_out;           // The voltage the inverter is producing
   float ac1_volts_in;           // Grid AC input
   float ac2_volts_in;           // Generator AC input. Xantrex only
-  int pv_amps_in;               // The current coming from the PV panels.
+  int   pv_amps_in;             // The current coming from the PV panels.
   float pv_volts_in;            // The DC voltage coming from the PV panels.
-  int hertz;                    // Frequency in Hertz. Xantrex only
   float buy_amps;               // The AC current taken from the Grid
                                 // and used to charge the batteries; 
   float sell_amps;              // The AC current the batteries are
@@ -71,6 +71,9 @@ typedef struct
   float daily_kwh;              // The daily kilowatts put into the
                                 // batteries from the PV
                                 // source. Outback only.
+  int   hertz;                  // Frequency in Hertz. Xantrex only
+  float tempcomp_volts;         // Battery Voltage temperate
+                                // compensated. Xantrex Only.
   
 }  meter_data_t ;
 

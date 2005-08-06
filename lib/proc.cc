@@ -38,6 +38,8 @@ Proc::~Proc (void) {
 
 bool
 Proc::Start (void) {
+  cerr << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
+  return false;
 }
 
 bool
@@ -113,6 +115,8 @@ Proc::Find (string procname) {
 
 bool
 Proc::Stop (void) {
+  cerr << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
+  return false;
 }
     
 bool

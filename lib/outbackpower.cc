@@ -65,7 +65,6 @@ outback::readSerial()
   // DEBUGLOG_REPORT_FUNCTION;
 
   int ret;
-  int retries = 1;
   char *buf = new char[PACKET_SIZE+1];
   
   memset(buf, 0, PACKET_SIZE+1);

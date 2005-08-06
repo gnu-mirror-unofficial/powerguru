@@ -96,7 +96,6 @@ ostream& stampoff(ostream& x) {
 ostream& timestamp(ostream& x) {
   time_t t;
   char buf[10];
-  const char *errmsg;
 
   memset (buf, '0', 10);	// this terminates the string
   time (&t);			// get the current time
@@ -109,7 +108,6 @@ string timestamp() {
   time_t t;
   string sbuf;
   char buf[10];
-  const char *errmsg;
 
   memset (buf, '0', 10);	// this terminates the string
   time (&t);			// get the current time
@@ -122,7 +120,6 @@ string timestamp() {
 ostream& datetimestamp(ostream& x) {
   time_t t;
   char buf[20];
-  const char *errmsg;
 
   memset (buf, '0', 20);	// this terminates the string
   time (&t);			// get the current time
@@ -197,7 +194,7 @@ LogFile::operator << (ErrCond& e) {
     if (verbose > 0)
       cout << e << endl;
     LogFile::outstream << e;
-    state == INPROGRESS;
+    state = INPROGRESS;
 
     return *this;
 }
@@ -208,7 +205,7 @@ LogFile::operator << (long x)
   if (verbose > 0)
     cout << x;
   LogFile::outstream << x;
-  state == INPROGRESS;
+  state = INPROGRESS;
   
   return *this;
 }
@@ -219,7 +216,7 @@ LogFile::operator << (unsigned int x)
   if (verbose > 0)
     cout << x;
   LogFile::outstream << x;
-  state == INPROGRESS;
+  state = INPROGRESS;
   
   return *this;
 }
@@ -231,7 +228,9 @@ LogFile::operator << (float x)
   if (verbose > 0) {
     cout << x;
   }
-  state == INPROGRESS;
+  state = INPROGRESS;
+
+  return *this;
 }
 
 LogFile&
@@ -242,7 +241,9 @@ LogFile::operator << (double &x)
     cout << x;
   }
   
-  state == INPROGRESS;
+  state = INPROGRESS;
+
+  return *this;
 }
 
 LogFile&
@@ -251,7 +252,7 @@ LogFile::operator << (int x) {
     if (verbose > 0)
 	cout << x;
     LogFile::outstream << x;
-    state == INPROGRESS;
+    state = INPROGRESS;
 
     return *this;
 }
@@ -262,7 +263,7 @@ LogFile::operator << (void *ptr) {
     if (verbose > 0)
 	cout << ptr;
     LogFile::outstream << ptr;
-    state == INPROGRESS;
+    state = INPROGRESS;
 
     return *this;
 }
@@ -300,6 +301,9 @@ LogFile::operator << (ostream & (&)(ostream &)) {
       cout << "\r" << endl;
     LogFile::outstream << endl;;
     LogFile::state = IDLE;
+
+    // FIXME: This is probably not the valuee to return
+    return cout;
 }
 
 #if 0

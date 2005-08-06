@@ -204,10 +204,13 @@ Serial::Close(void)
   
   return ERROR;
 }
+
 retcode_t
 Serial::Flush  (void)
 {
   tcflush(_uartfd, TCIOFLUSH);
+
+  return SUCCESS;               // FIXME: this should be a real check
 }
 
 int
@@ -215,14 +218,13 @@ Serial::Read(char *buf, int nbytes)
 {
   //DEBUGLOG_REPORT_FUNCTION;
 
-  int ret, sret, i, ch;
+  int ret, sret, i;
   fd_set fdset;
   int retries = 2;
-  char inbuf[100];
   string data;
   struct timeval timeout;
-  bool space = false;
 
+  ret = -1;
   char *tmpbuf = new char[nbytes+1];
   if (_uartfd > 0) {
 
@@ -335,6 +337,8 @@ Serial::Read(char *buf, int nbytes)
       return ERROR;
     }
 #endif
+
+    return ret;
 }
 
 int
@@ -421,6 +425,8 @@ Serial::SetBlocking(bool mode)
   currenttty.c_cc[VTIME] = 10;
   
   tcsetattr(_uartfd, TCSANOW, &currenttty);
+
+  return SUCCESS;               // FIXME: this should be a real check
 }
 
 //  modem control lines
@@ -451,6 +457,8 @@ Serial::SetDTR (bool value)
   // arg |= TIOCM_DTR | ~TIOCM_RTS;
 
   ioctl(_uartfd, TIOCMSET, (unsigned long) &arg);
+
+  return SUCCESS;               // FIXME: this should be a real check
 }
 
 retcode_t
@@ -480,6 +488,8 @@ Serial::SetRaw (void)
 #endif
   
   tcsetattr(_uartfd, TCSANOW, &currenttty);
+
+  return SUCCESS;               // FIXME: this should be a real check
 }
 
 void
@@ -552,6 +562,7 @@ ostream&
 Serial::operator << (ostream & (&)(ostream &)) {
   ostream outserial (serialin.rdbuf());
   outserial.write("\n", 1);
+  return cout;                  // FIXME: this is probably bogus
 }
 
 Serial& 

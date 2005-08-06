@@ -70,3 +70,6 @@ deb debian: dist-bzip2 $(srcdir)/debian/rules
 	cp -fr $(srcdir)/debian powerguru-${VERSION}/
 	(cd powerguru-${VERSION}; dpkg-buildpackage)
 
+mudflap:
+	@echo "Rebuilding with GCC Mudflap support"
+	$(MAKE) CXXFLAGS="$(CXXFLAGS) -fmudflap" LDFLAGS="$(LDFLAGS) -lmudflap"

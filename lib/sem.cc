@@ -78,6 +78,7 @@
 #include <string>
 #include <map>
 #include "sem.h"
+#include <iostream>
 
 using namespace std;
 
@@ -87,40 +88,56 @@ int SysVSem::semid;
 string SysVSem::keypath;
 
 Sem::Sem (void) {
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
 }
 
 Sem::~Sem (void) {
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
 }
 
 int
 Sem::Init (void) {
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+  return -1;
 }
 
 int
 Sem::Try (void) {
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+  return -1;
 }
 
 int
 Sem::Wait (void) {
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+  return -1;
 }
 
 int
 Sem::Destroy (void) {
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+  return -1;
 }
 
 int
 Sem::GetValue (void) {
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+  return -1;
 }
 
 int
 Sem::Post (void) {
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+  return -1;
 }
 
 // SysV style semaphores
 SysVSem::SysVSem (void) {
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
 }
 
 SysVSem::~SysVSem (void) {
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
 }
 
 int
@@ -138,21 +155,28 @@ SysVSem::Init (void) {
   semopts.val = 1;
   
   /* Initialize all members (could be done with SETALL) */        
-  for(i=0; i < MEMBERS; i++)
+  for(i=0; i < MEMBERS; i++) {
     semctl(semid, i, SETVAL, semopts);
+  }
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+  return -1;
 }
 
 int
 SysVSem::Try (void) {
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+  return -1;
 }
 
 int
 SysVSem::Wait (void) {
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+  return -1;
 }
 
 int
 SysVSem::Destroy (void) {
-  semctl(semid, 0, IPC_RMID, 0);
+  return semctl(semid, 0, IPC_RMID, 0);
 }
 
 int
@@ -162,6 +186,8 @@ SysVSem::GetValue (void) {
 
 int
 SysVSem::Post (void) {
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+  return -1;
 }
 
 
@@ -184,25 +210,35 @@ POSIXSem::Init (void) {
 int
 POSIXSem::Try (void) {
   //  return sem_trywait(sem);
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+  return -1;
 }
 
 int
 POSIXSem::Wait (void) {
   //  return sem_wait(sem);
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+  return -1;
 }
 
 int
 POSIXSem::Destroy (void) {
   //  return sem_destroy(sem);
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+  return -1;
 }
 
 int
 POSIXSem::GetValue (void) {
   //  return sem_getvalue(sem);
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+  return -1;
 }
 
 int
 POSIXSem::Post (void) {
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+  return -1;
 }
 
 

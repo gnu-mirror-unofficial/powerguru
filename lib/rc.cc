@@ -63,9 +63,10 @@ RCinitFile::load_files()
   if (home) {
     loadfile = home;
     loadfile += "/.powerguru/config";
-    parse_file(loadfile);
+    return parse_file(loadfile);
   }
-
+  
+  return ERROR;
 }
 
 // Parse the config file and set the variables.
@@ -132,11 +133,15 @@ RCinitFile::parse_file(string filespec)
       }
     }
   } else {
-    in.close();
+    if (in) {
+      in.close();
+    }
     return ERROR;
   }  
 
-  in.close();
+  if (in) {
+    in.close();
+  }
   return SUCCESS;
 }
 
@@ -144,6 +149,8 @@ RCinitFile::parse_file(string filespec)
 retcode_t
 RCinitFile::update_file(string filespec)
 {
+  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+  return ERROR;
 }
 
 

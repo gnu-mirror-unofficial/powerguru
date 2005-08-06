@@ -20,6 +20,8 @@
 
 AUTOMAKE_OPTIONS = # dejagnu
 
+AM_CPPFLAGS = -Wall
+
 if SNMP
   SNMP_LA = ../snmp/libpgsnmp.la
   SNMP_FILES = $(SNMP_LA) $(SNMP_LIBS)
@@ -40,4 +42,12 @@ pgd_SOURCES = main.cc
 pgd_LDFLAGS = -export-dynamic -static -L../lib $(SNMP_DIR)
 pgd_LDADD =  -lpguru $(MYSQL_LIBS)  $(SNMP_FILES) #-lpgsnmp
 pgd_DEPENDENCIES = ../lib/libpguru.la $(SNMP_LA)
+
+MUDFLAP_OPT = -fmudflap
+MUDFLAP_LIB =  /usr/local/lib/libmudflap.so
+
+# Rebuild with GCC 4.x Mudflap support
+mudflap:
+	@echo "Rebuilding with GCC Mudflap support"
+	$(MAKE) CXXFLAGS="$(CXXFLAGS) $(MUDFLAP_OPT)" LIBS="$(LIBS) $(MUDFLAP_LIB)"
 

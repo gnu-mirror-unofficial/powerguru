@@ -1,5 +1,56 @@
+2005-08-06  Rob Savoye  <rob@direwolf.welcomehome.org>
+
+	* lib/serial.cc:  Cleanup compilation warnings about unused
+	variables till -Wall is happy.
+	* daemon/main.cc: Cleanup compilation warnings about unused
+	variables till -Wall is happy.
+	* lib/console.cc: Cleanup compilation warnings about unused
+	variables till -Wall is happy.
+	* lib/err.cc:  Cleanup compilation warnings about unused
+	variables and no return values till -Wall is happy.
+	* lib/log.cc:  Cleanup compilation warnings about unused
+	variables and no return values till -Wall is happy.
+	* lib/menuitem.cc:  Cleanup compilation warnings about unused
+	variables and no return values till -Wall is happy.
+	* lib/mysql.cc:  Cleanup compilation warnings about unused
+	variables and no return values till -Wall is happy.
+	* lib/outbackpower.cc:  Cleanup compilation warnings about unused
+	variables and no return values till -Wall is happy.
+	* lib/proc.cc:  Cleanup compilation warnings about unused
+	variables and no return values till -Wall is happy.
+	* lib/rc.cc:  Cleanup compilation warnings about unused
+	variables and no return values till -Wall is happy.
+	* lib/sem.cc:  Cleanup compilation warnings about unused
+	variables and no return values till -Wall is happy.
+	* lib/snmp.cc:  Cleanup compilation warnings about unused
+	variables and no return values till -Wall is happy.
+	* lib/xantrext-trace.cc:  Cleanup compilation warnings about
+	unused variables and no return values till -Wall is happy.
+	* lib/sem.h: Add pragma so we don't get buried in warnings as this
+	is still mostly unimplemented, and totally unused for now.
+	* macros/snmp.m4 (AC_PATH_SNMP): Edit out the -Wstrict-prototypes
+	option net-snmp-config gives us, as it's not used for C++ code.
+	* doc/C/powerguru.xml: Make reference to Xantrex and Outback
+	products links.
+	* Makefile.am: Add top level mudflap target.
+	* Makefile.in: Regenerated with automake 1.9a.
+	* lib/Makefile.am: Add -Wall to AM_CPPFLAGS. Add mudflap target.
+	* lib/Makefile.in: Regenerated with automake 1.9a.
+	* daemon/Makefile.am:  Add -Wall to AM_CPPFLAGS. Add mudflap
+	target.
+	* daemon/Makefile.in: Regenerated with automake 1.9a.
+	* configure.ac: Look for C++ compiler, not just C. Link the images
+	directory in doc/C to the srcdir so we can browse the HTML without
+	installing.
+	* configure: Regenerated with autoconf 2.59c.
+
 2005-08-05  Rob Savoye  <rob@bertha.welcomehome.org>
 
+	* configure.ac: Link to the images directory so we can browse the
+	HTML output without installing it.
+	* configure: Regenerated.
+	* doc/C/powerguru.xml: Add image of off-grid geodesic domes.
+	* doc/C/domes.png: Add image of off-grid geodesic domes.
 	* doc/C/{xantrex.xml,outback.xml}: Fix table and colmun widths to
 	look better for both HTML and PDF output.
 
