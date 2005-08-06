@@ -268,10 +268,11 @@
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -366,10 +367,11 @@ resetOverCurrent</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -591,10 +593,11 @@ conditions are</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -685,10 +688,11 @@ Fax 360-435-2229</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -938,10 +942,11 @@ aux relays</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -1101,10 +1106,11 @@ speed</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -1171,10 +1177,11 @@ speed</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -1334,10 +1341,11 @@ start @ endquiet</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -1387,10 +1395,11 @@ start @ endquiet</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -1511,10 +1520,11 @@ spacing</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth=""/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -1635,10 +1645,11 @@ LeadAcid NiCad</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -1745,10 +1756,11 @@ input VAC limits</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -1922,10 +1934,11 @@ set LBCO</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -2018,10 +2031,11 @@ seconds</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -2184,10 +2198,11 @@ delay on open</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -2293,10 +2308,11 @@ daily chg time.</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -2376,10 +2392,11 @@ above LBCO volts</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -2446,10 +2463,11 @@ enable SELL mode</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -2633,10 +2651,11 @@ ignore timer.</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">
@@ -2807,10 +2826,11 @@ LBX</literallayout>
 
 	<para>
 	<informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="3" colsep="1" rowsep="1">
-	<colspec colname="COLSPEC3" colwidth="45.00*"/>
-	<colspec colname="COLSPEC4" colwidth="25.00*"/>
-	<colspec colname="COLSPEC5" colwidth="30.00*"/>
+	<colspec colname="COLSPEC3" colwidth="*"/>
+	<colspec colname="COLSPEC4" colwidth="*"/>
+	<colspec colname="COLSPEC5" colwidth="3*"/>
 	<thead>
 	  <row rowsep="1">
 	    <entry valign="top">

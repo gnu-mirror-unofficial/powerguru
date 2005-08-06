@@ -2,9 +2,9 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
     "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
   <!ENTITY legal SYSTEM "legal.xml">
-  <!ENTITY appversion "0.1">
-  <!ENTITY manrevision "0.1">
-  <!ENTITY date "May 2005">
+  <!ENTITY appversion "0.2">
+  <!ENTITY manrevision "0.2">
+  <!ENTITY date "August 2005">
   <!ENTITY app "<application>PowerGuru</application>">
   <!ENTITY appname "Power Guru">
   <!ENTITY version "2.0">
@@ -59,7 +59,9 @@
 	<firstname>Rob</firstname> 
 	<surname>Savoye</surname> 
 	<affiliation> 
-	  <address> <email>rob@senecass.com</email> </address> 
+	  <address>
+	    <email>rob@senecass.com</email>
+	  </address> 
 	</affiliation> 
       </author> 
 <!-- This is appropriate place for other contributors: translators,
@@ -348,7 +350,4 @@
    </para>
   </sect1>
 </article>
-
-
-
 

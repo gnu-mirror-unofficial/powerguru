@@ -1,3 +1,4 @@
+
 <sect2 id="Outback Power Systems">
   <title>Outback Power Systems</title>
   
@@ -97,11 +98,12 @@
     
     <para>
       <informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
 	<tgroup cols="4" colsep="1" rowsep="1">
-	  <colspec colname="col1"/>
-	  <colspec colname="col2"/>
-	  <colspec colname="col3"/>
-	  <colspec colname="col4"/>
+	  <colspec colwidth="*"  colname="col1"/>
+	  <colspec colwidth="*"  colname="col2"/>
+	  <colspec colwidth="*"  colname="col3"/>
+	  <colspec colwidth="4*" colname="col4"/>
 	  <thead>
 	    <row rowsep="1">
 	      <entry valign="top" align="center">
@@ -799,6 +801,7 @@
 	
 	<para>
 	  <informaltable frame="all">
+	    <?dbhtml table-width="50%" ?>
 	    <tgroup cols="2" colsep="1" rowsep="1">
 	      <colspec colname="col1"/>
 	      <colspec colname="col2"/>
@@ -876,6 +879,7 @@
 	
 	<para>
 	  <informaltable frame="all">
+	    <?dbhtml table-width="50%" ?>
 	    <tgroup cols="2" colsep="1" rowsep="1">
 	      <colspec colname="col1"/>
 	      <colspec colname="col2"/>
@@ -935,7 +939,1302 @@
 	  </informaltable>
 	</para>
       </sect5>
-    </sect4>
+    </sect4>    
+  </sect3>
+
+  <sect3 id="FX Message Frame">
+    <title>FX Message Frame</title>
+    
+    <para>
+      An FX status message frame is comprised of 49 ASCII numerical
+      characters. A newline used to signify the start of a
+      frame and carriage return is used to signify the end of the
+      frame. These are the only two non ASCII in a message.
+    </para>
+
+    <para>
+    </para>
+
+    <para>
+      
+    </para>
+
+
+    <programlisting>
+      0,00,00,00,119,000,00,00,000,01,254,008,000,031
+      0,00,00,00,120,000,00,02,000,01,254,008,000,025
+    </programlisting>
+    
+    <para>
+      <informaltable frame="all">
+	<?dbhtml table-width="75%" ?>
+	<tgroup cols="4" colsep="1" rowsep="1">
+	  <colspec colwidth="*"  colname="col1"/>
+	  <colspec colwidth="*"  colname="col2"/>
+	  <colspec colwidth="*"  colname="col3"/>
+	  <colspec colwidth="4*" colname="col4"/>
+	  <thead>
+	    <row rowsep="1">
+	      <entry valign="top" align="center">
+		<para>Index</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>Byte Value</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>Data Field</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>Description</para>
+	      </entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>1</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>10</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>Message Start Frame</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>
+		  This is an New Line character denoting the
+		  start of the status page. 
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>2</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>FX address</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>The FX address is an ASCII 'A' for unit 0, and
+		an ASCII 'B' to 'K' for the other 9 units.</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>3</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+ 	      <entry valign="top" align="center">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>4</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>Inverter Current</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>Range 00-99. This is the current the inverter is
+		  putting into the loads. 1 amp increments are used.</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>5</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>6</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>7</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>Charger current</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>
+		  Range 00-99. This is the current the charger is
+		  putting into the batteries from the AC Input. 1 amp
+		  increments are used.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>8</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>9</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>10</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>Buy current</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>
+		  Range 00-99.  This is the current the charger is
+		  putting into the batteries and pass thru loads from
+		  the AC Input. 1 amp increments are used.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>11</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>12</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>13</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>AC Input Voltage</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>
+		  Range 000-256. This is the voltage coming in the AC
+		  Input. If the Misc byte is set, multiply this by
+		  2. 1 amp increments,
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>14</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>15</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>16</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>17</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>AC output voltage</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>
+		  Range 000-999. This is the voltage of the inverter's
+		  AC output. If the Misc byte is set, multiply this by
+		  2. 1 amp increments,
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>18</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>19</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>20</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+
+	    <!-- 
+		 FIXME: Use this to make an entry span multiple columns
+		 namest="col2" nameend="col3"	    
+	    -->
+	    <row>
+	      <entry valign="top" align="center">
+		<para>21</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>Sell current</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>
+		  Range 00-99. This is the current the inverter is
+		  putting into the batteried from the AC Input.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>22</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>23</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>24</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>FX Operating Mode</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>
+		 Range 00-99. The value is used to do a table lookuop
+		 for the mode.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>25</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>26</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>27</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>FX Error Modes</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>
+		  Range 000-256. This is a bit field represening an
+		  error, if there is one. Multiple errors can be
+		  returned at the same time in the bit field.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>28</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>29</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>30</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>31</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>FX AC Mode</para>
+	      </entry>
+	      <entry valign="middle" morerows="1" align="center">
+		<para>
+		  Range 00-99. The FX AC Mode is used to do a
+		  table lookup for the actual value.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>32</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>33</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>34</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>Battery Voltage</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>
+		  Range 000-999. The Battery Voltage is a 3 digit
+		  floating point number with the last digit as the
+		  fraction. So 251 volts becomes 25.1
+		  volts. Resolution is 0.1V for 12V, 0.2 for 24V, and
+		  0.4 for 48V systems.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>35</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>36</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>37</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>38</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>FX Misc Byte</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>
+		  This is a bit field used to possible modify the the
+		  voltage readings, or to signify the AUX output is
+		  on.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>39</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>40</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>41</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>42</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>FX Warning Mode</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para></para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>43</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>45</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>44</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Field Separator</para>
+	      </entry>
+	      <entry valign="middle" align="center">
+		<para>ASCII Comma character</para>
+	      </entry>
+	    </row>
+	    
+	    <row>
+	      <entry valign="top" align="center">
+		<para>46</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>Checksum</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>
+		  Range 000-999. The Message checksum is calculated be
+		  adding all the digits of the message together, one
+		  at a time.
+		</para>
+	      </entry>
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>47</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <entry valign="top" align="center">
+		<para>48</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>X</para>
+	      </entry>
+	      <!-- row span supplies this entry -->
+	    </row>
+	    <row>
+	      <?dbhtml bgcolor="#EEEEEE" ?><?dbfo bgcolor="#EEEEEE" ?>
+	      <entry valign="top" align="center">
+		<para>49</para>
+	      </entry>
+	      <entry valign="top" align="center">
+		<para>13</para>
+	      </entry>
+	      <entry valign="top" align="center" bgcolor="#F0F0F0">
+		<para>Send of Frame</para>
+	      </entry>
+	      <entry valign="middle" morerows="2" align="center">
+		<para>
+		  The end of the message frame is a Carriage Return.
+		</para>
+	      </entry>
+	    </row>
+	    	    
+	  </tbody>
+	</tgroup>
+      </informaltable>
+    </para>
+
+    <sect4 id="FX Message Data Tables">
+      <title>FX Message Data Tables</title>
+      
+      <para>
+	There are a few tables used to lookup values from the
+	messages. The Operational and AC Input Mode data fields both need to be 
+	looked up from a tables.
+      </para>
+
+      <sect5 id="FX Operational Modes">
+	<title>FX Operational Modes</title>
+
+	<para>
+	  The Operational mode is the current operating mode of the inverter.
+	</para>
+	
+	<para>
+	  <informaltable frame="all">
+	    <?dbhtml table-width="50%" ?>
+	    <tgroup cols="2" colsep="1" rowsep="1">
+	      <colspec colname="col1"/>
+	      <colspec colname="col2"/>
+	      <thead>
+		<row rowsep="1">
+		  <entry valign="top" align="center">
+		    <para>Data</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Mode</para>
+		  </entry>
+		</row>
+	      </thead>
+	      <tbody>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"00"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Inverter Off</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"01"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Search</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"02"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Inverter On</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"03"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Charge</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"04"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Silent</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"05"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Float</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"06"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Equalize</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"07"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Charger Off</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"08"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Support</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"09"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Sell Enabled</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"10"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Pass Thru</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"90"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>FX Error</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"91"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>AGS Error</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"92"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Comm Error</para>
+		  </entry>
+		</row>
+	      </tbody>
+	    </tgroup>
+	  </informaltable>
+	</para>
+      </sect5>
+
+      <sect5 id="FX Error Modes">
+	<title>FX Error Modes</title>
+
+	<para>
+	  This is the error code, if any, of the inverter. Multiple
+	  errors can be returned at the same time in the bitmask.
+	</para>
+	
+	<para>
+	  <informaltable frame="all">
+	    <?dbhtml table-width="50%" ?>
+	    <tgroup cols="2" colsep="1" rowsep="1">
+	      <colspec colname="col1"/>
+	      <colspec colname="col2"/>
+	      <thead>
+		<row rowsep="1">
+		  <entry valign="top" align="center">
+		    <para>Bit</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Value</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Error</para>
+		  </entry>
+		</row>
+	      </thead>
+	      <tbody>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>1</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>1</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Low AC output</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>2</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>2</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Stacking Error</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>3</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>4</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Over Temperature</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>4</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>8</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Low Battery</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>5</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>16</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Phase Loss</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>6</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>32</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>High Battery</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>7</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>64</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Shorted output</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>8</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>128</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Backfeed</para>
+		  </entry>
+		</row>
+	      </tbody>
+	    </tgroup>
+	  </informaltable>
+	</para>
+      </sect5>
+
+      <sect5 id="FX AC Input Modes">
+	<title>FX AC Input Modes</title>
+
+	<para>
+	  This is the current mode of the AC input.
+	</para>
+	
+	<para>
+	  <informaltable frame="all">
+	    <?dbhtml table-width="50%" ?>
+	    <tgroup cols="2" colsep="1" rowsep="1">
+	      <colspec colname="col1"/>
+	      <colspec colname="col2"/>
+	      <thead>
+		<row rowsep="1">
+		  <entry valign="top" align="center">
+		    <para>Data</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Mode</para>
+		  </entry>
+		</row>
+	      </thead>
+	      <tbody>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"00"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>No AC</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"01"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>AC Drop</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>"02"</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>AC Use</para>
+		  </entry>
+		</row>
+	      </tbody>
+	    </tgroup>
+	  </informaltable>
+	</para>
+      </sect5>
+
+      <sect5 id="FX Misc Byte">
+	<title>FX Misc Byte</title>
+
+	<para>
+	</para>
+	
+	<para>
+	  <informaltable frame="all">
+	    <?dbhtml table-width="50%" ?>
+	    <tgroup cols="2" colsep="1" rowsep="1">
+	      <colspec colname="col1"/>
+	      <colspec colname="col2"/>
+	      <thead>
+		<row rowsep="1">
+		  <entry valign="top" align="center">
+		    <para>Bit</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Value</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Description</para>
+		  </entry>
+		</row>
+	      </thead>
+	      <tbody>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>1</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>1</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>230V unit</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>2</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>2</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Reserved</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>3</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>4</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Reserved</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>4</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>8</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Reserved</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>5</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>16</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Reserved</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>6</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>32</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Reserved</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>7</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>64</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Reserved</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>8</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>128</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>AUX output On</para>
+		  </entry>
+		</row>
+	      </tbody>
+	    </tgroup>
+	  </informaltable>
+	</para>
+      </sect5>
+
+      <sect5 id="FX Warning Modes">
+	<title>FX Warning Modes</title>
+
+	<para>
+	  This is the warning code, if any, of the inverter. Multiple
+	  warnings can be returned at the same time in the bitmask.
+	</para>
+	
+	<para>
+	  <informaltable frame="all">
+	    <?dbhtml table-width="50%" ?>
+	    <tgroup cols="2" colsep="1" rowsep="1">
+	      <colspec colname="col1"/>
+	      <colspec colname="col2"/>
+	      <thead>
+		<row rowsep="1">
+		  <entry valign="top" align="center">
+		    <para>Bit</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Value</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Warning</para>
+		  </entry>
+		</row>
+	      </thead>
+	      <tbody>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>1</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>1</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>AC input Freq High</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>2</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>2</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>AC Input Freq Low</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>3</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>4</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Input VAC High</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>4</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>8</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Input VAC Low</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>5</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>16</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Buy amps > input size</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>6</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>32</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Temp Sensor failed</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>7</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>64</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Comm Error</para>
+		  </entry>
+		</row>
+		<row>
+		  <entry valign="top" align="center">
+		    <para>8</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>128</para>
+		  </entry>
+		  <entry valign="top" align="center">
+		    <para>Fan Failure</para>
+		  </entry>
+		</row>
+	      </tbody>
+	    </tgroup>
+	  </informaltable>
+	</para>
+      </sect5>
+
+
+
+
+    </sect4>	       <!-- End of FX Message Data Tables -->
     
 
 
@@ -944,5 +2243,6 @@
     </para>
     
   </sect3>
+
 </sect2>
 
