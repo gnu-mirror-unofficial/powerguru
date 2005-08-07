@@ -89,7 +89,7 @@ class SnmpDaemon
  public:
   SnmpDaemon();
   ~SnmpDaemon();
-  retcode_t main(bool background);
+  retcode_t master(bool background);
   retcode_t start(std::string init, std::string mibname);
   retcode_t close(void);
   struct snmp_pdu *readSnmp(std::string mibnode);

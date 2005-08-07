@@ -28,7 +28,7 @@ IMPORTS
 -- This is the MIB node for a generic power device
 --
 powerguru MODULE-IDENTITY
-    LAST-UPDATED "200507200000Z"
+    LAST-UPDATED "200508060000Z"
     ORGANIZATION "Seneca Software & Solar, Inc"
     CONTACT-INFO
 	"This MIB is new, and still under development.
@@ -37,11 +37,11 @@ powerguru MODULE-IDENTITY
                    PO Box 36
                    Rollinsville, CO 80474
 
-         email:    xantrex@senecass.com or outback@senecass.com
+         email:    powerguru@gnu.org
         "
     DESCRIPTION
 	"The PowerGuru MIB."
-    REVISION	 "200507200000Z"
+    REVISION	 "200508060000Z"
     DESCRIPTION
 	"This is the default value for net-snmp."
     ::= { enterprises 8072 }

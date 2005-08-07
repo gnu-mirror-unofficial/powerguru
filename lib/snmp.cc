@@ -137,12 +137,12 @@ SnmpDaemon::~SnmpDaemon()
 
 
 retcode_t
-SnmpDaemon::main(bool background) {
+SnmpDaemon::master(bool background) {
   // print log errors to syslog or stderr
   snmp_enable_stderrlog();
   snmp_debug_init();  
 
-  snmp_set_do_debugging(1);
+  //  snmp_set_do_debugging(1);
   
   // run in the background
   Proc daemon;
@@ -164,6 +164,12 @@ SnmpDaemon::main(bool background) {
     
   init_powerguru();
 
+#if 0
+  // initialize vacm/usm access control
+  init_vacm_vars();
+  init_usmUser();
+#endif
+  
   init_snmp("pgd");
 
   snmp_store("pgd");

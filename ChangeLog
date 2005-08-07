@@ -1,3 +1,10 @@
+2005-08-06  Rob Savoye  <rob@bertha.welcomehome.org>
+
+	* snmp/POWERGURU-MIB.txt: Update the contact info.
+	* lib/snmp.cc: Rename main() to master().
+	* daemon/main.cc: Call SnmpDaemon::master() instead of
+	SnmpDaemon::main().
+
 2005-08-06  Rob Savoye  <rob@direwolf.welcomehome.org>
 
 	* lib/serial.cc:  Cleanup compilation warnings about unused

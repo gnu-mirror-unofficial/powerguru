@@ -230,7 +230,7 @@ main(int argc, char *argv[]) {
 #ifdef USE_SNMP
     if (snmp) {
       SnmpDaemon agent;
-      agent.main(false);
+      agent.master(false);
     }
 #endif
 
