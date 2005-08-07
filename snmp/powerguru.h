@@ -26,4 +26,3 @@ Netsnmp_Node_Handler handle_powerGuruACOutputVolts;
 Netsnmp_Node_Handler handle_powerGuruACSellAmps;
 
 #endif                          /* POWERGURU_H */
- 

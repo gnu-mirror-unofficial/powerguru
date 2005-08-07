@@ -13,31 +13,36 @@ int unimplemented;
 void
 init_powerguru(void)
 {
-    static oid      powerGuruDataLog_oid[] = { 1, 3, 6, 1, 4, 1, 8072, 1 };
+    static oid      powerGuruDataLog_oid[] =
+        { 1, 3, 6, 1, 4, 1, 9999, 1, 1 };
     static oid      powerGuruUnitAddress_oid[] =
-        { 1, 3, 6, 1, 4, 1, 8072, 3 };
+        { 1, 3, 6, 1, 4, 1, 9999, 1, 3 };
     static oid      powerGuruChargeAmps_oid[] =
-        { 1, 3, 6, 1, 4, 1, 8072, 4 };
-    static oid      powerGuruPVAmps_oid[] = { 1, 3, 6, 1, 4, 1, 8072, 5 };
-    static oid      powerGuruPVVolts_oid[] = { 1, 3, 6, 1, 4, 1, 8072, 6 };
-    static oid      powerGuruDailyKW_oid[] = { 1, 3, 6, 1, 4, 1, 8072, 7 };
-    static oid      powerGuruAuxMode_oid[] = { 1, 3, 6, 1, 4, 1, 8072, 8 };
+        { 1, 3, 6, 1, 4, 1, 9999, 1, 4 };
+    static oid      powerGuruPVAmps_oid[] =
+        { 1, 3, 6, 1, 4, 1, 9999, 1, 5 };
+    static oid      powerGuruPVVolts_oid[] =
+        { 1, 3, 6, 1, 4, 1, 9999, 1, 6 };
+    static oid      powerGuruDailyKW_oid[] =
+        { 1, 3, 6, 1, 4, 1, 9999, 1, 7 };
+    static oid      powerGuruAuxMode_oid[] =
+        { 1, 3, 6, 1, 4, 1, 9999, 1, 8 };
     static oid      powerGuruErrorMode_oid[] =
-        { 1, 3, 6, 1, 4, 1, 8072, 9 };
+        { 1, 3, 6, 1, 4, 1, 9999, 1, 9 };
     static oid      powerGuruChargerMode_oid[] =
-        { 1, 3, 6, 1, 4, 1, 8072, 10 };
+        { 1, 3, 6, 1, 4, 1, 9999, 1, 10 };
     static oid      powerGuruBatteryVolts_oid[] =
-        { 1, 3, 6, 1, 4, 1, 8072, 11 };
+        { 1, 3, 6, 1, 4, 1, 9999, 1, 11 };
     static oid      powerGuruLoadAmps_oid[] =
-        { 1, 3, 6, 1, 4, 1, 8072, 12 };
+        { 1, 3, 6, 1, 4, 1, 9999, 1, 12 };
     static oid      powerGuruACBuyAmps_oid[] =
-        { 1, 3, 6, 1, 4, 1, 8072, 13 };
+        { 1, 3, 6, 1, 4, 1, 9999, 1, 13 };
     static oid      powerGuruACInputVolts_oid[] =
-        { 1, 3, 6, 1, 4, 1, 8072, 14 };
+        { 1, 3, 6, 1, 4, 1, 9999, 1, 14 };
     static oid      powerGuruACOutputVolts_oid[] =
-        { 1, 3, 6, 1, 4, 1, 8072, 15 };
+        { 1, 3, 6, 1, 4, 1, 9999, 1, 15 };
     static oid      powerGuruACSellAmps_oid[] =
-        { 1, 3, 6, 1, 4, 1, 8072, 16 };
+        { 1, 3, 6, 1, 4, 1, 9999, 1, 16 };
 
     DEBUGMSGTL(("powerguru", "Initializing\n"));
 
@@ -244,7 +249,6 @@ handle_powerGuruUnitAddress(netsnmp_mib_handler *handler,
                             netsnmp_agent_request_info *reqinfo,
                             netsnmp_request_info *requests)
 {
-  printf("HEY Now !!!!!\n");
     /*
      * We are never called for a GETNEXT if it's registered as a
      * "instance", as it's "magically" handled for us.  

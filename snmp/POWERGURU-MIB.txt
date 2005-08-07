@@ -20,14 +20,13 @@ POWERGURU-MIB DEFINITIONS ::= BEGIN
 
 IMPORTS
     MODULE-IDENTITY, OBJECT-TYPE,
-    INTEGER, INTEGER				FROM SNMPv2-SMI
-    enterprises					FROM RFC1155-SMI
-    MODULE-COMPLIANCE, OBJECT-GROUP		FROM SNMPv2-CONF;
+    INTEGER, INTEGER, enterprises, mib-2         FROM SNMPv2-SMI
+    MODULE-COMPLIANCE, OBJECT-GROUP		 FROM SNMPv2-CONF;
 
 --
 -- This is the MIB node for a generic power device
 --
-powerguru MODULE-IDENTITY
+powerguruMIB MODULE-IDENTITY
     LAST-UPDATED "200508060000Z"
     ORGANIZATION "Seneca Software & Solar, Inc"
     CONTACT-INFO
@@ -44,7 +43,10 @@ powerguru MODULE-IDENTITY
     REVISION	 "200508060000Z"
     DESCRIPTION
 	"This is the default value for net-snmp."
-    ::= { enterprises 8072 }
+    ::= { enterprises 9999 }
+--    ::= { enterprises 8072 }
+
+powerguru          OBJECT IDENTIFIER ::= { powerguruMIB   1 }
 
 --
 -- Commands that get sent to the power device. Not all commands are
