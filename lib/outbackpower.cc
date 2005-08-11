@@ -150,7 +150,7 @@ outback::main(Console &con, Database &db)
   string str;
   int ch;
   
-  while ((ch = con.Getc())!='q') {
+  while ((ch = con.Getc()) != 'q') {
     if (ch > 0){                // If we have something, process it
       //con.Putc (ch);          // echo inputted character to screen
       

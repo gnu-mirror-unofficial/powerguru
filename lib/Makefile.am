@@ -59,6 +59,7 @@ libpguru_la_SOURCES = \
 	mysql.cc database.h $(SNMP_FILES) \
 	tcputil.cc tcputil.h \
 	tcpip.cc tcpip.h \
+	msgs.cc msgs.h \
 	xml.cc xml.h
 
 include_HEADERS = \

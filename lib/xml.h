@@ -156,10 +156,9 @@ class XML {
   }
   
 private:
-  xmlDocPtr _doc;
-  xmlNodePtr _firstChild;    
-  const char  *_nodename;
-  XMLNode     *_nodes;
+  xmlDocPtr     _doc;
+  const char    *_nodename;
+  XMLNode       *_nodes;
 };
 
 int memadjust(int x);

@@ -67,6 +67,7 @@ class Tcpip : public Tcputil
 
   // Read from the socket
   int readNet(char *buffer, int nbytes);
+  int readNet(char *buffer, int nbytes, int timeout);
   int readNet(int fd, char *buffer, int nbytes);
   int readNet(int fd, char *buffer, int nbytes, int timeout);
   

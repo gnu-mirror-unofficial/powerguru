@@ -52,6 +52,7 @@ extern char *optarg;
 #include "database.h"
 #include "snmp.h"
 #include "rc.h"
+#include "tcpip.h"
 
 using namespace std;
 using namespace rcinit;
@@ -73,6 +74,7 @@ main(int argc, char *argv[]) {
     const char *filespec;
     MenuItem ti;
     string value, display;
+    string hostname;
     bool console;
     bool setitem;
     bool getitem;
@@ -88,7 +90,7 @@ main(int argc, char *argv[]) {
     bool client;
     
     Database pdb;
-    XantrexUI ui;
+    //    XantrexUI ui;
     //    Console con;
 
     if (argc == 1) {
@@ -110,6 +112,7 @@ main(int argc, char *argv[]) {
     background = false;
     daemon = true;
     client = false;
+    hostname = "localhost";
     
     // Load the database config variable so they can be overridden by
     // the command line arguments.
@@ -181,6 +184,8 @@ main(int argc, char *argv[]) {
 #ifdef USE_SNMP
       case 'j':
         snmp = true;
+        daemon = false;
+        client = false;
 	break;
 #endif
       case 'e':
@@ -244,6 +249,9 @@ main(int argc, char *argv[]) {
     }
 #endif
 
+    //
+
+        
     // Talk to an Outback Power Systems device
     if (outbackmode) {
       Console con;
@@ -267,6 +275,7 @@ main(int argc, char *argv[]) {
     }
 
     if (xantrexmode) {
+      XantrexUI ui;
       Console con;
       // Open a console for user input
       con.Open();
@@ -306,6 +315,63 @@ main(int argc, char *argv[]) {
       }
       con.Reset();
       con.Close();      
+    }
+    
+    // Network daemon/client mode. Normally we're a network daemon that
+    // responses to requests by a remote client. Many house networks
+    // are behind a firewall,so the daemon can also connect to a
+    // publically accessible host to establish the connection the
+    // other direction.
+    if (daemon || client) {
+      Tcpip tcpip;
+      
+      tcpip.toggleDebug(true);
+      
+      char *buffer;
+      
+      buffer = (char *)new char[300];
+      memset(buffer, 0, 300);
+      
+      // If we are in client mode, connect to the server
+      if (client) {
+        if (tcpip.createNetClient(hostname)) {
+          dbglogfile << "Connected to server at " << hostname.c_str() << endl;
+        } else {
+          dbglogfile << "ERROR: Couldn't create connection to server" << hostname  << endl;
+        }
+      }
+      
+      // If we are in daemon mode, wait for the remote server to connect to us
+      // as a client. This is for when the server is behind a firewall.
+      if (daemon) {
+        if (tcpip.createNetServer()) {
+          dbglogfile << "New server started for remote client." << endl;
+        } else {
+          dbglogfile << "ERROR: Couldn't create a new server" << endl;
+        }      
+        
+        if (tcpip.newNetConnection(true)) {
+          dbglogfile << "New connection started for remote client." << endl;
+        } else {
+          dbglogfile << "ERROR: Couldn't create a new connection!" << endl;
+          exit (1);
+        }
+      }
+      
+      tcpip.writeNet("\r<powerguru><version>0.2</version></powerguru>\n");
+      
+      int bytes = tcpip.readNet(buffer, 300);
+#if 1
+      if (bytes > 0) {
+        cout << "FIXME: Read bytes: " << endl << buffer << endl;
+        if (strncmp(buffer, "quit", 4) == 0) {
+          exit(0);
+        } 
+        if (strncmp(buffer, "<powerguru>quit</powerguru>", 27) == 0) {
+          exit(0);
+        } 
+      }
+#endif
     }
 }
 

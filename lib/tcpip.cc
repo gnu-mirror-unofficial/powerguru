@@ -706,6 +706,12 @@ Tcpip::readNet(int fd, char *buffer, int nbytes)
 }
 
 int
+Tcpip::readNet(char *buffer, int nbytes, int timeout)
+{
+  return readNet(_sockfd, buffer, nbytes, timeout);
+}
+
+int
 Tcpip::readNet(int fd, char *buffer, int nbytes, int timeout)
 {
   fd_set              fdset;
@@ -729,7 +735,7 @@ Tcpip::readNet(int fd, char *buffer, int nbytes, int timeout)
   }
   
   // Reset the timeout value, since select modifies it on return
-  if (timeout) {
+  if (timeout >= 0) {
     tval.tv_sec = timeout;
   } else {
     tval.tv_sec = DEFAULTTIMEOUT;
@@ -759,8 +765,10 @@ Tcpip::readNet(int fd, char *buffer, int nbytes, int timeout)
   }
   
   if (ret == 0) {
+#if 0                           // FIXME: too verbose
     dbglogfile <<
       "The socket for fd #" << fd << " timed out waiting to read!" << endl;
+#endif
     return 0;
   }
 
