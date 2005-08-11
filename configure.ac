@@ -38,6 +38,58 @@ else
     DMALLOC_LIB=""
 fi
 AC_SUBST(DMALLOC_LIB)
+dnl Use the POSIX Threads library, if specified.
+AC_ARG_ENABLE(pthreads, [  --enable-pthreads       Enable support for pthreads],[case "${enableval}" in
+  yes) pthreads=yes ;;
+  no)  pthreads=no ;;
+  *)   AC_MSG_ERROR([bad value ${enableval} for enable-pthreads option]) ;;
+esac])
+ 
+if test x$pthreads = xyes; then
+    AC_DEFINE([HAVE_PTHREADS], [], [Use POSIX Threads])
+fi
+                                                                                
+dnl Add XML support, if specified.
+AC_ARG_ENABLE(libxml, [  --disable-xml           Disable support for xml tcpip],
+[case "${enableval}" in
+  yes) disablexml=yes ;;
+  no)  disablexml=no ;;
+  *)   AC_MSG_ERROR([bad value ${enableval} for disable-xml option]) ;;
+esac])
+if test x$disable_xml != xno; then
+    AC_DEFINE([HAVE_LIBXML], [], [Use XML])
+    AM_PATH_LIBXML2
+fi
+
+dnl Use the Dom parser from libxml2, not the xmlReader one
+dnl The default is to use the Dom parser
+dom=yes
+AC_ARG_ENABLE(dom, [  --enable-dom            Enable support for Dom parser],
+[case "${enableval}" in
+  yes) dom=yes ;;
+  no)  dom=no ;;
+  *)   AC_MSG_ERROR([bad value ${enableval} for enable-malloc option]) ;;
+esac])
+ 
+if test x$dom = xyes; then
+    AC_DEFINE([USE_DOM], [], [Use Dom parser])
+fi
+ 
+dnl Use an xmlReader parser, instead of the DOM one
+AC_ARG_ENABLE(reader, [  --enable-xmlreader      Enable support for xmlReader parser],
+[case "${enableval}" in
+  yes) reader=yes ;;
+  no)  reader=no ;;
+  *)   AC_MSG_ERROR([bad value ${enableval} for enable-malloc option]) ;;
+esac])
+
+if test x$reader = xyes; then
+    AC_DEFINE([USE_XMLREADER], [], [Use xmlReader parser])
+fi
+                                                                                
+if test x$reader = xyes -a x$dom = xyes; then
+   AC_ERROR([Can't specify a DOM and an xmlReader parser])
+fi
 
 dnl Where are the Docbook stylesheets ?
 AC_ARG_WITH(docbook, [  --with-docbook          specify the path to the Docbook stylesheets],
@@ -98,14 +150,16 @@ lib/Makefile
 daemon/Makefile
 sim/Makefile
 snmp/Makefile
+client/Makefile
 po/Makefile.in
 doc/Makefile
 doc/C/Makefile
+testsuite/Makefile
+testsuite/libtests/Makefile
 ])
 
 dnl we arent building this for now
 dnl src/Makefile
-
 echo ""
 echo "Configurable options are:"
 dnl SNMP
@@ -125,4 +179,20 @@ fi
 dnl Docbook
 if test x$docbook = xyes; then
   echo "        Docbook styles in $DOCBOOK_STYLES"
+fi
+if test x"$pthreads" = x"yes"; then
+  echo "        Using POSIX Threads"
+else
+  echo "        Not using POSIX Threads"
+fi
+if test x"$disablexml" = x"yes"; then
+  echo "        Not using XML"
+else
+  echo "        Using XML"
+fi
+if test x"$dom" != x"yes"; then
+  echo "        Using DOM parser"
+fi
+if test x"$reader" != x"yes"; then
+  echo "        Using XmlReader (SAX) parser"
 fi

@@ -34,8 +34,8 @@ lib_LTLIBRARIES = libpguru.la
 INCLUDES = \
 	-I$(srcdir) \
 	-I$(top_srcdir)/snmp \
-	-I.. \
-	$(MYSQL_CFLAGS) 
+	-I.. $(LIBXML_CFLAGS) \
+	$(MYSQL_CFLAGS)
 
 if SNMP
 SNMP_FILES = snmp.cc snmp.h
@@ -56,7 +56,10 @@ libpguru_la_SOURCES = \
 	xantrex-trace.cc xantrex-trace.h \
 	outbackpower.cc outbackpower.h \
 	menuitem.cc menuitem.h \
-	mysql.cc database.h $(SNMP_FILES)
+	mysql.cc database.h $(SNMP_FILES) \
+	tcputil.cc tcputil.h \
+	tcpip.cc tcpip.h \
+	xml.cc xml.h
 
 include_HEADERS = \
 	proc.h \
@@ -67,7 +70,10 @@ include_HEADERS = \
 	database.h \
 	console.h \
 	err.h \
-	log.h
+	log.h \
+	tcputil.h \
+	tcpip.h \
+	xml.h
 
 #libpguru_la_LDFLAGS = -module -avoid-version -no-undefined
 #libpguru_la_LIBDADD =  #@DL_LIB@  # $(LIBLTDL)

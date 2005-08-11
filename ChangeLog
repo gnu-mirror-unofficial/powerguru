@@ -1,3 +1,32 @@
+2005-08-10  Rob Savoye  <rob@cree.moongulch.net>
+
+	* Makefile.am: Add new client and testsuite directories.
+	* Makefile.in, client/Makefile.in: Regenerated,
+	* lib/Makefile.am: Add XML support. Add tcpip, tcputil, and xml
+	new files.
+	* daemon/main.cc: Add options for daemon or client mode,
+	* web/support.php, web/plotdata.php: Use meters for the tables
+	instead of inverters.
+	* client/Makefile.am: New directory for remote clients.
+	* client/cmd.cc: New command line remote client.
+	* lib/xml.h, xml.cc: New support for an XML based networking
+	system.
+	* lib/tcpip.h, tcp.cc: New support for basic tcp/ip networkng
+	class.
+	* lib/tcputil.h, tcputil.cc: New support for basic low level
+	networking system calls for manipulating hostent and servent
+	structures.
+	* testsuite/Makefile.am: New Makefile for top level tests.
+	* testsuite/Makefile.in: Generated.
+	* testsuite/libtests/Makefile.am: New Makefile for test cases.
+	* testsuite/libtests/Makefile.in: Generated.
+	* testsuite/libtests/tcpip-tests.cc: New test case for Tcpip
+	class.
+	* testsuite/libtests/tcputil-tests.cc: New test for Tcputil
+	class.
+	* testsuite/libtests/childtcpip.cc: New test case for tcpip
+	class.
+
 2005-08-06  Rob Savoye  <rob@bertha.welcomehome.org>
 
 	* snmp/POWERGURU-MIB.txt: Use inassigned enterprise number.

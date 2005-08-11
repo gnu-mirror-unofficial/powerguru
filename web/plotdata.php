@@ -26,7 +26,7 @@ include "support.php";
 include "charts.php";
 
 $query = opts("query","");
-$whichtable = opts("whichtable","inverter");
+$whichtable = opts("whichtable","meters");
 $whichfield = opts("whichfield","battery_volts");
 // Start timestamp for queries
 $start_day    = opts("start_day", "1");

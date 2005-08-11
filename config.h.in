@@ -9,11 +9,17 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define this if you have libxml2 support available */
+#undef HAVE_LIBXML
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
 /* Mysql package */
 #undef HAVE_MYSQL
+
+/* Use POSIX Threads */
+#undef HAVE_PTHREADS
 
 /* NET-SNMP package */
 #undef HAVE_SNMP
@@ -69,8 +75,14 @@
 /* Use DMalloc */
 #undef USE_DMALLOC
 
+/* Use Dom parser */
+#undef USE_DOM
+
 /* Use SNMP */
 #undef USE_SNMP
+
+/* Use xmlReader parser */
+#undef USE_XMLREADER
 
 /* Version number of package */
 #undef VERSION

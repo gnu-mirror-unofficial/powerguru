@@ -203,6 +203,7 @@ SnmpDaemon::master(bool background) {
   return SUCCESS;
 }
 
+#if 0
 retcode_t
 SnmpDaemon::process(void)
 {
@@ -224,4 +225,5 @@ SnmpDaemon::process(void)
 
   return SUCCESS;
 }
+#endif
 

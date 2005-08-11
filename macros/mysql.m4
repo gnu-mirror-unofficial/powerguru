@@ -38,7 +38,7 @@ dnl   fi
    dnl For some odd reason, this fails on when building a deb package
     MYSQL_LIBS=`mysql_config --libs`
     found=`echo $MYSQL_LIBS | grep mysqlclient`
-    for i in /usr/local/apache /usr/local /opt /usr; do
+    for i in /usr/local /opt /usr/local/apache /usr; do
 	if test -e $i/lib/mysql/libmysqlclient.a -o $i/lib/mysql/libmysqlclient.so; then
 	    MYSQL_LIBS="-L$i/lib/mysql -lmysqlclient -lcrypt -lnsl -lm -lz"
 	    break;

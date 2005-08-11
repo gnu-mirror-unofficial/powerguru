@@ -37,6 +37,7 @@
 #include <sys/timeb.h>
 */
 
+#ifdef USE_SNMP
 /* if on windows: */
 #ifdef WIN32
 #include <winsock.h>
@@ -62,6 +63,7 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/agent/scalar.h>
+#endif
 
 #include <string>
 #include "err.h"
@@ -75,12 +77,14 @@ class SnmpClient
   retcode_t close(void);
   struct snmp_pdu *read(std::string mibnode);
  private:
+  std::string           *_hostname;
+#ifdef USE_SNMP
   struct snmp_session   _session;
   struct snmp_session   *_handle;
   struct tree           *_mibtree;
-  std::string           *_hostname;
   struct snmp_pdu       *_pdu;
   struct snmp_pdu       *_response;
+#endif
 };
 
 

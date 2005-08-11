@@ -86,9 +86,9 @@ function get_data()
     or die("Connection Failure to Database");
   mysql_select_db($dbname, $chandle) or die ("Database not found.");
 
-  $query = "SELECT * FROM inverter ORDER BY timestamp";
+  $query = "SELECT * FROM meters ORDER BY timestamp";
   // echo $query, "<br>";
-  $result = mysql_db_query($dbname, $query) or die("Failed Query for inverter");
+  $result = mysql_db_query($dbname, $query) or die("Failed Query for meters");
   while ($thisrow=mysql_fetch_row($result)) {
     $metadata[] = array($thisrow[0], $thisrow[1], $thisrow[2], $thisrow[3], $thisrow[4], $thisrow[5], $thisrow[6], $thisrow[7], $thisrow[8], $thisrow[9]);
     //echo "$thisrow[0], $thisrow[1], $thisrow[2], $thisrow[3], $thisrow[4], $thisrow[5], $thisrow[6],$thisrow[7], $thisrow[8], $thisrow[9] )<br>";
@@ -194,7 +194,7 @@ function date_range()
   mysql_select_db($dbname, $chandle) or die ("Database not found.");
 
   $query="select month(min(timestamp)),min(dayofmonth(timestamp)),hour(min(timestamp)),minute(min(timestamp)),year(min(timestamp)),
-month(max(timestamp)),max(dayofmonth(timestamp)),hour(max(timestamp)),minute(max(timestamp)),year(max(timestamp)) from inverter";
+month(max(timestamp)),max(dayofmonth(timestamp)),hour(max(timestamp)),minute(max(timestamp)),year(max(timestamp)) from meters";
   //echo "Query is: $query<br>";
   $result = mysql_query($query) or die("Failed Query");
   while ($thisrow=mysql_fetch_row($result)) {

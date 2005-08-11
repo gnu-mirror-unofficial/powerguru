@@ -171,7 +171,7 @@ handle_powerGuruDataLog(netsnmp_mib_handler *handler,
         /*
          * or you could use netsnmp_check_vb_type_and_size instead 
          */
-        ret = netsnmp_check_vb_type(requests->requestvb, ASN_INTEGER);
+        /* ret = netsnmp_check_vb_type(requests->requestvb, ASN_INTEGER); */
         if (ret != SNMP_ERR_NOERROR) {
             netsnmp_set_request_error(reqinfo, requests, ret);
         }

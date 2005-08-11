@@ -1,5 +1,4 @@
-# Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-# 2003, 2004  Free Software Foundation, Inc.
+# Copyright (C) 2005 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -10,11 +9,13 @@
 # PARTICULAR PURPOSE.
 
 ## Process this file with automake to produce Makefile.in
+AUTOMAKE_OPTIONS = dejagnu
 
+STD_DIRS = lib daemon doc sim client # testsuite
 if SNMP
-SUBDIRS = lib snmp daemon doc #src
+SUBDIRS = snmp $(STD_DIRS) #src
 else
-SUBDIRS = lib daemon doc sim #src
+SUBDIRS = $(STD_DIRS) #src
 endif
 
 EXTRA_DIST = \

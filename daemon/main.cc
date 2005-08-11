@@ -84,6 +84,9 @@ main(int argc, char *argv[]) {
     bool use_db;
     bool snmp;
     bool background;
+    bool daemon;
+    bool client;
+    
     Database pdb;
     XantrexUI ui;
     //    Console con;
@@ -104,7 +107,9 @@ main(int argc, char *argv[]) {
     xantrexmode = false;
     use_db = true;
     snmp = false;
-    background = false;    
+    background = false;
+    daemon = true;
+    client = false;
     
     // Load the database config variable so they can be overridden by
     // the command line arguments.
@@ -131,6 +136,11 @@ main(int argc, char *argv[]) {
     // Process the command line arguments.
     while ((c = getopt (argc, argv, "d:ahvm:cexnob:p:u:w:rj")) != -1) {
       switch (c) {
+      case 'p':
+        poll = true;
+	break;
+
+#if 0
       case 'i':
         ui.Dump();
         exit(0);
@@ -141,11 +151,6 @@ main(int argc, char *argv[]) {
         exit(0);
         break;
 
-      case 'p':
-        poll = true;
-	break;
-
-#if 0
       case 'i':
 	item = strdup(optarg);
         monitor = true;
@@ -204,6 +209,11 @@ main(int argc, char *argv[]) {
         // Specify database user password.
       case 'w':
         pdb.dbPasswdSet(optarg);
+        break;
+
+      case 'c':
+        client = true;
+        daemon = false;
         break;
 
       case 'v':

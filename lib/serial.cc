@@ -446,10 +446,12 @@ Serial::SetDTR (bool value)
 
   ioctl(_uartfd, TIOCMGET, (unsigned long) &arg);
 
+  cerr << "ARG is " << arg << endl;
+  
   // Turn off everything but DTR
   if (value) {  
     seriallogfile << "<device><DTR>True</DTR></device>" << endl;
-    arg |= TIOCM_DTR;
+    arg = TIOCM_DTR;
   } else { 
     seriallogfile << "<device><DTR>False</DTR></device>" << endl;
     arg = 0;

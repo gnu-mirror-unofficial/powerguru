@@ -4,6 +4,6 @@
 $dbuser="XXX";
 $dbpass="XXX";
 $dbname="XXX";
-$dbhost="localhost";
+$dbhost="XXX";
 
 ?>

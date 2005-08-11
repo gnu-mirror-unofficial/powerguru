@@ -50,7 +50,7 @@ echo "<ul>";
 echo "<form action=dataminer.php method=POST>";
 
 //
-$whichtable = opts("whichtable","inverter");
+$whichtable = opts("whichtable","meters");
 // This is the time interval
 $interval = opts("interval", "0");
 // Get the Custom SQL query, if there is one
