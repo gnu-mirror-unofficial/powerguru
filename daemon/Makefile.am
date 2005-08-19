@@ -40,7 +40,7 @@ bin_PROGRAMS = pgd
 
 pgd_SOURCES = main.cc
 pgd_LDFLAGS = -export-dynamic -static -L../lib $(SNMP_DIR)
-pgd_LDADD =  -lpguru $(MYSQL_LIBS) $(LIBXML_LIBS) $(SNMP_FILES) #-lpgsnmp
+pgd_LDADD =  -lpguru $(MYSQL_LIBS) $(XML_LIBS) $(SNMP_FILES) #-lpgsnmp
 pgd_DEPENDENCIES = ../lib/libpguru.la $(SNMP_LA) # $(LIBXML_LA)
 
 MUDFLAP_OPT = -fmudflap

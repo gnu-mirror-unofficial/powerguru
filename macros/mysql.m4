@@ -37,13 +37,13 @@ dnl   fi
   dnl if test x"$MYSQL_LIBS" = "x" ; then
    dnl For some odd reason, this fails on when building a deb package
     MYSQL_LIBS=`mysql_config --libs`
-    found=`echo $MYSQL_LIBS | grep mysqlclient`
-    for i in /usr/local /opt /usr/local/apache /usr; do
-	if test -e $i/lib/mysql/libmysqlclient.a -o $i/lib/mysql/libmysqlclient.so; then
-	    MYSQL_LIBS="-L$i/lib/mysql -lmysqlclient -lcrypt -lnsl -lm -lz"
-	    break;
-	fi
-    done
+dnl     found=`echo $MYSQL_LIBS | grep mysqlclient`
+dnl     for i in /usr/local /opt /usr/local/apache /usr; do
+dnl 	if test -e $i/lib/mysql/libmysqlclient.a -o $i/lib/mysql/libmysqlclient.so; then
+dnl 	    MYSQL_LIBS="-L$i/lib/mysql -lmysqlclient -lcrypt -lnsl -lm -lz"
+dnl 	    break;
+dnl 	fi
+dnl     done
     AC_MSG_RESULT($MYSQL_LIBS)
   dnl fi
 

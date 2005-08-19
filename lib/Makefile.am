@@ -34,7 +34,7 @@ lib_LTLIBRARIES = libpguru.la
 INCLUDES = \
 	-I$(srcdir) \
 	-I$(top_srcdir)/snmp \
-	-I.. $(LIBXML_CFLAGS) \
+	-I.. $(XML_CPPFLAGS) \
 	$(MYSQL_CFLAGS)
 
 if SNMP
@@ -125,3 +125,7 @@ uninstall-libLTLIBRARIES:
 mudflap:
 	@echo "Rebuilding with GCC Mudflap support"
 	$(MAKE) CXXFLAGS="$(CXXFLAGS) -fmudflap" LDFLAGS="$(LDFLAGS) -lmudflap"
+
+clean-hook:
+	-rm -f core.*
+

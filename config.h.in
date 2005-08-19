@@ -9,7 +9,7 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define this if you have libxml2 support available */
+/* Use XML */
 #undef HAVE_LIBXML
 
 /* Define to 1 if you have the <memory.h> header file. */

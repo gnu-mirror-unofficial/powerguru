@@ -35,13 +35,17 @@
 #include <sys/time.h>
 #include <iostream>
 
+#if 0
+#include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/agent/scalar.h>
+#endif
 
 #include "err.h"
 #include "snmp.h"
 #include "proc.h"
+
 #if 0
 #include "ifTable.h"
 #include "ifTable_data_access.h"
@@ -89,7 +93,7 @@ SnmpClient::open(std::string init, std::string mibname)
 retcode_t
 SnmpClient::close(void)
 {
-  //snmp_close(_handle);
+  snmp_close(_handle);
   cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
   return ERROR;
 }
@@ -142,7 +146,7 @@ SnmpDaemon::master(bool background) {
   snmp_enable_stderrlog();
   snmp_debug_init();  
 
-  //  snmp_set_do_debugging(1);
+  snmp_set_do_debugging(1);
   
   // run in the background
   Proc daemon;
@@ -159,9 +163,6 @@ SnmpDaemon::master(bool background) {
   //init_mib_modules();
   
   // mib generated code
-  //init_ifTable();
-  //init_vacm_vars();
-    
   init_powerguru();
 
 #if 0
@@ -227,3 +228,4 @@ SnmpDaemon::process(void)
 }
 #endif
 
+#endif

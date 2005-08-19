@@ -1,3 +1,18 @@
+2005-08-19  Rob Savoye  <rob@bertha.welcomehome.org>
+
+	* configure.ac:	Use out own libxml2 macro. Add support for cross
+	configuration and cross compilation to support Cygwin and Mingw.
+	* configure: Regenerated.
+	* */Makefile.am: Use newer LIBXML variable.
+	* */Makefile.in: Regenerated.
+	* client/cmd.cc: Add XML networking support.
+	* lib/tcpip.{cc,h}: Add methods to extract the tcp/ip data from
+	the connection.
+	* lib/xml.{cc,h}: Rewrite everything so it works as this code was
+	originally based on another project I wrote.
+	* macros/snmp.m4: Don't enable SNMP support by default.
+	* lib/msgs.{cc,h}: New files for XML based networking system.
+
 2005-08-10  Rob Savoye  <rob@cree.moongulch.net>
 
 	* Makefile.am: Add new client and testsuite directories.

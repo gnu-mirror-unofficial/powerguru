@@ -30,6 +30,7 @@
 #include <sys/socket.h>
 #include <errno.h>
 #include <cstdlib>
+#include <cstdio>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -38,13 +39,13 @@
 
 #include "tcpip.h"
 #include "tcputil.h"
+#include "xml.h"
 #include "log.h"
 #include "err.h"
-#include "xml.h"
 
 using namespace std;
 
-static const char *SERVICENAME = "powerguru";
+//static const char *SERVICENAME = "powerguru";
 static const char *DEFAULTPROTO = "tcp";
 static const short DEFAULTPORT  = 7654;
 static const int INBUF = 1024;
@@ -58,7 +59,7 @@ extern LogFile dbglogfile;
 #endif
 
 Tcpip::Tcpip(void)
-    : _debug(false), _sockfd(-1), _sockIOfd(-1), _ipaddr(INADDR_ANY), _port(-1), _proto(0)
+    : _sockfd(-1), _sockIOfd(-1), _ipaddr(INADDR_ANY),  _proto(0), _debug(false)
 {
     // Get the low level host data for this machine
     hostDataGet();
@@ -66,6 +67,30 @@ Tcpip::Tcpip(void)
 
 Tcpip::~Tcpip(void)
 {    
+}
+
+const string
+Tcpip::remoteIP(void)
+{
+  return inet_ntoa(_client.sin_addr);
+}
+
+const string
+Tcpip::remoteIP(struct in_addr sockin)
+{
+  return inet_ntoa(sockin);
+}
+
+const string
+Tcpip::remoteName(void)
+{
+  return hostByAddrGet(inet_ntoa(_client.sin_addr));
+}
+
+const string
+Tcpip::remoteName(struct in_addr sockin)
+{
+  return hostByAddrGet(inet_ntoa(sockin));
 }
 
 // Description: Create a tcp/ip network server. This creates a server
@@ -321,6 +346,8 @@ Tcpip::newNetConnection(bool block)
   
   dbglogfile << "Accepting tcp/ip connection on fd #"
              << _sockfd << endl;
+
+  memcpy(&_client, &fsin, sizeof(struct sockaddr));
   
   return SUCCESS;
 }
@@ -488,7 +515,9 @@ Tcpip::createNetClient(string &hostname, short port, string &protocol)
   
   // For a client, the IO file descriptor is the same as the default one
   _sockIOfd = _sockfd;
-  
+
+  memcpy(&_client, &sock_in, sizeof(struct sockaddr));
+
   return SUCCESS;
 }
 
@@ -534,9 +563,8 @@ Tcpip::closeNet(int sockfd)
                  << " on fd " << sockfd << endl;
       return SUCCESS;
     }
-    
-    return ERROR;
   }
+  return ERROR;
 }
 
 void
@@ -567,7 +595,6 @@ Tcpip::anydata(int fd, char **msgs)
   char                  *packet;
   int                   retries = 10;
   char                  *ptr, *eom;
-  int                   pos;
   int                   cr, index = 0;
   static char           *leftover = 0;
   int                   adjusted_size;
@@ -717,7 +744,6 @@ Tcpip::readNet(int fd, char *buffer, int nbytes, int timeout)
   fd_set              fdset;
   int                 ret = 0;
   struct timeval      tval;
-  int                 flag;
   
   // have ensible limits...
   if (fd == 0 || fd > 100) {
@@ -776,6 +802,7 @@ Tcpip::readNet(int fd, char *buffer, int nbytes, int timeout)
 #if 0
   if (ret != 0) {
     dbglogfile << "Read " << ret << " bytes from fd #" << fd << endl;
+    dbglogfile << "Buffer says " << buffer << endl;
   }
 #endif
   return ret;
@@ -783,6 +810,12 @@ Tcpip::readNet(int fd, char *buffer, int nbytes, int timeout)
 
 // Write data to the socket. We first make sure the socket is ready for
 // data.
+int
+Tcpip::writeNet(string buffer)
+{
+  return writeNet(_sockfd, buffer.c_str(), buffer.size(), 0);
+}
+
 int
 Tcpip::writeNet(char const *buffer)
 {
@@ -817,6 +850,8 @@ Tcpip::writeNet(int fd, char const *buffer, int nbytes, int timeout)
   int                 retries = 3;
   
   bufptr = buffer;
+
+  dbglogfile << "Writing to socket: \r\n\t" << buffer << endl;
   
   while (retries-- > 1) {
     // Wait for the socket to be ready for writing
@@ -890,7 +925,21 @@ Tcpip::writeNet(int fd, char const *buffer, int nbytes, int timeout)
   
   return ret;
 }
-                                                                           
+
+Tcpip &
+Tcpip::operator = (Tcpip &tcp) 
+{
+#if 1
+  _sockfd = _sockfd;
+  _sockIOfd = _sockIOfd;
+  _ipaddr = _ipaddr;
+  _hostname = _hostname;
+  //memcpy(_client, tcp._client, sizeof(sockaddr_in);
+  //_proto = strdup(_proto);
+  _port = _port;
+  _debug = _debug;
+#endif
+}
 
 #if 0
 // Description: Get the hostname of this machine.
@@ -907,3 +956,4 @@ Tcpip::netNameGet(void)
     return _hostname;
 }
 #endif
+

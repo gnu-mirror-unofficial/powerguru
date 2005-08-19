@@ -19,6 +19,8 @@ dnl  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(configure.ac)
+dnl AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE(powerguru, 0.2)
 AM_MAINTAINER_MODE
 AM_CONFIG_HEADER(config.h)
@@ -58,8 +60,8 @@ AC_ARG_ENABLE(libxml, [  --disable-xml           Disable support for xml tcpip],
 esac])
 if test x$disable_xml != xno; then
     AC_DEFINE([HAVE_LIBXML], [], [Use XML])
-    AM_PATH_LIBXML2
 fi
+    AM_PATH_XML2
 
 dnl Use the Dom parser from libxml2, not the xmlReader one
 dnl The default is to use the Dom parser
@@ -112,6 +114,24 @@ AC_ISC_POSIX
 AC_PROG_CXX
 AM_PROG_CC_STDC
 AC_HEADER_STDC
+dnl AC_PROG_AR
+AC_CHECK_TOOL(AR, ar)
+AC_PROG_RANLIB
+AC_PROG_LD
+
+dnl These are for MinGW or Cygwin support.
+AC_EXEEXT
+AC_CHECK_TOOL(DLLTOOL, dlltool)
+AC_CHECK_TOOL(WINDRES, windres)
+
+AR=${AR-ar}
+AC_SUBST(AR)
+
+LD=${LD-ld}
+AC_SUBST(LD)
+
+RANLIB=${RANLIB-ranlib}
+AC_SUBST(RANLIB)
 
 AC_PROG_LIBTOOL
 dnl We only use these defnitions if we want to dynamically load

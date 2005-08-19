@@ -63,7 +63,9 @@ Database::Database()
 
 Database::~Database()
 {
-    closeDB();
+  if (_connection) {
+    //closeDB();
+  }
 }
 
 // Accessors
@@ -97,7 +99,7 @@ Database::openDB (void)
 {
   // DEBUGLOG_REPORT_FUNCTION;
 
-    unsigned long flag;
+    unsigned long flag = 0;
 
     dbglogfile <<"Connecting to MySQL database "  << _dbname.c_str()
                << " on " << _dbhost.c_str()

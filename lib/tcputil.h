@@ -95,7 +95,7 @@ class Tcputil {
 
   const std::string hostByAddrGet();
   const std::string hostByAddrGet(std::string addr);
-  
+
   int numberOfInterfaces();
   
   // Change the debug flag

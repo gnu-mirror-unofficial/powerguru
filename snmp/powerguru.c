@@ -8,7 +8,6 @@
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include "powerguru.h"
 
-int unimplemented;
 /** Initializes the powerguru module */
 void
 init_powerguru(void)
@@ -155,10 +154,10 @@ handle_powerGuruDataLog(netsnmp_mib_handler *handler,
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
                                  (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 &unimplemented,
+                                 ,
                                  /*
                                   * XXX: the length of the data in bytes 
-                                  */4 );
+                                  */ );
         break;
 
         /*
@@ -181,7 +180,7 @@ handle_powerGuruDataLog(netsnmp_mib_handler *handler,
         /*
          * XXX malloc "undo" storage buffer 
          */
-        if ( unimplemented /* XXX if malloc, or whatever, failed: */ ) {
+        if ( /* XXX if malloc, or whatever, failed: */ ) {
             netsnmp_set_request_error(reqinfo, requests,
                                       SNMP_ERR_RESOURCEUNAVAILABLE);
         }
@@ -199,9 +198,9 @@ handle_powerGuruDataLog(netsnmp_mib_handler *handler,
         /*
          * XXX: perform the value change here 
          */
-        if ( unimplemented /* XXX: error? */ ) {
+        if ( /* XXX: error? */ ) {
             netsnmp_set_request_error(reqinfo, requests, /* some error */
-                                      unimplemented);
+                                      );
         }
         break;
 
@@ -209,7 +208,7 @@ handle_powerGuruDataLog(netsnmp_mib_handler *handler,
         /*
          * XXX: delete temporary storage 
          */
-        if ( unimplemented /* XXX: error? */ ) {
+        if ( /* XXX: error? */ ) {
             /*
              * try _really_really_ hard to never get to this point 
              */
@@ -222,7 +221,7 @@ handle_powerGuruDataLog(netsnmp_mib_handler *handler,
         /*
          * XXX: UNDO and return to previous value for the object 
          */
-        if ( unimplemented /* XXX: error? */ ) {
+        if ( /* XXX: error? */ ) {
             /*
              * try _really_really_ hard to never get to this point 
              */
@@ -255,20 +254,20 @@ handle_powerGuruUnitAddress(netsnmp_mib_handler *handler,
      */
 
     /*
-     * a instance handler also only hands us one request at a time, so 
+     * a instance handler also only hands us one request at a time, so
      * we don't need to loop over a list of requests; we'll only get one. 
      */
-  int foo = 676;
-  
+
     switch (reqinfo->mode) {
+
     case MODE_GET:
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
                                  (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 &foo,
+                                 ,
                                  /*
                                   * XXX: the length of the data in bytes 
-                                  */ 4);
+                                  */ );
         break;
 
 
@@ -307,10 +306,10 @@ handle_powerGuruChargeAmps(netsnmp_mib_handler *handler,
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
                                  (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 &unimplemented,
+                                 ,
                                  /*
                                   * XXX: the length of the data in bytes 
-                                  */1 );
+                                  */ );
         break;
 
 
@@ -349,10 +348,10 @@ handle_powerGuruPVAmps(netsnmp_mib_handler *handler,
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
                                  (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 &unimplemented,
+                                 ,
                                  /*
                                   * XXX: the length of the data in bytes 
-                                  */ 1);
+                                  */ );
         break;
 
 
@@ -390,10 +389,10 @@ handle_powerGuruPVVolts(netsnmp_mib_handler *handler,
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
                                  (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 &unimplemented,
+                                 ,
                                  /*
                                   * XXX: the length of the data in bytes 
-                                  */ 1);
+                                  */ );
         break;
 
 
@@ -431,10 +430,10 @@ handle_powerGuruDailyKW(netsnmp_mib_handler *handler,
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
                                  (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 &unimplemented,
+                                 ,
                                  /*
                                   * XXX: the length of the data in bytes 
-                                  */ 1);
+                                  */ );
         break;
 
 
@@ -472,10 +471,10 @@ handle_powerGuruAuxMode(netsnmp_mib_handler *handler,
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
                                  (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 &unimplemented,
+                                 ,
                                  /*
                                   * XXX: the length of the data in bytes 
-                                  */ 1);
+                                  */ );
         break;
 
 
@@ -513,10 +512,10 @@ handle_powerGuruErrorMode(netsnmp_mib_handler *handler,
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
                                  (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 &unimplemented,
+                                 ,
                                  /*
                                   * XXX: the length of the data in bytes 
-                                  */ 1);
+                                  */ );
         break;
 
 
@@ -555,10 +554,10 @@ handle_powerGuruChargerMode(netsnmp_mib_handler *handler,
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
                                  (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 &unimplemented,
+                                 ,
                                  /*
                                   * XXX: the length of the data in bytes 
-                                  */ 1);
+                                  */ );
         break;
 
 
@@ -597,10 +596,10 @@ handle_powerGuruBatteryVolts(netsnmp_mib_handler *handler,
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
                                  (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 &unimplemented,
+                                 ,
                                  /*
                                   * XXX: the length of the data in bytes 
-                                  */ 1);
+                                  */ );
         break;
 
 
@@ -639,10 +638,10 @@ handle_powerGuruLoadAmps(netsnmp_mib_handler *handler,
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
                                  (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 &unimplemented,
+                                 ,
                                  /*
                                   * XXX: the length of the data in bytes 
-                                  */ 1);
+                                  */ );
         break;
 
 
@@ -681,10 +680,10 @@ handle_powerGuruACBuyAmps(netsnmp_mib_handler *handler,
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
                                  (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 &unimplemented,
+                                 ,
                                  /*
                                   * XXX: the length of the data in bytes 
-                                  */ 1);
+                                  */ );
         break;
 
 
@@ -723,10 +722,10 @@ handle_powerGuruACInputVolts(netsnmp_mib_handler *handler,
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
                                  (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 &unimplemented,
+                                 ,
                                  /*
                                   * XXX: the length of the data in bytes 
-                                  */ 1);
+                                  */ );
         break;
 
 
@@ -765,10 +764,10 @@ handle_powerGuruACOutputVolts(netsnmp_mib_handler *handler,
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
                                  (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 &unimplemented,
+                                 ,
                                  /*
                                   * XXX: the length of the data in bytes 
-                                  */ 1);
+                                  */ );
         break;
 
 
@@ -807,10 +806,10 @@ handle_powerGuruACSellAmps(netsnmp_mib_handler *handler,
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
                                  (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 &unimplemented,
+                                 ,
                                  /*
                                   * XXX: the length of the data in bytes 
-                                  */ 1);
+                                  */ );
         break;
 
 

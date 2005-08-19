@@ -33,26 +33,33 @@
 #include <sys/types.h>
 #include <cstdio>
 #include <iostream>
+#include <libxml/encoding.h>
+#include <libxml/xmlwriter.h>
+#include <libxml/debugXML.h>
 
 #include "dejagnu.h"
 #include "tcpip.h"
 #include "console.h"
+#include "msgs.h"
+#include "xml.h"
 
 using namespace std;
 extern LogFile dbglogfile;
 static void usage (const char *);
+void fooby();
 
 int
 main(int argc, char *argv[])
 {
-    int c;
-    string filespec;
-    bool client;
-    bool daemon;
-    string hostname;
-    string user;
-    string passwd;
-
+    int         c;
+    string      filespec;
+    bool        client;
+    bool        daemon;
+    string      hostname;
+    string      user;
+    string      passwd;
+    char        *ptr;
+    
     client = true;
     daemon = false;
     hostname = "localhost";
@@ -142,9 +149,33 @@ main(int argc, char *argv[])
         exit (1);
       }
     }
+
+#if 0
+    cerr << "\rWelcome " << tcpip.remoteName()
+         << " at IP address: " << tcpip.remoteIP() << endl;
+    cerr << msg.status((meter_data_t *)0) << endl;
+#endif
     
-    tcpip.writeNet("\r<powerguru><version>0.2</version></powerguru>\n");
-      
+    //    Msgs msg(tcpip.remoteName(), tcpip.remoteIP());
+    Msgs msg(&tcpip);
+
+    msg.initDaemon();
+    //msg.methodsDump();          // FIXME: debugging crap
+    
+    //msg.print_msg(msg.status((meter_data_t *)0));
+    
+    tcpip.writeNet(msg.heloCreate(0.3));
+    if (client) {
+      //      sleep(1);
+      tcpip.writeNet(msg.metersRequestCreate(Msgs::BATTERY_VOLTS));
+      sleep(1);
+      tcpip.writeNet(msg.metersRequestCreate(Msgs::AC1_VOLTS_IN));
+      //      tcpip.writeNet(msg.metersCreate(Msgs::CHARGE_AMPS));
+      //      tcpip.writeNet(msg.metersCreate(Msgs::AC_LOAD_AMPS));
+      //      tcpip.writeNet(msg.metersCreate(Msgs::PV_AMPS_IN));
+      //      tcpip.writeNet(msg.metersCreate(Msgs::SELL_AMPS));
+    }
+    
     while ((ch = con.Getc()) != 'q') {
       if (ch > 0){                // If we have something, process it
         //con.Putc (ch);          // echo inputted character to screen
@@ -168,18 +199,31 @@ main(int argc, char *argv[])
         };
       }
 
-      int bytes = tcpip.readNet(buffer, 300, 0);
-#if 1
+      XML xml;
+      
+      memset(buffer, 0, 300);
+      ptr = buffer;
+      int bytes = tcpip.readNet(buffer, 300, 0);      
       if (bytes > 0) {
-        con.Puts(buffer);
-        con.Puts("\r\n");
-        if (strncmp(buffer, "quit", 4) == 0) {
-          exit(0);
-        } 
+        while (ptr != NULL) {
+          if (ptr != buffer) {
+            ptr++;
+          }
+          // We're at the end of the messages
+          if (strlen(ptr) == 0) {
+            break;
+          }
+          if (xml.parseXML(ptr) == false) {
+            break;
+          }
+          if (strncmp(buffer, "quit", 4) == 0) {
+            exit(0);
+          }
+          ptr = strchr(ptr, '\0');
+        }
       }
-#endif
-      con.Close();
     }
+    //con.Close();
 }
 
 static void

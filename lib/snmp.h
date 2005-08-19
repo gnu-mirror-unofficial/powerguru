@@ -47,6 +47,7 @@
 #define NETSNMP_IMPORT extern
 
 /* don't use inline constructs (define to <i>inline</i> if you want them) */
+#undef NETSNMP_INLINE
 #define NETSNMP_INLINE
 
 /* run man signal and see what the user function is supposed to return
@@ -57,6 +58,9 @@
 /* tell the Net-SNMP core functionality headers that we've done the
    minimal requirements */
 #define NET_SNMP_CONFIG_H
+
+#undef SNMP_TRANSPORT_UDPIPV6_DOMAIN
+#undef SNMP_TRANSPORT_TCPIPV6_DOMAIN
 
 /* include the core Net-SNMP functionality headers */
 #include <net-snmp/net-snmp-config.h>

@@ -32,136 +32,81 @@
 #include "log.h"
 #include "err.h"
 
+// This holds the data (name & value) for an XML node's attributes.
 class XMLAttr {
 public:
   XMLAttr();
   ~XMLAttr();
-  //private:
-  char        *_name;
-  char        *_value;
+  std::string nameGet(void);
+  void nameSet(const xmlChar *name);
+  std::string valueGet(void);
+  void valueSet(const xmlChar *val);
+ private:
+  const xmlChar *_name;
+  const xmlChar *_value;
 };
 
+// This holds the data (name & value) for an XML node.
 class XMLNode
 {
 public:
   XMLNode();
   ~XMLNode();
 
-  int size() { return _children.size(); }
-  std::string nodeName() 
-  {
-    return _name;
-  }
+  int size(void) { return _children.size(); }
+  XMLNode *operator [] (int x);
+  XMLNode *operator = (XMLNode &node);
+  XMLNode *operator = (XMLNode *node);
 
-  char *nodeValue()
-  {
-    return _value;
-  }
+  std::string nameGet(void);
+  //  void nameSet(std::string name);
+  void nameSet(const xmlChar *name);
+  std::string valueGet(void);
+  //  void valueSet(std::string val);
+  void valueSet(const xmlChar *val);
   
-  bool hasChildNodes()
-  {
-    if (_children.size() > 0) {
-      return true;
-    }
-    return false;
-  }
+  std::vector<XMLNode *> childrenGet(void);
+  XMLNode *childGet(int x);
+  void childAdd(XMLNode *node);
   
-  std::vector<XMLNode *>childNodes()
-  {
-    return _children;
-  }  
-
-  XMLNode *operator [] (int x)
-  {
-    return _children[x];
-  }
-  
-  XMLNode *operator = (XMLNode &node)
-  {
-    _name = node._name;
-    _value = node._value;
-    _children = node._children;
-    _attributes = node._attributes;
-    return this;
-  }
-
-  XMLNode *operator = (XMLNode *node)
-  {
-    _name = node->_name;
-    _value = node->_value;
-    _children = node->_children;
-    _attributes = node->_attributes;
-    return this;
-  }
-  //private:
-  char               *_name;
-  char               *_value;
-  std::vector<XMLNode *>   _children;
-  std::vector<XMLAttr *>   _attributes;
+  std::vector<XMLAttr *> attributesGet(void);
+  XMLAttr *attribGet(int x);
+  void attribAdd(XMLAttr *attr);
+  int childrenSize(void);
+  int attributesSize(void);
+  bool hasContent(void);
+  bool hasChildren(void);
+  bool hasAttributes(void);
+ private:
+  const xmlChar         *_name;
+  const xmlChar         *_value;
+  std::vector<XMLNode *> _children;
+  std::vector<XMLAttr *> _attributes;
 };
 
+// This is the top level for parsing an XML network message or file.
 class XML {
  public:
   XML();
   XML(std::string xml_in);
   XML(struct node * childNode);
-  virtual ~XML();
+  ~XML();
 
-  // Methods
-  bool parseDoc(xmlDocPtr document, bool mem); // This is the base method used by both parseXML() and load().
-  bool parseXML(std::string xml_in); // Parses an XML document into the specified XML object tree.
-  bool load(const char *filespec);  // Loads a document (specified by
-                                    // the XML object) from a URL.
-
-  void clear()
-  {
-    delete _nodes;
-  }
-  
-  std::vector<XMLNode *> childNodes()
-  {
-    return _nodes->_children;
-  }
-  
-  //  Returns true if the specified node has child nodes; otherwise, returns false.
-  bool hasChildNodes()
-  {
-    return _nodes->_children.size();
-  }
-  
+  bool parseDoc(xmlDocPtr document, bool mem);
+  bool parseXML(std::string xml_in);
+  bool load(const char *filespec);
+  bool hasChildren(void);
   XMLNode *extractNode(xmlNodePtr node, bool mem);
   XMLNode *processNode(xmlTextReaderPtr reader, XMLNode *node);
-  
-  const char *nodeNameGet() 
-  {
-    return _nodename;
-  }
-  
-  int size() { return _nodes->size(); }
-  
+  std::string nodeNameGet(void);
+  int size(void);  
   XMLNode *operator [] (int x);
-#if 0
-  XMLNode *operator = (XMLNode &node)
-  {
-    dbglogfile << "%s: copy element "
-               << node._name.c_str() << endl;
-    _nodes = node;
-  }
-  
-#endif
-  XML *operator = (XMLNode *node)
-  {
-    _nodes = node;    
-    return this;
-  }
-  
+  XML *operator = (XMLNode *node);
 private:
   xmlDocPtr     _doc;
-  const char    *_nodename;
-  XMLNode       *_nodes;
+  XMLNode       _nodes;
 };
 
 int memadjust(int x);
 
 #endif	// __XML_H__
-

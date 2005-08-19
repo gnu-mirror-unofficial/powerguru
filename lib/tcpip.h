@@ -72,6 +72,7 @@ class Tcpip : public Tcputil
   int readNet(int fd, char *buffer, int nbytes, int timeout);
   
   // Write to the socket  
+  int writeNet(std::string buffer);
   int writeNet(char const *buffer);
   int writeNet(char const *buffer, int nbytes);
   int writeNet(int fd, char const *buffer);
@@ -88,15 +89,23 @@ class Tcpip : public Tcputil
   // Authenticate the socket connection
   retcode_t authNetClient(void);
   retcode_t authNetServer(void);
-  
+
+  // Extract some info from the other end of the connection.
+  const std::string remoteIP(void);
+  const std::string remoteIP(struct in_addr addr);
+  const std::string remoteName(void);
+  const std::string remoteName(struct in_addr addr);
+
+  Tcpip &operator = (Tcpip &tcp);  
 private:
-  bool                     _debug;
   int                      _sockfd;
   int                      _sockIOfd;
   in_addr_t                _ipaddr;
   std::string              _hostname;
-  short                    _port;
+  struct sockaddr_in	   _client;
   const char              *_proto;
+  short                    _port;
+  bool                     _debug;
 };
 
 // EOF __TCPIP_H__ */

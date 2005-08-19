@@ -73,7 +73,6 @@ main(int argc, char *argv[]) {
     string item, str;
     const char *filespec;
     MenuItem ti;
-    string value, display;
     string hostname;
     bool console;
     bool setitem;
@@ -269,9 +268,9 @@ main(int argc, char *argv[]) {
         }
         
       }
-      exit(0);
       con.Reset();
       con.Close();
+      exit(0);
     }
 
     if (xantrexmode) {
@@ -314,7 +313,15 @@ main(int argc, char *argv[]) {
         }
       }
       con.Reset();
-      con.Close();      
+      con.Close();
+      exit(0);
+    }
+
+    if (use_db) {
+      if (!pdb.closeDB()) {
+        dbglogfile << "ERROR: Couldn't open database!" << endl;
+        exit(1);
+      }
     }
     
     // Network daemon/client mode. Normally we're a network daemon that
@@ -418,7 +425,7 @@ static void
 usage (const char *prog)
 {
   cerr <<"This program implements a command line interface" << endl; 
-  cerr << "for an Xantrex inverter" << endl;
+  cerr << "for an inverter or charge controller" << endl;
   cerr << "Usage: " << prog << " [sglvphmdcx]" << endl;
 
   // enable SNMP daemon mode

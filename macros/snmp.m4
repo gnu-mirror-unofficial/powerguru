@@ -5,7 +5,7 @@ AC_DEFUN([AM_PATH_SNMP],
 dnl Get the cflags and libraries
 dnl
 dnl Use the Snmp library, if specified.
-snmp=true
+snmp=false
 AC_ARG_ENABLE(snmp, [  --enable-snmp           enable support for Snmp (default=yes)],
 [case "${enableval}" in
   yes) snmp=true ;;
