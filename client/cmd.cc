@@ -60,12 +60,23 @@ main(int argc, char *argv[])
     string      passwd;
     char        *ptr;
     retcode_t   ret;
-    
     client = true;
     daemon = false;
     hostname = "localhost";
+
+    // scan for the two main standard GNU options
+    for (c=0; c<argc; c++) {
+      if (strcmp("--help", argv[c]) == 0) {
+        usage(argv[0]);
+        exit(0);
+      }
+      if (strcmp("--version", argv[c]) == 0) {
+        cerr << "PowerGuru version: " << VERSION << endl;
+        exit(0);
+      }
+    }
     
-    while ((c = getopt (argc, argv, "hvdcm:u:p:")) != -1) {
+    while ((c = getopt (argc, argv, "hvdcm:u:p:V")) != -1) {
       switch (c) {
       case 'h':
         usage (argv[0]);
@@ -92,6 +103,11 @@ main(int argc, char *argv[])
       case 'c':
         client = true;
         daemon = false;
+        break;   
+        
+      case 'V':
+        cerr << "PowerGuru version " << VERSION << endl;
+        exit (0);
         break;   
         
       case 'd':

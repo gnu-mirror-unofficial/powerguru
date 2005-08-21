@@ -1,5 +1,8 @@
 2005-08-20  Rob Savoye  <rob@bertha.welcomehome.org>
 
+	* daemon/main.cc (main): Add support for --help and --version.
+	* client/cmd.cc (main):  Add support for --help and --version.
+
 	* client/cmd.cc (main): Remove tcpip code, it's now inherited by
 	the Msgs class.Use the new anydata() method to process socket
 	messages. On an socket error, exit if you are the client, and
@@ -23,7 +26,7 @@
 
 	* configure.ac:	Use out own libxml2 macro. Add support for cross
 	configuration and cross compilation to support Cygwin and Mingw.
-	* configure: Regenerated.
+	* configure: Rebgenerated.
 	* */Makefile.am: Use newer LIBXML & XML_CPPFLAGS variables.
 	* */Makefile.in: Regenerated.
 	* client/cmd.cc: Add XML networking support.
