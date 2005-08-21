@@ -36,6 +36,10 @@
 #include <iostream>
 #include <sys/param.h>
 #include <fcntl.h>
+#include <libxml/encoding.h>
+#include <libxml/xmlwriter.h>
+#include <libxml/debugXML.h>
+
 
 #include "tcpip.h"
 #include "tcputil.h"
@@ -48,9 +52,9 @@ using namespace std;
 //static const char *SERVICENAME = "powerguru";
 static const char *DEFAULTPROTO = "tcp";
 static const short DEFAULTPORT  = 7654;
-static const int INBUF = 1024;
+static const int INBUF          = 2048;
 static const int DEFAULTTIMEOUT = 5;
-const int BLOCKING_TIMEOUT = -1;
+const int BLOCKING_TIMEOUT      = -1;
 
 extern LogFile dbglogfile;
 
@@ -58,8 +62,13 @@ extern LogFile dbglogfile;
 #define INADDR_NONE  0xffffffff
 #endif
 
+// FIXME: This is so methods executed via a pointer can still do
+// I/O. It's probably a gross memory corruption problem too.
+int  Tcpip::_sockfd;
+int  Tcpip::_sockIOfd;
+
 Tcpip::Tcpip(void)
-    : _sockfd(-1), _sockIOfd(-1), _ipaddr(INADDR_ANY),  _proto(0), _debug(false)
+    : _ipaddr(INADDR_ANY),  _proto(0), _debug(false)// _sockfd(-1), _sockIOfd(-1), 
 {
     // Get the low level host data for this machine
     hostDataGet();
@@ -120,6 +129,8 @@ Tcpip::createNetServer(string &service)
 retcode_t
 Tcpip::createNetServer(string &service, string &proto)
 {
+  DEBUGLOG_REPORT_FUNCTION;
+
   const struct servent  *serv;
 
   serv = lookupService(service);
@@ -145,6 +156,7 @@ Tcpip::createNetServer(string &service, string &proto)
 retcode_t
 Tcpip::createNetServer(short port, string &protocol)
 {
+  DEBUGLOG_REPORT_FUNCTION;
   
   struct protoent *ppe;
   struct sockaddr_in sock_in;
@@ -273,12 +285,14 @@ Tcpip::createNetServer(short port, string &protocol)
 retcode_t
 Tcpip::newNetConnection(void)
 {
+  DEBUGLOG_REPORT_FUNCTION;
   return newNetConnection(true);
 }
 
 retcode_t
 Tcpip::newNetConnection(bool block)
 {
+  DEBUGLOG_REPORT_FUNCTION;
   struct sockaddr	fsin;
   socklen_t		alen;
   int			ret;
@@ -300,6 +314,7 @@ Tcpip::newNetConnection(bool block)
     // We use select to wait for the read file descriptor to be
     // active, which means there is a client waiting to connect.
     FD_ZERO(&fdset);
+    FD_SET(0, &fdset);          // also return on any input from stdin
     FD_SET(_sockIOfd, &fdset);
     
     // Reset the timeout value, since select modifies it on return. To
@@ -313,7 +328,11 @@ Tcpip::newNetConnection(bool block)
       ret = select(_sockIOfd+1, &fdset, NULL, NULL, &tval);
     }
     
-    
+    if (FD_ISSET(0, &fdset)) {
+      dbglogfile << "There is data at the console for stdin!" << endl;
+      return SUCCESS;
+    }
+
     // If interupted by a system call, try again
     if (ret == -1 && errno == EINTR) {
       dbglogfile <<
@@ -356,6 +375,7 @@ Tcpip::newNetConnection(bool block)
 retcode_t
 Tcpip::createNetClient(void)
 {
+  DEBUGLOG_REPORT_FUNCTION;
   string str = DEFAULTPROTO;
   string host = "localhost";
   
@@ -365,6 +385,7 @@ Tcpip::createNetClient(void)
 retcode_t
 Tcpip::createNetClient(short port)
 {
+  DEBUGLOG_REPORT_FUNCTION;
   string str = DEFAULTPROTO;
   string host = "localhost";
   
@@ -375,6 +396,7 @@ Tcpip::createNetClient(short port)
 retcode_t
 Tcpip::createNetClient(string &hostname, short port)
 {
+  DEBUGLOG_REPORT_FUNCTION;
   string str = DEFAULTPROTO;
   return createNetClient(hostname, port, str);
 }
@@ -382,6 +404,7 @@ Tcpip::createNetClient(string &hostname, short port)
 retcode_t
 Tcpip::createNetClient(string &hostname)
 {
+  DEBUGLOG_REPORT_FUNCTION;
   string str = DEFAULTPROTO;
   return createNetClient(hostname, DEFAULTPORT, str);
 }
@@ -389,12 +412,14 @@ Tcpip::createNetClient(string &hostname)
 retcode_t
 Tcpip::createNetClient(string &hostname, string &srvname, string &protocol)
 {
+  DEBUGLOG_REPORT_FUNCTION;
   //    return createNetClient(hostname, srvname, "tcp");
 }
 
 retcode_t
 Tcpip::createNetClient(string &hostname, short port, string &protocol)
 {
+  DEBUGLOG_REPORT_FUNCTION;
   struct sockaddr_in	sock_in;
   int             	type;
   char                thishostname[MAXHOSTNAMELEN];
@@ -525,13 +550,18 @@ Tcpip::createNetClient(string &hostname, short port, string &protocol)
 retcode_t
 Tcpip::closeNet(void)
 {
+  DEBUGLOG_REPORT_FUNCTION;
 
+  closeNet(_sockfd);
+  _sockfd= 0;
+  
   return ERROR;
 }
 
 retcode_t
 Tcpip::closeNet(int sockfd)
 {
+  DEBUGLOG_REPORT_FUNCTION;
   int retries = 0;
   
   // If we can't close the socket, other processes must be
@@ -539,31 +569,34 @@ Tcpip::closeNet(int sockfd)
   // few tries, we give up, cause there must be something
   // wrong.
   while (retries < 3) {
-    // Shutdown the socket connection
-    if (shutdown(sockfd, SHUT_RDWR) < 0) {
-      if (errno != ENOTCONN) {
-        dbglogfile << "WARNING: Unable to shutdown socket for fd #"
-                   << sockfd << strerror(errno) << endl;
+    if (sockfd) {
+      // Shutdown the socket connection
+      if (shutdown(sockfd, SHUT_RDWR) < 0) {
+        if (errno != ENOTCONN) {
+          dbglogfile << "WARNING: Unable to shutdown socket for fd #"
+                     << sockfd << strerror(errno) << endl;
+        } else {
+          dbglogfile << "The socket using fd #" << sockfd
+                     << " has been shut down successfully." << endl;
+          return SUCCESS;
+        }
+      }
+      
+      if (close(sockfd) < 0) {
+        dbglogfile <<
+          "WARNING: Unable to close the socket for fd "
+                   <<	sockfd << strerror(errno) << endl;
+        sleep(1);
+        retries++;
       } else {
-        dbglogfile << "The socket using fd #" << sockfd
-                   << " has been shut down successfully." << endl;
+        dbglogfile << "Closed the socket for "
+                   << serviceNameGet()
+                   << " on fd " << sockfd << endl;
         return SUCCESS;
       }
     }
-    
-    if (close(sockfd) < 0) {
-      dbglogfile <<
-        "WARNING: Unable to close the socket for fd "
-                 <<	sockfd << strerror(errno) << endl;
-      sleep(1);
-      retries++;
-    } else {
-      dbglogfile << "Closed the socket for "
-                 << serviceNameGet()
-                 << " on fd " << sockfd << endl;
-      return SUCCESS;
-    }
   }
+  
   return ERROR;
 }
 
@@ -578,16 +611,20 @@ Tcpip::toggleDebug(bool val)
 }
 
 // Return true if there is data in the socket, otherwise return false.
-bool
-Tcpip::anydata(char **msgs)
+retcode_t
+Tcpip::anydata(vector<const xmlChar *> &msgs)
 {
+  DEBUGLOG_REPORT_FUNCTION;
   //printf("%s: \n", __FUNCTION__);
   return anydata(_sockfd, msgs);
 }
 
-bool
-Tcpip::anydata(int fd, char **msgs)
+// This waits for data on the socket, and on stdin. This way we can sit
+// here in a kernel sleep instead of polling all devices.
+retcode_t
+Tcpip::anydata(int fd, vector<const xmlChar *> &msgs)
 {
+  DEBUGLOG_REPORT_FUNCTION;
   fd_set                fdset;
   struct timeval        tval;
   int                   ret = 0;
@@ -600,44 +637,68 @@ Tcpip::anydata(int fd, char **msgs)
   int                   adjusted_size;
 
   if (fd <= 0) {
-    return false;
+    return ERROR;
   }
+  
+  //fcntl(_sockfd, F_SETFL, O_NONBLOCK);
 
   //msgs = (char **)realloc(msgs, sizeof(char *));
-
   while (retries-- > 0) {
     FD_ZERO(&fdset);
+    FD_SET(0, &fdset);          // look for STDIN too
     FD_SET(fd, &fdset);
     
-    tval.tv_sec = 1;
+    tval.tv_sec = 10;
     tval.tv_usec = 10;
     
     ret = ::select(fd+1, &fdset, NULL, NULL, &tval);
 
     // If interupted by a system call, try again
-    if (ret == -1 && errno == EINTR) {
+    if (ret == -1 && (errno == EINTR || errno == EAGAIN)) {
       dbglogfile << "The socket for fd #%d was interupted by a system call!"
                  << fd << endl;
       continue;
     }
+    if (ret == 0) {
+      dbglogfile << "There is no data in the socket for fd #" << fd << endl;
+      return ERROR;
+    }
     if (ret == -1) {
       dbglogfile << "The socket for fd #%d never was available!"
                  << fd << endl;
-      return false;
-    }
-    if (ret == 0) {
-      //log_msg("There is no data in the socket for fd #%d!\n", fd);
-      return false;
+      return ERROR;
     }
     if (ret > 0) {
-      //log_msg("There is data in the socket for fd #%d!\n", fd);        
-      //break;
+      if (FD_ISSET(0, &fdset)) {
+        dbglogfile << "There is data at the console for stdin!" << endl;
+        return SUCCESS;
+      }
+      dbglogfile << "There is data in the socket for fd #" << fd << endl;
     }
     memset(buf, 0, INBUF);
-    ret = ::read(_sockfd, buf, INBUF-2);
+    if (FD_ISSET(_sockfd, &fdset)) {
+      ret = ::read(_sockfd, buf, INBUF-2);
+    } else {
+      return ERROR;
+    }
+    
+    if (ret == 0) {
+      return ERROR;
+    }
+    
+    if (ret == -1) {
+      switch (errno) {
+      case EAGAIN:
+        continue;
+        break;
+      default:
+        break;
+      };
+      return ERROR;
+    }
     cr = strlen(buf);
-    //log_msg("%s: read %d bytes, first msg terminates at %d\n", __FUNCTION__, ret, cr);
-    //log_msg("%s: read (%d,%d) %s\n", __FUNCTION__, buf[0], buf[1], buf);
+//     dbglogfile << "read " << ret << " bytes, first msg terminates at " << cr << endl;
+//     dbglogfile << "read " << buf << endl;
     ptr = buf;
     // If we get a single XML message, do less work
     if (ret == cr + 1) {
@@ -650,32 +711,33 @@ Tcpip::anydata(int fd, char **msgs)
       if (eom) {
         *eom = 0;
       }
-      //data.push_back(packet);
-      msgs[index] = packet;
-      msgs[index+1] = 0;
+      //    msgs[index] = (const xmlChar *)packet;
+      msgs.push_back((const xmlChar *)packet);
+      //      msgs[index+1] = 0;
       //printf("%d: Pushing Packet of size %d at %p\n", __LINE__, strlen(packet), packet);
       //processing(false);
-      return true;
+      
+      return SUCCESS;
     }
 
     // If we get multiple messages in a single transmission, break the buffer
     // into separate messages.
-    while (strchr(ptr, '\n') > 0) {
+    while ((strchr(ptr, '\0') > 0) && (ptr > 0)) {
       if (leftover) {
         //processing(false);
-        //printf("%s: The remainder is: \"%s\"\n", __FUNCTION__, leftover);
-        //printf("%s: The rest of the message is: \"%s\"\n", __FUNCTION__, ptr);
+        printf("%s: The remainder is: \"%s\"\n", __FUNCTION__, leftover);
+        printf("%s: The rest of the message is: \"%s\"\n", __FUNCTION__, ptr);
         adjusted_size = memadjust(cr + strlen(leftover) + 1);
         packet = new char[adjusted_size];
         memset(packet, 0, adjusted_size);
         strcpy(packet, leftover);
         strcat(packet, ptr);
-        eom = strrchr(packet, '\n'); // drop the CR off the end there is one
+        eom = strrchr(packet, '\0'); // drop the CR off the end there is one
         if (eom) {
           *eom = 0;
         }
-        //printf("%s: The whole message is: \"%s\"\n", __FUNCTION__, packet);
-        ptr = strchr(ptr, '\n') + 2; // messages are delimited by a "\n\0"
+        printf("%s: The whole message is: \"%s\"\n", __FUNCTION__, packet);
+        ptr = strchr(ptr, '\0') + 2; // messages are delimited by a "\n\0"
         delete leftover;
         leftover = 0;
       } else {
@@ -684,22 +746,28 @@ Tcpip::anydata(int fd, char **msgs)
         memset(packet, 0, adjusted_size);
         strcpy(packet, ptr);
         ptr += cr + 1;
+        //dbglogfile << "Packet is: " << packet << endl;
       } // end of if remainder
       if (*packet == '<') {
-        //printf("%d: Pushing Packet #%d of size %d at %p: %s\n", __LINE__,
-        //       data.size(), strlen(packet), packet, packet);
         eom = strrchr(packet, '\n'); // drop the CR off the end there is one
         if (eom) {
           *eom = 0;
         }
         //printf("Allocating new packet at %p\n", packet);
         //data.push_back(packet);
-        msgs[index++] = packet;
+        //        msgs[index++] = (const xmlChar *)packet;
+        msgs.push_back((const xmlChar *)packet);
       } else {
-        dbglogfile << "WARNING: Throwing out partial packet " << packet << endl;
+        if (*packet == *ptr) {
+          // dbglogfile << "Read all XML messages in packet " << packet << endl;
+          break;
+        } else { 
+          //dbglogfile << "WARNING: Throwing out partial packet " << endl;
+          dbglogfile << "WARNING: Throwing out partial packet " << packet << endl;
+          break;
+        }
       }
       
-      //log_msg("%d messages in array now\n", data.size());
       cr = strlen(ptr);
     } // end of while (cr)
     
@@ -707,16 +775,19 @@ Tcpip::anydata(int fd, char **msgs)
       leftover = new char[strlen(ptr) + 1];
       strcpy(leftover, ptr);
       //processing(true);
-      //printf("%s: Adding remainder: \"%s\"\n", __FUNCTION__, leftover);
+      printf("%s: Adding remainder: \"%s\"\n", __FUNCTION__, leftover);
     }
     
     //processing(false);
-    printf("Returning %d messages\n", index);
-    return true;
+    if (msgs.size() == 0) {
+      return ERROR;
+      //      printf("Returning %d messages\n", msgs.size());
+    }
+    return SUCCESS;
     
   } // end of while (retires)
 
-  return true;
+  return SUCCESS;
 }
 
 // Read from the socket
@@ -741,6 +812,7 @@ Tcpip::readNet(char *buffer, int nbytes, int timeout)
 int
 Tcpip::readNet(int fd, char *buffer, int nbytes, int timeout)
 {
+  DEBUGLOG_REPORT_FUNCTION;
   fd_set              fdset;
   int                 ret = 0;
   struct timeval      tval;
@@ -813,36 +885,37 @@ Tcpip::readNet(int fd, char *buffer, int nbytes, int timeout)
 int
 Tcpip::writeNet(string buffer)
 {
-  return writeNet(_sockfd, buffer.c_str(), buffer.size(), 0);
+  return writeNet(_sockfd, buffer.c_str(), buffer.size(), DEFAULTTIMEOUT);
 }
 
 int
 Tcpip::writeNet(char const *buffer)
 {
-  return writeNet(_sockfd, buffer, strlen(buffer), 0);
+  return writeNet(_sockfd, buffer, strlen(buffer), DEFAULTTIMEOUT);
 }
 
 int
 Tcpip::writeNet(char const *buffer, int nbytes)
 {
-  return writeNet(_sockfd, buffer, nbytes, 0);
+  return writeNet(_sockfd, buffer, nbytes,DEFAULTTIMEOUT );
 }
 
 int
 Tcpip::writeNet(int fd, char const *buffer)
 {
-  return writeNet(fd, buffer, strlen(buffer), 0);
+  return writeNet(fd, buffer, strlen(buffer), DEFAULTTIMEOUT);
 }
 
 int
 Tcpip::writeNet(int fd, char const *buffer, int nbytes)
 {
-  return writeNet(fd, buffer, nbytes, 0);
+  return writeNet(fd, buffer, nbytes, DEFAULTTIMEOUT);
 }
 
 int
 Tcpip::writeNet(int fd, char const *buffer, int nbytes, int timeout)
 {
+  DEBUGLOG_REPORT_FUNCTION;
   fd_set              fdset;
   int                 ret = 0;
   const char         *bufptr;
@@ -868,9 +941,9 @@ Tcpip::writeNet(int fd, char const *buffer, int nbytes, int timeout)
     if (timeout) {
       tval.tv_sec = timeout;
     } else {
-      tval.tv_sec = 5;
+      tval.tv_sec = DEFAULTTIMEOUT;
     }
-    tval.tv_usec = 0;
+    tval.tv_usec = 100;
     ret = select(fd+1, NULL, &fdset, NULL, &tval);
     
     // If interupted by a system call, try again
@@ -900,7 +973,6 @@ Tcpip::writeNet(int fd, char const *buffer, int nbytes, int timeout)
     if (ret < 0) {
       dbglogfile << "Couldn't write " << nbytes << " bytes to fd #"
                  << fd << endl;
-      
       return ret;
     }
     

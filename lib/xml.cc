@@ -45,12 +45,11 @@ XMLAttr::XMLAttr() : _name(0), _value(0)
   // DEBUGLOG_REPORT_FUNCTION;
 }
 
-std::string
+const xmlChar *
 XMLAttr::nameGet(void)
 {
   // DEBUGLOG_REPORT_FUNCTION;
-  string str(reinterpret_cast<const char *>(_name));
-  return str;
+  return _name;
 }
 
 void
@@ -60,12 +59,11 @@ XMLAttr::nameSet(const xmlChar *name)
   _name = name;
 }
 
-std::string
+const xmlChar *
 XMLAttr::valueGet(void)
 {
   // DEBUGLOG_REPORT_FUNCTION;
-  string str(reinterpret_cast<const char *>(_value));
-  return str;
+  return _value;
 }
 
 void
@@ -157,12 +155,11 @@ XMLNode::operator = (XMLNode *node)
   return this;
 }
 
-std::string
+const xmlChar *
 XMLNode::nameGet(void)
 {
   // DEBUGLOG_REPORT_FUNCTION;
-  string str(reinterpret_cast<const char *>(_name));
-  return str;
+  return _name;
 }
 
 void
@@ -172,16 +169,11 @@ XMLNode::nameSet(const xmlChar *name)
   _name = name;
 }
 
-std::string
+const xmlChar *
 XMLNode::valueGet(void)
 {
-  string str;
-  
   // DEBUGLOG_REPORT_FUNCTION;
-  if (_value != 0) {
-    str = reinterpret_cast<const char *>(_value);
-  }
-  return str;
+  return _value;
 }
 
 void
@@ -304,8 +296,8 @@ XML::extractNode(xmlNodePtr node, bool mem)
 #endif
     XMLAttr *attrib = new XMLAttr;
     memset(attrib, 0, sizeof (XMLAttr));
-    attrib->nameSet(attr->name);
-    attrib->valueSet(attr->children->content);
+    attrib->nameSet(xmlStrdup(attr->name));
+    attrib->valueSet(xmlStrdup(attr->children->content));
 #if 0
     dbglogfile << "\tPushing attribute " << (const char *)attr->name
                << " for element "
@@ -316,7 +308,7 @@ XML::extractNode(xmlNodePtr node, bool mem)
     attr = attr->next;
   }
 
-  element->nameSet(node->name);
+  element->nameSet(xmlStrdup(node->name));
   if (node->children) {
     //ptr = node->children->content;
     ptr = xmlNodeGetContent(node->children);
@@ -653,7 +645,7 @@ XML::hasChildren(void)
   return (_nodes.childrenSize() > 0)? true : false;
 }
 
-string
+const xmlChar *
 XML::nodeNameGet(void)
 {
   return _nodes.nameGet();

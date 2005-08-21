@@ -40,10 +40,14 @@
 #include "xml.h"
 #include "tcpip.h"
 
-class Msgs
-{
+class Msgs : public Tcpip {
  public:
 
+  typedef enum {
+    NONET,
+    DAEMON,
+    CLIENT
+  } net_mode_e;
 
   typedef enum {
     CHARGE_AMPS,
@@ -74,7 +78,12 @@ class Msgs
   Msgs(Tcpip *tcpip);
   ~Msgs();
 
-  retcode_t initDaemon(void);
+  retcode_t init(void);
+  retcode_t init(net_mode_e mode);
+  retcode_t init(std::string hostname);
+  retcode_t init(net_mode_e mode, std::string hostname);
+  retcode_t init(bool block);
+  retcode_t init(net_mode_e mode, bool block);
   
   void dump(XMLNode *datain);
   void process(XMLNode *datain);
@@ -111,30 +120,30 @@ class Msgs
   std::string configCreate(std::string tag, float value);
   std::string metersRequestCreate(std::string str);
   std::string metersRequestCreate(xml_meters_e type);
-  std::string metersResponseCreate(std::string, int val);
-  std::string metersResponseCreate(std::string, float val);
+  std::string metersResponseCreate(const xmlChar *tag, int val);
+  std::string metersResponseCreate(const xmlChar *tag, float val);
 
   std::string packet(void) { return _body.str(); }
   void print_msg(std::string msg);
 
-  void methodSet(std::string name, methodPtr_t func);
-  methodPtr_t methodGet(std::string name);
-  retcode_t methodProcess(std::string name, XMLNode *node);
+  void methodSet(const xmlChar *name, methodPtr_t func);
+  methodPtr_t methodGet(const xmlChar * name);
+  retcode_t methodProcess(const xmlChar * name, XMLNode *node);
   void methodsDump(void);
 
 #if 0
-protected:
   int fooby(int x)              // FIXME: test code
   {
     std::cerr << "Pointers to methods work! " << x << std::endl;
   }
   struct msg_data     _process_func;
 #endif
-private:
+protected:
   float               _version;
-  static Tcpip               *_tcpip;
-  static std::map<std::string, methodPtr_t> _methods;
+  static std::map<const xmlChar *, methodPtr_t> _methods;
   
+private:
+  static net_mode_e   _net_mode;
 #ifdef __STDC_HOSTED__
   std::ostringstream  _body;
 #else
@@ -147,7 +156,6 @@ private:
 };
 
 //typedef int (Msgs::*FPtr)(int);
-
 
 // end of __MSGS_H__
 #endif

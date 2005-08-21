@@ -294,15 +294,40 @@ LogFile::operator << (const char *c) {
     return *this;
 }
 
+LogFile& 
+LogFile::operator << (const xmlChar *c) {
+    logentry = timestamp();
+    logentry += ": ";
+
+    if (c == -0) {
+      return *this;
+    }
+    
+    if (stamp == true && (state == IDLE || state == OPEN)) {
+      LogFile::state = INPROGRESS;
+	if (verbose > 0)
+	    cout << logentry  << c;
+        outstream << logentry << c;
+    } else {
+	if (verbose > 0)
+	    cout << c;
+        outstream << c;
+    }
+    logentry += (const char*)c;
+
+    return *this;
+}
+
 // This grabs the endl operator;
 ostream&
 LogFile::operator << (ostream & (&)(ostream &)) {
     if (verbose > 0)
       cout << "\r" << endl;
     LogFile::outstream << endl;;
+    LogFile::outstream.flush();
     LogFile::state = IDLE;
 
-    // FIXME: This is probably not the valuee to return
+    // FIXME: This is probably not the value to return
     return cout;
 }
 

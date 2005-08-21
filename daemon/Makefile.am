@@ -34,7 +34,7 @@ else
   SNMP_DIR = 
 endif
 
-INCLUDES = -I$(top_srcdir)/lib $(MYSQL_CFLAGS) $(SNMP_INCLUDES)
+INCLUDES = -I$(top_srcdir)/lib $(MYSQL_CFLAGS) $(SNMP_INCLUDES) $(XML_CPPFLAGS)
 
 bin_PROGRAMS = pgd
 

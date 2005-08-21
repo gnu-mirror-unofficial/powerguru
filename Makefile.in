@@ -228,11 +228,6 @@ target_vendor = @target_vendor@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = dejagnu
-
-# CXX = @CXX_FOR_TARGET@
-# AR  = @AR_FOR_TARGET@
-# RANLIB = @RANLIB_FOR_TARGET@
-# LD = @LD_FOR_TARGET@
 STD_DIRS = lib daemon doc sim client # testsuite
 @SNMP_FALSE@SUBDIRS = $(STD_DIRS) #src
 @SNMP_TRUE@SUBDIRS = snmp $(STD_DIRS) #src

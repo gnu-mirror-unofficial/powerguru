@@ -37,9 +37,9 @@ class XMLAttr {
 public:
   XMLAttr();
   ~XMLAttr();
-  std::string nameGet(void);
+  const xmlChar *nameGet(void);
   void nameSet(const xmlChar *name);
-  std::string valueGet(void);
+  const xmlChar *valueGet(void);
   void valueSet(const xmlChar *val);
  private:
   const xmlChar *_name;
@@ -58,10 +58,10 @@ public:
   XMLNode *operator = (XMLNode &node);
   XMLNode *operator = (XMLNode *node);
 
-  std::string nameGet(void);
+  const xmlChar *nameGet(void);
   //  void nameSet(std::string name);
   void nameSet(const xmlChar *name);
-  std::string valueGet(void);
+  const xmlChar *valueGet(void);
   //  void valueSet(std::string val);
   void valueSet(const xmlChar *val);
   
@@ -98,7 +98,7 @@ class XML {
   bool hasChildren(void);
   XMLNode *extractNode(xmlNodePtr node, bool mem);
   XMLNode *processNode(xmlTextReaderPtr reader, XMLNode *node);
-  std::string nodeNameGet(void);
+  const xmlChar *nodeNameGet(void);
   int size(void);  
   XMLNode *operator [] (int x);
   XML *operator = (XMLNode *node);

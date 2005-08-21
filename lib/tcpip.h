@@ -29,6 +29,11 @@
 #include <arpa/inet.h>
 //#include <netdb.h>
 #include <string>
+#include <vector>
+#include <libxml/encoding.h>
+#include <libxml/xmlwriter.h>
+#include <libxml/debugXML.h>
+
 
 #include "log.h"
 #include "err.h"
@@ -62,8 +67,8 @@ class Tcpip : public Tcputil
   retcode_t createNetClient(std::string &hostname, short port, std::string &protocol);
 
   // If there is any data, process it
-  bool anydata(char **msgs);
-  bool anydata(int sockfd, char **msgs);
+  retcode_t anydata(std::vector<const xmlChar *> &msgs);
+  retcode_t anydata(int sockfd, std::vector<const xmlChar *> &msgs);
 
   // Read from the socket
   int readNet(char *buffer, int nbytes);
@@ -98,8 +103,8 @@ class Tcpip : public Tcputil
 
   Tcpip &operator = (Tcpip &tcp);  
 private:
-  int                      _sockfd;
-  int                      _sockIOfd;
+  static int               _sockfd;
+  static int               _sockIOfd;
   in_addr_t                _ipaddr;
   std::string              _hostname;
   struct sockaddr_in	   _client;

@@ -26,6 +26,10 @@
 
 #include <time.h>
 
+#include <libxml/xmlmemory.h>
+#include <libxml/parser.h>
+#include <libxml/xmlreader.h>
+
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -84,6 +88,7 @@ public:
   LogFile& operator << (bool x);
   LogFile& operator << (void *);
   LogFile& operator << (const char *);
+  LogFile& operator << (const xmlChar *);
   LogFile& operator << (std::string );
   std::ostream& operator << (std::ostream & (&)(std::ostream &));
   const char *GetEntry(void);

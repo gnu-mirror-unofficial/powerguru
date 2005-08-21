@@ -21,7 +21,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(configure.ac)
 dnl AC_CANONICAL_SYSTEM
 AC_CANONICAL_TARGET
-AM_INIT_AUTOMAKE(powerguru, 0.2)
+AM_INIT_AUTOMAKE(powerguru, 0.3)
 AM_MAINTAINER_MODE
 AM_CONFIG_HEADER(config.h)
 

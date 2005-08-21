@@ -1,9 +1,30 @@
+2005-08-20  Rob Savoye  <rob@bertha.welcomehome.org>
+
+	* client/cmd.cc (main): Remove tcpip code, it's now inherited by
+	the Msgs class.Use the new anydata() method to process socket
+	messages. On an socket error, exit if you are the client, and
+	restart the socket if you ar the daemon.
+	* configure.ac: Increment version to 0.3.
+	* lib/log.cc: Add operator for << (xmlChar *) to we can print
+	XML nodes directly.
+	* lib/log.h: Add operator for << (xmlChar *) to we can print
+	XML nodes directly.
+	* lib/msgs.cc: Inherit from Tcpip class. Have a daemon and
+	client mode. Initialize the table of pointers and the network
+	now.
+	* lib/msgs.h: Inherit from Tcpip class. Have a daemon and
+	client mode.
+	* lib/tcpip.cc (anydata): Use a vector instead of an array.
+	* lib/tcpip.h (anydata): Use a vector instead of an array.
+	* lib/xml.cc: Return an xmlChar instead of a std::string.
+	* lib/xml.h: Return an xmlChar instead of a std::string.
+
 2005-08-19  Rob Savoye  <rob@bertha.welcomehome.org>
 
 	* configure.ac:	Use out own libxml2 macro. Add support for cross
 	configuration and cross compilation to support Cygwin and Mingw.
 	* configure: Regenerated.
-	* */Makefile.am: Use newer LIBXML variable.
+	* */Makefile.am: Use newer LIBXML & XML_CPPFLAGS variables.
 	* */Makefile.in: Regenerated.
 	* client/cmd.cc: Add XML networking support.
 	* lib/tcpip.{cc,h}: Add methods to extract the tcp/ip data from

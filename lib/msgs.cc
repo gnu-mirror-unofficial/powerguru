@@ -43,8 +43,8 @@
 #include "tcpip.h"
 
 using namespace std;
-Tcpip *Msgs::_tcpip;
-std::map<std::string, Msgs::methodPtr_t> Msgs::_methods;
+Msgs::net_mode_e  Msgs::_net_mode;
+std::map<const xmlChar *, Msgs::methodPtr_t> Msgs::_methods;
 
 #define MY_ENCODING "ISO-8859-1"
 
@@ -60,7 +60,7 @@ Msgs::Msgs()
   _version = atof(VERSION);
 }
 
-Msgs::Msgs(std::string host, std::string ip)
+Msgs::Msgs(std::string host, std::string ip) // : _net_mode(NONET)
 {
   // DEBUGLOG_REPORT_FUNCTION;
   Tcputil tu;
@@ -75,7 +75,7 @@ Msgs::Msgs(std::string host, std::string ip)
   _version = atof(VERSION);
 }
 
-Msgs::Msgs(Tcpip *tcpip)
+Msgs::Msgs(Tcpip *tcpip)//  : _net_mode(NONET)
 {
   // DEBUGLOG_REPORT_FUNCTION;
   Tcputil tu;
@@ -86,51 +86,156 @@ Msgs::Msgs(Tcpip *tcpip)
   
   //  _remoteip = ip;
   //  _remotehost = host;
-  _tcpip = tcpip;
   
   _version = atof(VERSION);
 }
 
 retcode_t
-Msgs::initDaemon(void)
+Msgs::init(net_mode_e mode)
 {
+  DEBUGLOG_REPORT_FUNCTION;
+  string hostname = "localhost";
+  bool block = true;
+  
+  if (mode == CLIENT) {
+    _net_mode = CLIENT;
+    if (createNetClient(hostname)) {
+      dbglogfile << "Connected to server at " << hostname.c_str() << endl;
+      init();                     // initialize the table of pointers
+      return SUCCESS;
+    } else {
+      dbglogfile << "ERROR: Couldn't create connection to server" << hostname.c_str()  << endl;
+    }
+  } else if (mode == DAEMON) {
+    _net_mode = DAEMON;
+    init(DAEMON, block);
+    dbglogfile << "WARNING: ignoring hostname, starting as daemon" << endl;
+  } else {
+    dbglogfile << "ERROR: no mode specified! " << endl;
+    _net_mode = NONET;
+  }
+  return ERROR;  
+}
+
+// If a hostname is specifed, we force client mode.
+retcode_t
+Msgs::init(net_mode_e mode, std::string hostname)
+{
+  DEBUGLOG_REPORT_FUNCTION;
+  return init(hostname);
+}
+
+// By default, if just a hostname is supplied, we assume it's to establish
+// a network connection to the specified host.
+retcode_t
+Msgs::init(std::string hostname)
+{
+  DEBUGLOG_REPORT_FUNCTION;
+  
+  if (createNetClient(hostname)) {
+    dbglogfile << "Connected to server at " << hostname.c_str() << endl;
+    init();                     // initialize the table of pointers
+    _net_mode = CLIENT;
+    writeNet(heloCreate(_version));
+    return SUCCESS;
+  } else {
+    dbglogfile << "ERROR: Couldn't create connection to server" << hostname  << endl;
+  }
+  return ERROR;
+}
+
+retcode_t
+Msgs::init(net_mode_e mode, bool block)
+{
+  DEBUGLOG_REPORT_FUNCTION;
+  string hostname = "localhost";
+  if (mode == CLIENT) {
+    _net_mode = CLIENT;
+    if (createNetClient(hostname)) {
+      dbglogfile << "Connected to server at " << hostname.c_str() << endl;
+      init();                     // initialize the table of pointers
+      return SUCCESS;
+    } else {
+      dbglogfile << "ERROR: Couldn't create connection to server" << hostname.c_str()  << endl;
+    }
+  } else if (mode == DAEMON) {
+    _net_mode = DAEMON;
+    init(true);
+    dbglogfile << "WARNING: ignoring hostname, starting as daemon" << endl;
+  } else {
+    dbglogfile << "ERROR: no mode specified! " << endl;
+    _net_mode = NONET;
+  }
+  return ERROR;
+}
+               
+retcode_t
+Msgs::init(bool block)
+{
+  DEBUGLOG_REPORT_FUNCTION;
+  _net_mode = DAEMON;
+  
+  if (createNetServer()) {
+    dbglogfile << "New server started for remote client." << endl;
+    init();                     // initialize the table of pointers
+  } else {
+    dbglogfile << "ERROR: Couldn't create a new server" << endl;
+  }      
+  
+  if (newNetConnection(block)) {
+    dbglogfile << "New connection started for remote client." << endl;
+    _net_mode = DAEMON;
+    writeNet(heloCreate(_version));
+    return SUCCESS;
+  } else {
+    dbglogfile << "ERROR: Couldn't create a new connection!" << endl;
+  }
+  return ERROR;
+}
+
+  
+retcode_t
+Msgs::init(void)
+{
+  DEBUGLOG_REPORT_FUNCTION;
 
   // Top level node of the message
-  _methods["powerguru"] = &Msgs::powerguruProcess;
-
-  // initialization message
-  _methods["helo"] = &Msgs::heloProcess;
-  _methods["client"] = &Msgs::clientProcess;
-  _methods["server"] = &Msgs::serverProcess;
-
+  _methods[(const xmlChar *)"powerguru"] =      &Msgs::powerguruProcess;
+  
+    // initialization message
+  _methods[(const xmlChar *)"helo"] =           &Msgs::heloProcess;
+  _methods[(const xmlChar *)"client"] =         &Msgs::clientProcess;
+  _methods[(const xmlChar *)"server"] =         &Msgs::serverProcess;
+  
   // Meter readings
-  _methods["meters"] = &Msgs::metersProcess;
-  _methods["charge-mps"] = &Msgs::chargeAmpsProcess;
-  _methods["load-amps"] = &Msgs::loadAmpsProcess;
-  _methods["pv-amps"] = &Msgs::pvAmpsProcess;
-  _methods["pv-volts"] = &Msgs::pvVoltsProcess;
-  _methods["daily-kwh"] = &Msgs::dailyKwhProcess;
-  _methods["hertz"] = &Msgs::hertzProcess;
-  _methods["battery-volts"] = &Msgs::batteryVoltsProcess;
-  _methods["buy-amps"] = &Msgs::buyAmpsProcess;
-  _methods["sell-amps"] = &Msgs::sellAmpsProcess;
-  _methods["ac-volts-out"] = &Msgs::acVoltsOutProcess;
-  _methods["ac1-volts-in"] = &Msgs::ac1InProcess;
-  _methods["ac2-volts-in"] = &Msgs::ac2InProcess;
-
+  _methods[(const xmlChar *)"meters"] =         &Msgs::metersProcess;
+  _methods[(const xmlChar *)"charge-mps"] =     &Msgs::chargeAmpsProcess;
+  _methods[(const xmlChar *)"load-amps"] =      &Msgs::loadAmpsProcess;
+  _methods[(const xmlChar *)"pv-amps"] =        &Msgs::pvAmpsProcess;
+  _methods[(const xmlChar *)"pv-volts"] =       &Msgs::pvVoltsProcess;
+  _methods[(const xmlChar *)"daily-kwh"] =      &Msgs::dailyKwhProcess;
+  _methods[(const xmlChar *)"hertz"] =          &Msgs::hertzProcess;
+  _methods[(const xmlChar *)"battery-volts"] =  &Msgs::batteryVoltsProcess;
+  _methods[(const xmlChar *)"buy-amps"] =       &Msgs::buyAmpsProcess;
+  _methods[(const xmlChar *)"sell-amps"] =      &Msgs::sellAmpsProcess;
+  _methods[(const xmlChar *)"ac-volts-out"] =   &Msgs::acVoltsOutProcess;
+  _methods[(const xmlChar *)"ac1-volts-in"] =   &Msgs::ac1InProcess;
+  _methods[(const xmlChar *)"ac2-volts-in"] =   &Msgs::ac2InProcess;
+  
   // Status messages on the system
-  _methods["status"] = &Msgs::statusProcess;
-
+  _methods[(const xmlChar *)"status"] = &Msgs::statusProcess;
+  
   // Configuration settings
-  _methods["config"] = &Msgs::configProcess;
-
+  _methods[(const xmlChar *)"config"] = &Msgs::configProcess;
+  
   //  _methods[""] = &Msgs::heloProcess;
+  return SUCCESS;
 }
 
 
 // Add a function for handling an XML tag to the list.
 void
-Msgs::methodSet(string name, methodPtr_t func)
+Msgs::methodSet(const xmlChar * name, methodPtr_t func)
 {
   // DEBUGLOG_REPORT_FUNCTION;
   _methods[name] = func;
@@ -138,14 +243,14 @@ Msgs::methodSet(string name, methodPtr_t func)
 
 // Get the function for an XML tag from the list.
 Msgs::methodPtr_t
-Msgs::methodGet(string name)
+Msgs::methodGet(const xmlChar * name)
 {
   //DEBUGLOG_REPORT_FUNCTION;
 #if 1
-  string                str;
+  const xmlChar         *str;
   Msgs::methodPtr_t     ptr;
 
-  std::map<std::string, Msgs::methodPtr_t>::const_iterator it;
+  std::map<const xmlChar *, Msgs::methodPtr_t>::const_iterator it;
   for (it = _methods.begin(); it != _methods.end(); it++) {
     //entry = it->second;
     str = it->first;
@@ -158,19 +263,19 @@ Msgs::methodGet(string name)
     }
 //     dbglogfile << "Looking for method for XML Tag \"" << name.c_str()
 //                << "\" has " << _body.str().c_str() << endl;
-    if (str == name) {
+    if (xmlStrcmp(str, name) == 0) {
       return ptr;
     }
   }
 #else
-  dbglogfile << "\"" << name.c_str() << "\" method we want" << endl;
+  dbglogfile << "\"" << name << "\" method we want" << endl;
   return _methods[name];
 #endif
 }
 
 // Call the function to process an XML node
 retcode_t
-Msgs::methodProcess(string name, XMLNode *node)
+Msgs::methodProcess(const xmlChar *name, XMLNode *node)
 {
   // DEBUGLOG_REPORT_FUNCTION;
   //(this->*_methods.find(name)(node); 
@@ -182,12 +287,12 @@ void
 Msgs::methodsDump(void)
 {
   DEBUGLOG_REPORT_FUNCTION;
-  string                name;
+  const xmlChar         *name;
   Msgs::methodPtr_t     ptr;
   
   dbglogfile << "We have " << _methods.size() << " in function table" << endl;
   
-  std::map<std::string, Msgs::methodPtr_t>::const_iterator it;
+  std::map<const xmlChar *, Msgs::methodPtr_t>::const_iterator it;
   for (it = _methods.begin(); it != _methods.end(); it++) {
     name = it->first;
     ptr  = it->second;
@@ -197,7 +302,7 @@ Msgs::methodsDump(void)
     } else {
       _body << "no pointer to method";
     }
-    dbglogfile << "XML Tag \"" << name.c_str()
+    dbglogfile << "XML Tag \"" << name
                << "\" has " << _body.str().c_str() << endl;
   }
 }
@@ -213,7 +318,7 @@ Msgs::process(XMLNode *xml)
 {
   DEBUGLOG_REPORT_FUNCTION;
   methodPtr_t   fptr;
-  string        str;
+  const xmlChar *str;
   retcode_t     ret;
   int           i;
 
@@ -222,17 +327,24 @@ Msgs::process(XMLNode *xml)
   //methodsDump();
   
   if (fptr != 0) {
-    dbglogfile << "XML tag \"" << str.c_str() << "\" has method pointer" << endl;
+    dbglogfile << "XML tag \"" << str << "\" has method pointer" << endl;
     ret = (this->*fptr)(xml);
   } else {
-    dbglogfile << "WARNING: XML tag \"" << str.c_str() << "\" doesn't have a method pointer" << endl;
+    dbglogfile << "WARNING: XML tag \"" << str << "\" doesn't have a method pointer" << endl;
   }
 
+  if (ret < 0) {
+    dbglogfile << "ERROR: Got an error from executing function pointer!" << endl;
+  } else {    
+    dbglogfile << "executed function pointer successfully!" << endl;
+  }
+  
   // Process the children too
   for (i=0; i<xml->childrenSize(); i++) {
     process(xml->childGet(i));
   }
   
+  // delete(xml);
 
 #if 0
   //  struct Msgs::msg_data md;
@@ -254,39 +366,39 @@ void
 Msgs::dump(XMLNode *xml)
 {
   // DEBUGLOG_REPORT_FUNCTION;
-  int  child, length, i;
+  int           child,  i;
   XMLNode       *childnode;
 
-  dbglogfile << "processing node " << xml->nameGet().c_str() << endl;
+  dbglogfile << "processing node " << xml->nameGet() << endl;
 
   // Process the node's value, if it has one.
-  if (xml->valueGet().size() == 0) {
-    dbglogfile << "No content for node " << xml->nameGet().c_str() << endl;
+  if (xml->valueGet() == 0) {
+    dbglogfile << "No content for node " << xml->nameGet() << endl;
   } else {
-    dbglogfile << "Content for node " << xml->nameGet().c_str()
-               << " is " << xml->valueGet().c_str() << endl;
+    dbglogfile << "Content for node " << xml->nameGet()
+               << " is " << xml->valueGet() << endl;
   }
   
   // Process the attributes, if any
   if (xml->attributesSize() == 0) {
-    dbglogfile << "\tNo attributes for node " << xml->nameGet().c_str() << endl;
+    dbglogfile << "\tNo attributes for node " << xml->nameGet() << endl;
   } else {
     for (i=0; i<xml->attributesSize(); i++) {
-      dbglogfile << "\tAttribute is " << xml->attribGet(i)->nameGet().c_str()
-                 << " who's value is " << xml->attribGet(i)->valueGet().c_str() << endl;
+      dbglogfile << "\tAttribute is " << xml->attribGet(i)->nameGet()
+                 << " who's value is " << xml->attribGet(i)->valueGet() << endl;
     }
   }
 
   // Process the children, if there are any
   if (xml->childrenSize()) {
     dbglogfile << "\tProcessing " << xml->childrenSize() << " children nodes for "
-               << xml->nameGet().c_str() << endl;
+               << xml->nameGet() << endl;
     for (child=0; child<xml->childrenSize(); child++) {
       childnode = xml->childGet(child);
       dump(childnode); // setup child node
     }
   } else {
-    dbglogfile << "Node " << xml->nameGet().c_str() << " has no children" << endl;
+    dbglogfile << "Node " << xml->nameGet() << " has no children" << endl;
   }
 }
 
@@ -294,7 +406,7 @@ Msgs::dump(XMLNode *xml)
 string
 Msgs::statusCreate(meter_data_t *md)
 {
-  // DEBUGLOG_REPORT_FUNCTION;
+  DEBUGLOG_REPORT_FUNCTION;
 #if 1
   _body.str("");                // erase the current string
   _body << "<powerguru version=\"";
@@ -380,7 +492,7 @@ Msgs::statusCreate(meter_data_t *md)
 string
 Msgs::heloCreate(float version)
 {
-  // DEBUGLOG_REPORT_FUNCTION;
+  DEBUGLOG_REPORT_FUNCTION;
   _body.str("");                // erase the current string
   _body << "<powerguru version=\"";
   _body << _version << "\">";
@@ -458,14 +570,14 @@ Msgs::metersRequestCreate(xml_meters_e val) {
 }
 
 std::string
-Msgs::metersResponseCreate(string type, int val) {
+Msgs::metersResponseCreate(const xmlChar * type, int val) {
   DEBUGLOG_REPORT_FUNCTION;
   _body.str("");                // erase the current string
   _body << "<powerguru version=\"";
   _body << _version << "\">";
-  _body << "<meters><" << type << ">";
+  _body << "<meters><" << (const char *)type << ">";
   _body << val;
-  _body << "</" << type << ">" << "</meters>"; 
+  _body << "</" << (const char *)type << ">" << "</meters>"; 
   _body << "</powerguru>";
   _body << ends;
 
@@ -473,14 +585,14 @@ Msgs::metersResponseCreate(string type, int val) {
 }
 
 std::string
-Msgs::metersResponseCreate(string type, float val) {
+Msgs::metersResponseCreate(const xmlChar *type, float val) {
   DEBUGLOG_REPORT_FUNCTION;
   _body.str("");                // erase the current string
   _body << "<powerguru version=\"";
   _body << _version << "\">";
-  _body << "<meters><" << type << ">";
+  _body << "<meters><" << (const char *)type << ">";
   _body << val;
-  _body << "</" << type << ">" << "</meters>"; 
+  _body << "</" << (const char *)type << ">" << "</meters>"; 
   _body << "</powerguru>";
   _body << ends;
 
@@ -488,9 +600,9 @@ Msgs::metersResponseCreate(string type, float val) {
 }
 
 string
-Msgs::configCreate(std::string tag, int value)
+Msgs::configCreate(string tag, int value)
 {
-  // DEBUGLOG_REPORT_FUNCTION;
+  DEBUGLOG_REPORT_FUNCTION;
   _body.str("");                // erase the current string
   _body << "<powerguru>";
   _body << "<" << tag << ">" << value << "</" << tag << ">";
@@ -591,13 +703,24 @@ Msgs::metersProcess(XMLNode *node)
 {
   DEBUGLOG_REPORT_FUNCTION;
 
-  dbglogfile << "Node is \"" << node->nameGet().c_str()
-             << "\" with a value of " << node->valueGet().c_str() << endl;
+  dbglogfile << "Node is \"" << node->nameGet()
+             << "\" with a value of " << node->valueGet()
+             << " and mode is: " << (int)_net_mode << endl;
 
-  string str = metersResponseCreate(node->valueGet(), 2);
+  if(_net_mode == DAEMON) {
+    string str = metersResponseCreate(node->valueGet(), 99999); // FIXME: this should return a real value!
+    if (writeNet(str)) {
+      return ERROR;
+    } else {
+      return SUCCESS;
+    }
+  }
 
-  _tcpip->writeNet(str);
-  return SUCCESS;
+  if (_net_mode == CLIENT) {
+    // Process the result
+  }
+
+  return ERROR;
 }
 
 retcode_t
@@ -606,21 +729,21 @@ Msgs::serverProcess(XMLNode *node)
   //  DEBUGLOG_REPORT_FUNCTION;
   XMLAttr *attr;
   
-  dbglogfile << "Node is \"" << node->nameGet().c_str()
-             << "\" with a value of " << node->valueGet().c_str() << endl;
+  dbglogfile << "Node is \"" << node->nameGet()
+             << "\" with a value of " << node->valueGet() << endl;
       
   if (node->hasAttributes()) {
     if ((attr = node->attribGet(0))) {
-      dbglogfile << "\tAttribute is \"" << attr->nameGet().c_str()
-                 << "\" with a value of " << attr->valueGet().c_str() << endl;
-      if (attr->valueGet() != _thisip) {
+      dbglogfile << "\tAttribute is \"" << attr->nameGet()
+                 << "\" with a value of " << attr->valueGet() << endl;
+      if (xmlStrcmp(attr->valueGet(), (const xmlChar *)_thisip.c_str()) != 0) {
         dbglogfile << "WARNING: IP's don't match!!!!" << endl;
         return ERROR;
       }
     }
   }
 
-  if ((node->valueGet() != _thishost)) {
+  if (xmlStrcmp(node->valueGet(), (const xmlChar *)_thishost.c_str()) != 0) {
     dbglogfile << "WARNING: Host's don't match!!!!" << endl;
     return ERROR;
   }
@@ -632,18 +755,18 @@ Msgs::serverProcess(XMLNode *node)
 retcode_t
 Msgs::clientProcess(XMLNode *node)
 {
-  //  DEBUGLOG_REPORT_FUNCTION;
+  // DEBUGLOG_REPORT_FUNCTION;
   XMLAttr *attr;
 
-  dbglogfile << "Node is \"" << node->nameGet().c_str()
-             << "\" with a value of " << node->valueGet().c_str() << endl;
+  dbglogfile << "Node is \"" << node->nameGet()
+             << "\" with a value of " << node->valueGet() << endl;
       
   if (_remoteip.size() > 0) {
     if (node->hasAttributes()) {
       if ((attr = node->attribGet(0))) {
-        dbglogfile << "\tAttribute is \"" << attr->nameGet().c_str()
-                   << "\" with a value of " << attr->valueGet().c_str() << endl;
-        if (attr->valueGet() != _remoteip) {
+        dbglogfile << "\tAttribute is \"" << attr->nameGet()
+                   << "\" with a value of " << attr->valueGet() << endl;
+        if (xmlStrcmp(attr->valueGet(), (const xmlChar *)_remoteip.c_str()) != 0) {
           dbglogfile << "WARNING: IP's don't match!!!!" << endl;
           return ERROR;
         }
@@ -652,7 +775,7 @@ Msgs::clientProcess(XMLNode *node)
   }
 
   if (_remotehost.size() != 0) {
-    if ((node->valueGet() != _remotehost)) {
+    if (xmlStrcmp(node->valueGet(), (const xmlChar *)_remotehost.c_str()) != 0) {
       dbglogfile << "WARNING: Host's don't match!!!!" << endl;
       return ERROR;
     }
@@ -665,20 +788,20 @@ Msgs::clientProcess(XMLNode *node)
 retcode_t
 Msgs::powerguruProcess(XMLNode *node)
 {
-  //  DEBUGLOG_REPORT_FUNCTION;
+  DEBUGLOG_REPORT_FUNCTION;
   XMLAttr *attr;
 
   _body.str("");
   _body << _version;
   
-  dbglogfile << "Node is \"" << node->nameGet().c_str()
-             << "\" with a value of " << node->valueGet().c_str() << endl;
+//   dbglogfile << "Node is \"" << node->nameGet()
+//              << "\" with a value of " << node->valueGet() << endl;
       
   if (node->hasAttributes()) {
     if ((attr = node->attribGet(0))) {
 //       dbglogfile << "\tAttribute is \"" << attr->nameGet().c_str()
 //                  << "\" with a value of " << attr->valueGet().c_str() << endl;
-      if (_body.str() != attr->valueGet()) {
+      if (xmlStrcmp((const xmlChar *)_body.str().c_str(), attr->valueGet()) != 0) {
         dbglogfile << "Versions in header don't match!" << endl;
       } else {
         dbglogfile << "Versions in header match" << endl;        
@@ -693,10 +816,10 @@ retcode_t
 Msgs::chargeAmpsProcess(XMLNode *node) {
   DEBUGLOG_REPORT_FUNCTION;
   
-  dbglogfile << "Node is \"" << node->nameGet().c_str()
-             << "\" with a value of " << node->valueGet().c_str() << endl;
+  dbglogfile << "Node is \"" << node->nameGet()
+             << "\" with a value of " << node->valueGet() << endl;
       
-  if (node->valueGet().size() <= 0) {
+  if (node->valueGet() <= 0) {
     dbglogfile << "ERROR: no value in messages!" << endl;
     return ERROR;
   }
@@ -708,10 +831,10 @@ retcode_t
 Msgs::loadAmpsProcess(XMLNode *node) {
   DEBUGLOG_REPORT_FUNCTION;
   
-  dbglogfile << "Node is \"" << node->nameGet().c_str()
-             << "\" with a value of " << node->valueGet().c_str() << endl;
+  dbglogfile << "Node is \"" << node->nameGet()
+             << "\" with a value of " << node->valueGet() << endl;
       
-  if (node->valueGet().size() <= 0) {
+  if (node->valueGet() <= 0) {
     dbglogfile << "ERROR: no value in messages!" << endl;
     return ERROR;
   }
@@ -723,10 +846,10 @@ retcode_t
 Msgs::pvAmpsProcess(XMLNode *node) {
   DEBUGLOG_REPORT_FUNCTION;
   
-  dbglogfile << "Node is \"" << node->nameGet().c_str()
-             << "\" with a value of " << node->valueGet().c_str() << endl;
+  dbglogfile << "Node is \"" << node->nameGet()
+             << "\" with a value of " << node->valueGet() << endl;
       
-  if (node->valueGet().size() <= 0) {
+  if (node->valueGet() <= 0) {
     dbglogfile << "ERROR: no value in messages!" << endl;
     return ERROR;
   }
@@ -738,10 +861,10 @@ retcode_t
 Msgs::pvVoltsProcess(XMLNode *node) {
   DEBUGLOG_REPORT_FUNCTION;
   
-  dbglogfile << "Node is \"" << node->nameGet().c_str()
-             << "\" with a value of " << node->valueGet().c_str() << endl;
+  dbglogfile << "Node is \"" << node->nameGet()
+             << "\" with a value of " << node->valueGet() << endl;
       
-  if (node->valueGet().size() <= 0) {
+  if (node->valueGet() <= 0) {
     dbglogfile << "ERROR: no value in messages!" << endl;
     return ERROR;
   }
@@ -753,10 +876,10 @@ retcode_t
 Msgs::dailyKwhProcess(XMLNode *node) {
   DEBUGLOG_REPORT_FUNCTION;
   
-  dbglogfile << "Node is \"" << node->nameGet().c_str()
-             << "\" with a value of " << node->valueGet().c_str() << endl;
+  dbglogfile << "Node is \"" << node->nameGet()
+             << "\" with a value of " << node->valueGet() << endl;
       
-  if (node->valueGet().size() <= 0) {
+  if (node->valueGet() <= 0) {
     dbglogfile << "ERROR: no value in messages!" << endl;
     return ERROR;
   }
@@ -768,10 +891,10 @@ retcode_t
 Msgs::hertzProcess(XMLNode *node) {
   DEBUGLOG_REPORT_FUNCTION;
   
-  dbglogfile << "Node is \"" << node->nameGet().c_str()
-             << "\" with a value of " << node->valueGet().c_str() << endl;
+  dbglogfile << "Node is \"" << node->nameGet()
+             << "\" with a value of " << node->valueGet() << endl;
       
-  if (node->valueGet().size() <= 0) {
+  if (node->valueGet() <= 0) {
     dbglogfile << "ERROR: no value in messages!" << endl;
     return ERROR;
   }
@@ -783,25 +906,37 @@ retcode_t
 Msgs::batteryVoltsProcess(XMLNode *node) {
   DEBUGLOG_REPORT_FUNCTION;
   
-  dbglogfile << "Node is \"" << node->nameGet().c_str()
-             << "\" with a value of " << node->valueGet().c_str() << endl;
+//   dbglogfile << "Node is \"" << node->nameGet()
+//              << "\" with a value of " << node->valueGet() << endl;
       
-  if (node->valueGet().size() <= 0) {
+  if (node->valueGet() <= 0) {
     dbglogfile << "ERROR: no value in messages!" << endl;
     return ERROR;
   }
-      
-  return SUCCESS;
+
+  if (_net_mode == CLIENT) {
+    dbglogfile << "Battery voltage is: " << node->valueGet() << endl;
+    
+    return SUCCESS;
+  }
+  
+  if (_net_mode == DAEMON) {
+    string str = metersResponseCreate(node->valueGet(), 999999); // FIXME: this should return a real value!
+    
+    return SUCCESS;
+  }
+  
+  return ERROR;
 }
 
 retcode_t
 Msgs::buyAmpsProcess(XMLNode *node) {
   DEBUGLOG_REPORT_FUNCTION;
   
-  dbglogfile << "Node is \"" << node->nameGet().c_str()
-             << "\" with a value of " << node->valueGet().c_str() << endl;
+  dbglogfile << "Node is \"" << node->nameGet()
+             << "\" with a value of " << node->valueGet() << endl;
       
-  if (node->valueGet().size() <= 0) {
+  if (node->valueGet() <= 0) {
     dbglogfile << "ERROR: no value in messages!" << endl;
     return ERROR;
   }
@@ -813,10 +948,10 @@ retcode_t
 Msgs::sellAmpsProcess(XMLNode *node) {
   DEBUGLOG_REPORT_FUNCTION;
   
-  dbglogfile << "Node is \"" << node->nameGet().c_str()
-             << "\" with a value of " << node->valueGet().c_str() << endl;
+  dbglogfile << "Node is \"" << node->nameGet()
+             << "\" with a value of " << node->valueGet() << endl;
       
-  if (node->valueGet().size() <= 0) {
+  if (node->valueGet() <= 0) {
     dbglogfile << "ERROR: no value in messages!" << endl;
     return ERROR;
   }
@@ -828,10 +963,10 @@ retcode_t
 Msgs::acVoltsOutProcess(XMLNode *node) {
   DEBUGLOG_REPORT_FUNCTION;
   
-  dbglogfile << "Node is \"" << node->nameGet().c_str()
-             << "\" with a value of " << node->valueGet().c_str() << endl;
+  dbglogfile << "Node is \"" << node->nameGet()
+             << "\" with a value of " << node->valueGet() << endl;
       
-  if (node->valueGet().size() <= 0) {
+  if (node->valueGet() <= 0) {
     dbglogfile << "ERROR: no value in messages!" << endl;
     return ERROR;
   }
@@ -843,10 +978,10 @@ retcode_t
 Msgs::ac1InProcess(XMLNode *node) {
   DEBUGLOG_REPORT_FUNCTION;
   
-  dbglogfile << "Node is \"" << node->nameGet().c_str()
-             << "\" with a value of " << node->valueGet().c_str() << endl;
+  dbglogfile << "Node is \"" << node->nameGet()
+             << "\" with a value of " << node->valueGet() << endl;
       
-  if (node->valueGet().size() <= 0) {
+  if (node->valueGet() <= 0) {
     dbglogfile << "ERROR: no value in messages!" << endl;
     return ERROR;
   }
@@ -858,10 +993,10 @@ retcode_t
 Msgs::ac2InProcess(XMLNode *node) {
   DEBUGLOG_REPORT_FUNCTION;
   
-  dbglogfile << "Node is \"" << node->nameGet().c_str()
-             << "\" with a value of " << node->valueGet().c_str() << endl;
+  dbglogfile << "Node is \"" << node->nameGet()
+             << "\" with a value of " << node->valueGet() << endl;
       
-  if (node->valueGet().size() <= 0) {
+  if (node->valueGet() <= 0) {
     dbglogfile << "ERROR: no value in messages!" << endl;
     return ERROR;
   }

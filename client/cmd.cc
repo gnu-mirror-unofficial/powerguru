@@ -46,8 +46,8 @@
 using namespace std;
 extern LogFile dbglogfile;
 static void usage (const char *);
-void fooby();
 
+const int INBUFSIZE = 1024;
 int
 main(int argc, char *argv[])
 {
@@ -59,6 +59,7 @@ main(int argc, char *argv[])
     string      user;
     string      passwd;
     char        *ptr;
+    retcode_t   ret;
     
     client = true;
     daemon = false;
@@ -110,72 +111,60 @@ main(int argc, char *argv[])
         dbglogfile << "Will use \"" << filespec << "\" for test " << endl;
     }
 
-    Tcpip tcpip;
+    //    Tcpip tcpip;
     Console con;
     int ch;
 
-    tcpip.toggleDebug(true);
+    //    tcpip.toggleDebug(true);
 
     // Open a console for user input
     con.Open();
 
     char *buffer;
       
-    buffer = (char *)new char[300];
-    memset(buffer, 0, 300);
-      
-    // If we are in client mode, connect to the server
-    if (client) {
-      if (tcpip.createNetClient(hostname)) {
-        dbglogfile << "Connected to server at " << hostname.c_str() << endl;
-      } else {
-        dbglogfile << "ERROR: Couldn't create connection to server" << hostname  << endl;
-      }
-    }
-    
-    // If we are in daemon mode, wait for the remote server to connect to us
-    // as a client. This is for when the server is behind a firewall.
-    if (daemon) {
-      if (tcpip.createNetServer()) {
-        dbglogfile << "New server started for remote client." << endl;
-      } else {
-        dbglogfile << "ERROR: Couldn't create a new server" << endl;
-      }      
-
-      if (tcpip.newNetConnection(true)) {
-        dbglogfile << "New connection started for remote client." << endl;
-      } else {
-        dbglogfile << "ERROR: Couldn't create a new connection!" << endl;
-        exit (1);
-      }
-    }
+    buffer = (char *)new char[INBUFSIZE];
+    memset(buffer, 0, INBUFSIZE);
 
 #if 0
     cerr << "\rWelcome " << tcpip.remoteName()
          << " at IP address: " << tcpip.remoteIP() << endl;
     cerr << msg.status((meter_data_t *)0) << endl;
-#endif
-    
-    //    Msgs msg(tcpip.remoteName(), tcpip.remoteIP());
-    Msgs msg(&tcpip);
+#endif    
 
-    msg.initDaemon();
+    Msgs msg;
+    msg.toggleDebug(true);
+
+    // Make a client connection
+    if (client == true) {
+      msg.init(hostname);
+    }
+
+    // Start as a daemon
+    if (daemon == true) {
+      msg.init(true);
+    }
     //msg.methodsDump();          // FIXME: debugging crap
     
     //msg.print_msg(msg.status((meter_data_t *)0));
-    
-    tcpip.writeNet(msg.heloCreate(0.3));
+
     if (client) {
-      //      sleep(1);
-      tcpip.writeNet(msg.metersRequestCreate(Msgs::BATTERY_VOLTS));
-      sleep(1);
-      tcpip.writeNet(msg.metersRequestCreate(Msgs::AC1_VOLTS_IN));
-      //      tcpip.writeNet(msg.metersCreate(Msgs::CHARGE_AMPS));
-      //      tcpip.writeNet(msg.metersCreate(Msgs::AC_LOAD_AMPS));
-      //      tcpip.writeNet(msg.metersCreate(Msgs::PV_AMPS_IN));
-      //      tcpip.writeNet(msg.metersCreate(Msgs::SELL_AMPS));
+      msg.writeNet(msg.metersRequestCreate(Msgs::BATTERY_VOLTS));
     }
     
+#if 1
+    if (client) {
+      //sleep(1);
+      msg.writeNet(msg.metersRequestCreate(Msgs::AC1_VOLTS_IN));
+      //sleep(1);
+      msg.writeNet(msg.metersRequestCreate(Msgs::CHARGE_AMPS));
+      //sleep(1);
+      msg.writeNet(msg.metersRequestCreate(Msgs::AC_LOAD_AMPS));
+      //sleep(1);
+      msg.writeNet(msg.metersRequestCreate(Msgs::PV_AMPS_IN));
+      //sleep(1);
+      msg.writeNet(msg.metersRequestCreate(Msgs::SELL_AMPS));
+    }
+#endif
     while ((ch = con.Getc()) != 'q') {
       if (ch > 0){                // If we have something, process it
         //con.Putc (ch);          // echo inputted character to screen
@@ -185,7 +174,8 @@ main(int argc, char *argv[])
           // flow control.
         case 'Q':
         case 'q':
-          tcpip.writeNet("quit");
+          con.Puts("Qutting PowerGuru due to user input!\n");
+          msg.writeNet("quit");
           exit(0);
           break;
         case '?':
@@ -200,10 +190,43 @@ main(int argc, char *argv[])
       }
 
       XML xml;
-      
-      memset(buffer, 0, 300);
+      unsigned int i;
+      memset(buffer, 0, INBUFSIZE);
+#if 1
+      vector<const xmlChar *> messages;
+      //const xmlChar *messages[200];
+      ret = msg.anydata(messages);
+
+      if (ret == ERROR) {
+        dbglogfile << "ERROR: Got error from socket " << endl;
+        // Start as a daemon
+        if (daemon == true) {
+          msg.closeNet();
+          // wait for the next connection
+          if (msg.newNetConnection(true)) {
+            dbglogfile << "New connection started for remote client." << endl;
+          }
+        } else {
+          if (errno != EAGAIN) {
+            dbglogfile << "ERROR: " << errno << ":\t"<< strerror(errno) << endl;
+            msg.closeNet();
+            exit (-1);
+          }
+        }
+      }
+      for (i=0; i < messages.size(); i++) {
+        dbglogfile << "Got message " << messages[i] << endl;
+        string str = (const char *)messages[i];
+        //delete messages[i];
+        if (xml.parseXML(str) == ERROR) {
+          continue;
+        }
+      }
+      messages.clear();
+
+#else
       ptr = buffer;
-      int bytes = tcpip.readNet(buffer, 300, 0);      
+      int bytes = msg.readNet(buffer, INBUFSIZE, 0);      
       if (bytes > 0) {
         while (ptr != NULL) {
           if (ptr != buffer) {
@@ -222,6 +245,7 @@ main(int argc, char *argv[])
           ptr = strchr(ptr, '\0');
         }
       }
+#endif
     }
     //con.Close();
 }
