@@ -96,6 +96,18 @@ main(int argc, char *argv[]) {
       //usage(argv[0]);
     }
 
+    // scan for the two main standard GNU options
+    for (c=0; c<argc; c++) {
+      if (strcmp("--help", argv[c]) == 0) {
+        usage(argv[0]);
+        exit(0);
+      }
+      if (strcmp("--version", argv[c]) == 0) {
+        cerr << "PowerGuru version: " << VERSION << endl;
+        exit(0);
+      }
+    }
+
     // Set the option flags to default values. We do it this way to
     // shut up GCC complaining they're not used.
     console = false;
@@ -133,7 +145,7 @@ main(int argc, char *argv[]) {
     if (config.deviceGet().size() > 0) {    
       filespec = (char *)config.deviceGet().c_str();
     }
-
+    
     filespec = DEFAULT_UART;
     // Process the command line arguments.
     while ((c = getopt (argc, argv, "d:ahvm:cexnob:p:u:w:rj")) != -1) {
