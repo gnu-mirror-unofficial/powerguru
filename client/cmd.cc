@@ -166,6 +166,8 @@ main(int argc, char *argv[])
     if (client) {
       msg.writeNet(msg.metersRequestCreate(Msgs::BATTERY_VOLTS));
     }
+
+    msg.cacheDump();
     
 #if 1
     if (client) {
@@ -233,7 +235,7 @@ main(int argc, char *argv[])
       for (i=0; i < messages.size(); i++) {
         dbglogfile << "Got message " << messages[i] << endl;
         string str = (const char *)messages[i];
-        //delete messages[i];
+        delete messages[i];
         if (xml.parseXML(str) == ERROR) {
           continue;
         }

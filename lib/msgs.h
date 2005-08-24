@@ -122,6 +122,7 @@ class Msgs : public Tcpip {
   std::string metersRequestCreate(xml_meters_e type);
   std::string metersResponseCreate(const xmlChar *tag, int val);
   std::string metersResponseCreate(const xmlChar *tag, float val);
+  std::string metersResponseCreate(const xmlChar *tag, std::string);
 
   std::string packet(void) { return _body.str(); }
   void print_msg(std::string msg);
@@ -131,18 +132,14 @@ class Msgs : public Tcpip {
   retcode_t methodProcess(const xmlChar * name, XMLNode *node);
   void methodsDump(void);
 
-#if 0
-  int fooby(int x)              // FIXME: test code
-  {
-    std::cerr << "Pointers to methods work! " << x << std::endl;
-  }
-  struct msg_data     _process_func;
-#endif
-protected:
-  float               _version;
-  static std::map<const xmlChar *, methodPtr_t> _methods;
+  std::string cacheGet(const xmlChar * name);
+  retcode_t cacheAdd(const xmlChar * name, std::string);
+  void cacheDump(void);
   
 private:
+  float               _version;
+  static std::map<const xmlChar *, methodPtr_t> _methods;
+  static std::map<const xmlChar *, std::string> _cache;
   static net_mode_e   _net_mode;
 #ifdef __STDC_HOSTED__
   std::ostringstream  _body;

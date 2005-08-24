@@ -45,6 +45,7 @@
 using namespace std;
 Msgs::net_mode_e  Msgs::_net_mode;
 std::map<const xmlChar *, Msgs::methodPtr_t> Msgs::_methods;
+std::map<const xmlChar *, std::string> Msgs::_cache;
 
 #define MY_ENCODING "ISO-8859-1"
 
@@ -200,35 +201,95 @@ Msgs::init(void)
   DEBUGLOG_REPORT_FUNCTION;
 
   // Top level node of the message
-  _methods[(const xmlChar *)"powerguru"] =      &Msgs::powerguruProcess;
+  _methods[BAD_CAST "powerguru"] =      &Msgs::powerguruProcess;
   
     // initialization message
-  _methods[(const xmlChar *)"helo"] =           &Msgs::heloProcess;
-  _methods[(const xmlChar *)"client"] =         &Msgs::clientProcess;
-  _methods[(const xmlChar *)"server"] =         &Msgs::serverProcess;
+  _methods[BAD_CAST "helo"] =           &Msgs::heloProcess;
+  _methods[BAD_CAST "client"] =         &Msgs::clientProcess;
+  _methods[BAD_CAST "server"] =         &Msgs::serverProcess;
   
   // Meter readings
-  _methods[(const xmlChar *)"meters"] =         &Msgs::metersProcess;
-  _methods[(const xmlChar *)"charge-mps"] =     &Msgs::chargeAmpsProcess;
-  _methods[(const xmlChar *)"load-amps"] =      &Msgs::loadAmpsProcess;
-  _methods[(const xmlChar *)"pv-amps"] =        &Msgs::pvAmpsProcess;
-  _methods[(const xmlChar *)"pv-volts"] =       &Msgs::pvVoltsProcess;
-  _methods[(const xmlChar *)"daily-kwh"] =      &Msgs::dailyKwhProcess;
-  _methods[(const xmlChar *)"hertz"] =          &Msgs::hertzProcess;
-  _methods[(const xmlChar *)"battery-volts"] =  &Msgs::batteryVoltsProcess;
-  _methods[(const xmlChar *)"buy-amps"] =       &Msgs::buyAmpsProcess;
-  _methods[(const xmlChar *)"sell-amps"] =      &Msgs::sellAmpsProcess;
-  _methods[(const xmlChar *)"ac-volts-out"] =   &Msgs::acVoltsOutProcess;
-  _methods[(const xmlChar *)"ac1-volts-in"] =   &Msgs::ac1InProcess;
-  _methods[(const xmlChar *)"ac2-volts-in"] =   &Msgs::ac2InProcess;
+  _methods[BAD_CAST "meters"] =         &Msgs::metersProcess;
+  _methods[BAD_CAST "charge-mps"] =     &Msgs::chargeAmpsProcess;
+  _methods[BAD_CAST "load-amps"] =      &Msgs::loadAmpsProcess;
+  _methods[BAD_CAST "pv-amps"] =        &Msgs::pvAmpsProcess;
+  _methods[BAD_CAST "pv-volts"] =       &Msgs::pvVoltsProcess;
+  _methods[BAD_CAST "daily-kwh"] =      &Msgs::dailyKwhProcess;
+  _methods[BAD_CAST "hertz"] =          &Msgs::hertzProcess;
+  _methods[BAD_CAST "battery-volts"] =  &Msgs::batteryVoltsProcess;
+  _methods[BAD_CAST "buy-amps"] =       &Msgs::buyAmpsProcess;
+  _methods[BAD_CAST "sell-amps"] =      &Msgs::sellAmpsProcess;
+  _methods[BAD_CAST "ac-volts-out"] =   &Msgs::acVoltsOutProcess;
+  _methods[BAD_CAST "ac1-volts-in"] =   &Msgs::ac1InProcess;
+  _methods[BAD_CAST "ac2-volts-in"] =   &Msgs::ac2InProcess;
   
   // Status messages on the system
-  _methods[(const xmlChar *)"status"] = &Msgs::statusProcess;
+  _methods[BAD_CAST "status"] = &Msgs::statusProcess;
   
   // Configuration settings
-  _methods[(const xmlChar *)"config"] = &Msgs::configProcess;
+  _methods[BAD_CAST "config"] = &Msgs::configProcess;
   
   //  _methods[""] = &Msgs::heloProcess;
+
+  // preload a few values
+  if (_net_mode == DAEMON) {
+    _cache[BAD_CAST "version"] = VERSION;
+    _cache[BAD_CAST "revision"] = VERSION;
+//     _cache[BAD_CAST "opmode"] = "unknown";
+//     _cache[BAD_CAST "errormode"] = "unknown";
+//     _cache[BAD_CAST "warningmode"] = "unknown";
+
+    // FIXME: fake meter values!
+    // Meters
+    _cache[BAD_CAST "battery-volts"] = "88888888";
+    _cache[BAD_CAST "charge-amps"] = "777777777";
+    _cache[BAD_CAST "load-amps"] = "66666666";
+    _cache[BAD_CAST "pv-amps"] = "55555555";
+    _cache[BAD_CAST "sell-amps"] = "444444444444";
+  }
+  
+  return SUCCESS;
+}
+
+std::string
+Msgs::cacheGet(const xmlChar * name) {
+  // DEBUGLOG_REPORT_FUNCTION;
+#if 1
+  const xmlChar         *tag;
+  string                str;
+  
+  _body.str("");
+  std::map<const xmlChar *, string>::const_iterator it;
+  for (it = _cache.begin(); it != _cache.end(); it++) {
+    //entry = it->second;
+    tag = it->first;
+    str  = it->second;
+    _body.str("");
+    if (xmlStrcmp(tag, name) == 0) {
+      if (str.size() != 0) {
+        _body << " Has data: " << str;
+      } else {
+        dbglogfile << " doesn't have data";
+        return _body.str();
+      }
+      return str;
+    }
+    dbglogfile << "Looking for cache value for XML Tag \"" << tag
+               << "\" has " << _body.str().c_str() << endl;
+  }
+  return _body.str();
+#else
+  return _cache[name];
+#endif
+}
+
+retcode_t
+Msgs::cacheAdd(const xmlChar * name, string str)
+{
+  // DEBUGLOG_REPORT_FUNCTION;
+  _cache[name] = str;
+
+  // FIXME: we should make sure this actually worked.
   return SUCCESS;
 }
 
@@ -249,7 +310,7 @@ Msgs::methodGet(const xmlChar * name)
 #if 1
   const xmlChar         *str;
   Msgs::methodPtr_t     ptr;
-
+  
   std::map<const xmlChar *, Msgs::methodPtr_t>::const_iterator it;
   for (it = _methods.begin(); it != _methods.end(); it++) {
     //entry = it->second;
@@ -261,15 +322,15 @@ Msgs::methodGet(const xmlChar * name)
     } else {
       _body << " doesn't have a function pointer";
     }
-//     dbglogfile << "Looking for method for XML Tag \"" << name.c_str()
-//                << "\" has " << _body.str().c_str() << endl;
+    //     dbglogfile << "Looking for method for XML Tag \"" << name.c_str()
+    //                << "\" has " << _body.str().c_str() << endl;
     if (xmlStrcmp(str, name) == 0) {
       return ptr;
     }
   }
 #else
-  dbglogfile << "\"" << name << "\" method we want" << endl;
-  return _methods[name];
+    dbglogfile << "\"" << name << "\" method we want" << endl;
+    return _methods[name];
 #endif
 }
 
@@ -301,6 +362,31 @@ Msgs::methodsDump(void)
       _body << "a method pointer";
     } else {
       _body << "no pointer to method";
+    }
+    dbglogfile << "XML Tag \"" << name
+               << "\" has " << _body.str().c_str() << endl;
+  }
+}
+
+// Dump all the pointer to methods for each XML Tag
+void
+Msgs::cacheDump(void)
+{
+  DEBUGLOG_REPORT_FUNCTION;
+  const xmlChar         *name;
+  string                data;
+  
+  dbglogfile << "We have " << _cache.size() << " items in the cache" << endl;
+  
+  std::map<const xmlChar *, string>::const_iterator it;
+  for (it = _cache.begin(); it != _cache.end(); it++) {
+    name = it->first;
+    data  = it->second;
+    _body.str("");
+    if (data.size() != 0) {
+      _body << "data is " << data;
+    } else {
+      _body << "no data";
     }
     dbglogfile << "XML Tag \"" << name
                << "\" has " << _body.str().c_str() << endl;
@@ -342,24 +428,7 @@ Msgs::process(XMLNode *xml)
   // Process the children too
   for (i=0; i<xml->childrenSize(); i++) {
     process(xml->childGet(i));
-  }
-  
-  // delete(xml);
-
-#if 0
-  //  struct Msgs::msg_data md;
-  //  md.func_ptr = &Msgs::fooby;
-  FPtr ptr = &Msgs::fooby;      // FIXME: test code
-  (this->*ptr)(2);              // FIXME: test code
-  _process_func.ptr = &Msgs::fooby; // FIXME: test code
-  _process_func.ptr = &Msgs::fooby; // FIXME: test code
-  _process_func.name = "Hey Now"; // FIXME: test code
-  (this->*_process_func.ptr)(3); // FIXME: test code
-  
-  //msg_data.func_ptr
-#endif
-
-  
+  }  
 }
 
 void
@@ -599,6 +668,21 @@ Msgs::metersResponseCreate(const xmlChar *type, float val) {
   return _body.str();  
 }
 
+std::string
+Msgs::metersResponseCreate(const xmlChar *type, string val) {
+  DEBUGLOG_REPORT_FUNCTION;
+  _body.str("");                // erase the current string
+  _body << "<powerguru version=\"";
+  _body << _version << "\">";
+  _body << "<meters><" << (const char *)type << ">";
+  _body << val;
+  _body << "</" << (const char *)type << ">" << "</meters>"; 
+  _body << "</powerguru>";
+  _body << ends;
+
+  return _body.str();  
+}
+
 string
 Msgs::configCreate(string tag, int value)
 {
@@ -708,7 +792,16 @@ Msgs::metersProcess(XMLNode *node)
              << " and mode is: " << (int)_net_mode << endl;
 
   if(_net_mode == DAEMON) {
-    string str = metersResponseCreate(node->valueGet(), 99999); // FIXME: this should return a real value!
+    //cacheDump();
+    const xmlChar *xxx = node->nameGet();
+    string value = cacheGet(node->valueGet());
+    dbglogfile << "value for \"" << node->valueGet() << "\" is " << value.c_str() << endl;
+    if (value.size() == 0) {
+    } else {
+      
+    }
+  
+    string str = metersResponseCreate(node->valueGet(), value);
     if (writeNet(str)) {
       return ERROR;
     } else {
@@ -717,6 +810,7 @@ Msgs::metersProcess(XMLNode *node)
   }
 
   if (_net_mode == CLIENT) {
+    //dbglogfile << node->valueGet()
     // Process the result
   }
 
@@ -836,9 +930,21 @@ Msgs::loadAmpsProcess(XMLNode *node) {
       
   if (node->valueGet() <= 0) {
     dbglogfile << "ERROR: no value in messages!" << endl;
-    return ERROR;
+    //    return ERROR;
   }
-      
+  
+  if (_net_mode == CLIENT) {
+    dbglogfile << "Battery voltage is: " << node->valueGet() << endl;
+    
+    return SUCCESS;
+  }
+  
+  if (_net_mode == DAEMON) {
+    string str = metersResponseCreate(node->valueGet(), _cache[node->nameGet()]);
+    
+    return SUCCESS;
+  }
+
   return SUCCESS;
 }
 
@@ -911,7 +1017,7 @@ Msgs::batteryVoltsProcess(XMLNode *node) {
       
   if (node->valueGet() <= 0) {
     dbglogfile << "ERROR: no value in messages!" << endl;
-    return ERROR;
+    //    return ERROR;
   }
 
   if (_net_mode == CLIENT) {
@@ -921,7 +1027,7 @@ Msgs::batteryVoltsProcess(XMLNode *node) {
   }
   
   if (_net_mode == DAEMON) {
-    string str = metersResponseCreate(node->valueGet(), 999999); // FIXME: this should return a real value!
+    string str = metersResponseCreate(node->valueGet(), _cache[node->nameGet()]);
     
     return SUCCESS;
   }
