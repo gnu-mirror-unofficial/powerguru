@@ -305,6 +305,8 @@ main(int argc, char *argv[]) {
           //display = ui.MenuHeadingPlus();
           
           vector<meter_data_t *> data = ui.PollMeters(1);
+          ui.MenuHeadingPlus();
+          ui.MenuHeadingMinus();          
           pdb.queryInsert(data);
 #if 0
           for (i=0; i<data->size(); i++) {

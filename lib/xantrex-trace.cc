@@ -767,15 +767,16 @@ XantrexUI::PollMeters(int loops)
     meters.push_back(updata);
   }
 #else
+  //  GotoMenuItem(mh, mi);
+  menuHeadingPlus();
   // Go back to the top
-  for (i=items; i>=mi; i--) {
-    MenuItemPlus();
-  }
+//   for (i=items; i>=mi; i--) {
+//     MenuItemPlus();
+//   }
 #endif
   
-return meters;
+  return meters;
 }
-
 
 // This method takes the data as outputted by the Xantrex inverter,
 // and munges it to be a standard form with whitespace compressed,
