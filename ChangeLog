@@ -1,3 +1,9 @@
+2005-08-25  Rob Savoye  <rob@cree.moongulch.net>
+
+	* lib/xantrex-trace.cc: Change the heading to force a clear
+	restart for polling the meters.
+	* daemon/main.cc: Don't check the console when polling meters.
+
 2005-08-24  Rob Savoye  <rob@cree.moongulch.net>
 
 	* daemon/main.cc: The -p option doesn't take an argument. Also

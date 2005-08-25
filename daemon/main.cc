@@ -291,6 +291,7 @@ main(int argc, char *argv[]) {
       Console con;
       // Open a console for user input
       con.Open();
+      int ch;
       if (poll) {
         // Open the serial port
         try {
@@ -303,10 +304,29 @@ main(int argc, char *argv[]) {
         //
         for (i=0; i<1000; i++) {        
           //display = ui.MenuHeadingPlus();
+#if 0
+          ch = con.Getc();
+          switch (ch) {
+            // Toggle the DTR state, which is as close as we get to
+            // flow control.
+          case 'Q':
+          case 'q':
+            return SUCCESS;
+            break;
+          case '?':
+            con.Puts("PowerGuru - Outback Mode\r\n");
+            con.Puts("\t? - help\r\n");
+            con.Puts("\tq - Quit\r\n");
+            con.Puts("\tQ - Quit\r\n");
+            sleep(2);
+          default:
+            break;
+          };
+#endif
           
           vector<meter_data_t *> data = ui.PollMeters(1);
-          ui.MenuHeadingPlus();
-          ui.MenuHeadingMinus();          
+//           ui.MenuHeadingPlus();
+//           ui.MenuHeadingMinus();          
           pdb.queryInsert(data);
 #if 0
           for (i=0; i<data->size(); i++) {

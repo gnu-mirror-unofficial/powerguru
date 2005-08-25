@@ -610,17 +610,17 @@ vector<meter_data_t *>
 XantrexUI::PollMeters(int loops)
 {
   MenuItem      ti;
-  int mh = 4;
-  int mi = 1;
-  int items = 7;                // the number of data items to get
+  int           mh = 4;
+  int           mi = 1;
+  int           items = 7;                // the number of data items to get
   float         fltval;
   int           intval;
-  //  float         *ptr1, *ptr2;
-  int i;
+  int           i;
+  string        str, label;
   meter_data_t *downdata, *updata;
   vector<meter_data_t *> meters;
 
-  memset(buffy, 0, 100);
+  //memset(buffy, 0, 100);
 
   GotoMenuItem(mh, mi);
   while (loops-- > 0) {
@@ -628,11 +628,10 @@ XantrexUI::PollMeters(int loops)
     memset(downdata, 0, sizeof(meter_data_t));
     
     for (i=mi; i<= mi+items; i++) {
-      string str = MenuItemMinus();
-      string label;
+      str = MenuItemMinus();
       fltval = 0.0;
       intval = 0;
-      if (str.size() > 0) {
+      if (str.size() > 1) {
         ti = GetItem();
         if (ti.GetType() != MenuItem::INFO) {
           label = GetLabel(); 
@@ -695,7 +694,6 @@ XantrexUI::PollMeters(int loops)
     meters.push_back(downdata);
     //MenuItemMinus();            // go one more, since the first thing
                                 // we do is come back up one item.
-#if 1
     updata = new meter_data_t;
     memset(updata, 0, sizeof(meter_data_t));
     //ptr2 = (float *)((char *)updata + sizeof(meter_data_t)-sizeof(float));
@@ -703,8 +701,7 @@ XantrexUI::PollMeters(int loops)
     
     // Now go up through the menu
     for (i=mi+items; i>mi; i--) {
-      string str = MenuItemPlus();
-      string label;
+      str = MenuItemPlus();
       fltval = 0.0;
       intval = 0;
       if (str.size() > 0) {
@@ -766,14 +763,13 @@ XantrexUI::PollMeters(int loops)
     } // end of for loop
     meters.push_back(updata);
   }
-#else
-  //  GotoMenuItem(mh, mi);
-  menuHeadingPlus();
   // Go back to the top
 //   for (i=items; i>=mi; i--) {
 //     MenuItemPlus();
 //   }
-#endif
+  
+  MenuHeadingPlus();
+  MenuHeadingMinus();          
   
   return meters;
 }
