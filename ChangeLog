@@ -24,9 +24,9 @@
 	messages. On an socket error, exit if you are the client, and
 	restart the socket if you ar the daemon.
 	* configure.ac: Increment version to 0.3.
-	* lib/log.cc: Add operator for << (xmlChar *) to we can print
+	* lib/log.cc: Add operator for << (xmlChar *) so we can print
 	XML nodes directly.
-	* lib/log.h: Add operator for << (xmlChar *) to we can print
+	* lib/log.h: Add operator for << (xmlChar *) so we can print
 	XML nodes directly.
 	* lib/msgs.cc: Inherit from Tcpip class. Have a daemon and
 	client mode. Initialize the table of pointers and the network
