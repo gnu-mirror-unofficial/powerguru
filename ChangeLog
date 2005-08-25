@@ -1,3 +1,13 @@
+2005-08-24  Rob Savoye  <rob@cree.moongulch.net>
+
+	* daemon/main.cc: The -p option doesn't take an argument. Also
+	default to Xantrex mode when meter polling is specified.
+	* lib/console.cc: Don't put the console in raw mode.
+	* lib/mysql.cc: Use ostringstream to format query for meter_data.
+	* lib/xantrex-trace.cc: Go down and then up through the
+	meters. Set the appropriate field in the meter_data to match the
+	read value
+
 2005-08-20  Rob Savoye  <rob@bertha.welcomehome.org>
 
 	* daemon/main.cc (main): Add support for --help and --version.

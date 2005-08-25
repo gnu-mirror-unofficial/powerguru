@@ -148,10 +148,11 @@ main(int argc, char *argv[]) {
     
     filespec = DEFAULT_UART;
     // Process the command line arguments.
-    while ((c = getopt (argc, argv, "d:ahvm:cexnob:p:u:w:rj")) != -1) {
+    while ((c = getopt (argc, argv, "d:ahvm:cexnob:pu:w:rj")) != -1) {
       switch (c) {
       case 'p':
         poll = true;
+        xantrexmode = true;     // FIXME: force xantrex mode for now
 	break;
 
 #if 0

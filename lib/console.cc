@@ -87,7 +87,7 @@ Console::OpenInChannel (string channel) {
 
   fcntl(fileno(inchannel.fhandle), F_SETOWN, getpid());
 
-  MakeRaw(fileno(inchannel.fhandle));
+  //  MakeRaw(fileno(inchannel.fhandle));
 }
 
 void
@@ -113,7 +113,7 @@ Console::OpenInChannel (void) {
 
   fcntl(fileno(inchannel.fhandle), F_SETOWN, getpid());
 
-  MakeRaw(fileno(inchannel.fhandle));
+  //  MakeRaw(fileno(inchannel.fhandle));
 }
 
 void

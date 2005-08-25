@@ -615,94 +615,165 @@ XantrexUI::PollMeters(int loops)
   int items = 7;                // the number of data items to get
   float         fltval;
   int           intval;
-  float         *ptr1, *ptr2;
+  //  float         *ptr1, *ptr2;
   int i;
   meter_data_t *downdata, *updata;
   vector<meter_data_t *> meters;
 
   memset(buffy, 0, 100);
 
-  //ti = Match(item);
-  //menuhead = ti.GetHeaderIndex();
-  //menuitem = ti.GetItemIndex();
-  //string str = GotoMenuItem(menuhead, menuitem);
-  //ti = GetItem(menuhead, menuitem);
   GotoMenuItem(mh, mi);
   while (loops-- > 0) {
-    //ti = GetItem();
     downdata = new meter_data_t;
     memset(downdata, 0, sizeof(meter_data_t));
-    ptr1 = (float *)downdata;
     
     for (i=mi; i<= mi+items; i++) {
       string str = MenuItemMinus();
+      string label;
+      fltval = 0.0;
+      intval = 0;
       if (str.size() > 0) {
         ti = GetItem();
         if (ti.GetType() != MenuItem::INFO) {
-          string label = GetLabel(); 
-          cout << "The Menu Item Label is: " << label;
+          label = GetLabel(); 
+          cout << "The Menu Item Label down is: " << label;
         }
         ti = GetItem();
         if (ti.GetType() == MenuItem::FLOAT) {
           fltval = GetFloatValue(str);
           cout << ", with a float value is: " << fltval << endl;
-          *ptr1 = fltval;
         }
         if (ti.GetType() == MenuItem::INT) {
           intval = GetIntValue(str);
           cout << ", with an Integer value is: " << intval << endl;
-          *ptr1 = intval * 1.0;
         }
         if (ti.GetType() == MenuItem::INFO) {
           cout << ", an INFO statement  " << endl;
           break;
         }
+        if (label.substr(0, 5) == "Input") {
+          //downdata->
+        }
+        if (label.substr(0, 4) == "Load") {
+          dbglogfile << "Matched label going down " << label;
+          dbglogfile << " value is: " << intval << endl;
+          downdata->ac_load_amps = intval;
+        }
+        if (label.substr(8, 6) == "actual") {
+          dbglogfile << "Matched label going down " << label << endl;
+          dbglogfile << " value is: " << fltval << endl;
+          downdata->battery_volts = fltval;
+        }
+        if (label.substr(8, 8) == "TempComp") {
+          dbglogfile << "Matched label going down " << label << endl;
+          dbglogfile << " value is: " << fltval << endl;
+          downdata->tempcomp_volts = fltval;
+        }
+        if (label.substr(0, 8) == "Inverter") {
+          dbglogfile << "Matched label going down " << label << endl;
+          dbglogfile << " value is: " << intval << endl;
+          downdata->ac_volts_out = intval;
+        }
+        if (label.substr(0, 4) == "Grid") {
+          dbglogfile << "Matched label going down " << label << endl;
+          dbglogfile << " value is: " << fltval << endl;
+          downdata->ac1_volts_in = fltval;
+        }
+        if (label.substr(0, 9) == "Generator") {
+          dbglogfile << "Matched label going down " << label << endl;
+          dbglogfile << " value is: " << fltval << endl;
+          downdata->ac2_volts_in = fltval;
+        }
+        if (label.substr(0, 9) == "Read Freq") {
+          dbglogfile << "Matched label going down " << label << endl;
+          dbglogfile << " value is: " << intval << endl;
+          downdata->hertz = intval;
+        }
       }
-      ptr1++;
     }
 
     meters.push_back(downdata);
-
+    //MenuItemMinus();            // go one more, since the first thing
+                                // we do is come back up one item.
 #if 1
-    if (loops > 0) {
-      updata = new meter_data_t;
-      memset(updata, 0, sizeof(meter_data_t));
-      ptr2 = (float *)((char *)updata + sizeof(meter_data_t)-sizeof(float));
-      *ptr2-- = downdata->hertz;
-
-      // Now go up through the menu
-      for (i=mi+items; i>mi; i--) {
-        string str = MenuItemPlus();
-        if (str.size() > 0) {
-          string label = GetLabel(); 
-          cout << "The Menu Item Label is: " << label;
-          ti = GetItem();
-          if (ti.GetType() == MenuItem::FLOAT) {
-            fltval = GetFloatValue(str);
-            cout << ", with a float value is: " << fltval << endl;
-            *ptr2 = fltval;
-          }
-          if (ti.GetType() == MenuItem::INT) {
-            intval = GetIntValue(str);
-            cout << ", with an integer value is: " << intval << endl;
-            *ptr2 = intval * 1.0;
-          }
-          //Flush();
-          //_data.push(label, );
+    updata = new meter_data_t;
+    memset(updata, 0, sizeof(meter_data_t));
+    //ptr2 = (float *)((char *)updata + sizeof(meter_data_t)-sizeof(float));
+    //*ptr2-- = downdata->hertz;
+    
+    // Now go up through the menu
+    for (i=mi+items; i>mi; i--) {
+      string str = MenuItemPlus();
+      string label;
+      fltval = 0.0;
+      intval = 0;
+      if (str.size() > 0) {
+        label = GetLabel(); 
+        cout << "The Menu Item Label up is: " << label;
+        ti = GetItem();
+        if (ti.GetType() == MenuItem::FLOAT) {
+          fltval = GetFloatValue(str);
+          cout << ", with a float value is: " << fltval << endl;
         }
-        ptr2--;
-      }
-      meters.push_back(updata);
-    }
-#else
-    // Go back to the top
-    for (i=items; i>=mi; i--) {
-      MenuItemPlus();
-    }
-#endif
+        if (ti.GetType() == MenuItem::INT) {
+          intval = GetIntValue(str);
+          cout << ", with an integer value is: " << intval << endl;
+        }
+        //Flush();
+        //_data.push(label, );
+        if (label.substr(0, 5) == "Input") {
+          //updata->
+        }
+        if (label.substr(0, 4) == "Load ") {
+          dbglogfile << "Matched label going up " << label << endl;
+          dbglogfile << " value is: " << intval << endl;
+          updata->ac_load_amps = intval;
+        }
+        if (label.substr(8, 6) == "actual") {
+          dbglogfile << "Matched label going up " << label << endl;
+          dbglogfile << " value is: " << fltval << endl;
+          updata->battery_volts = fltval;
+        }
+        if (label.substr(8, 8) == "TempComp") {
+          dbglogfile << "Matched label going up " << label << endl;
+          dbglogfile << " value is: " << fltval << endl;
+          updata->tempcomp_volts = fltval;
+        }
+        if (label.substr(0, 8) == "Inverter") {
+          dbglogfile << "Matched label going up " << label << endl;
+          dbglogfile << " value is: " << intval << endl;
+          updata->ac_volts_out = intval;
+        }
+        if (label.substr(0, 4) == "Grid") {
+          dbglogfile << "Matched label going up " << label << endl;
+          dbglogfile << " value is: " << fltval << endl;
+          updata->ac1_volts_in = fltval;
+        }
+        if (label.substr(0, 9) == "Generator") {
+          dbglogfile << "Matched label going up " << label << endl;
+          dbglogfile << " value is: " << fltval << endl;
+          updata->ac2_volts_in = fltval;
+        }
+        // Since this is the last and first reading, it doesn't really
+        // have time to change.
+        updata->hertz = downdata->hertz;
+//         if (label.substr(0, 9) == "Read Freq") {
+//           dbglogfile << "Matched label going up " << label << endl;
+//           dbglogfile << " value is: " << intval << endl;
+//           updata->hertz = intval;
+//         }
+      } // end of if str
+    } // end of for loop
+    meters.push_back(updata);
   }
+#else
+  // Go back to the top
+  for (i=items; i>=mi; i--) {
+    MenuItemPlus();
+  }
+#endif
   
-  return meters;
+return meters;
 }
 
 
@@ -810,15 +881,15 @@ XantrexUI::SetDefaultValues(void)
   mi.SetItem ("Input            amps AC",         4,  2, 0, "InputAmps");
   //mi.SetItem ("Input",                           4,  2, 0, "InputAmps");
   _items[4].push_back(mi);
-  mi.SetItem ("Load             amps AC",                            4,  3, 0, "LoadAmps");
+  mi.SetItem ("Load             amps AC",         4,  3, 0, "LoadAmps");
   _items[4].push_back(mi);
   //mi.SetItem ("Battery actual",                   4,  4, (float)25.1, "BattVolts");
-  mi.SetItem ("Battery actual   volts DC",                           4,  4, (float)25.1, "BattVolts");
+  mi.SetItem ("Battery actual   volts DC",        4,  4, (float)25.1, "BattVolts");
   _items[4].push_back(mi);
   //mi.SetItem ("Battery TempComp",                4,  5, (float)25.1, "TempComp");
-  mi.SetItem ("Battery TempComp volts DC",                       4,  5, (float)25.1, "TempComp");
+  mi.SetItem ("Battery TempComp volts DC",        4,  5, (float)25.1, "TempComp");
   _items[4].push_back(mi);
-  mi.SetItem ("Inverter         volts AC",                        4,  6, 0, "InvertVolts");
+  mi.SetItem ("Inverter         volts AC",        4,  6, 0, "InvertVolts");
   _items[4].push_back(mi);
   //mi.SetItem ("Grid (AC1)",                       4,  7, 0, "GridVolts");
   mi.SetItem ("Grid (AC1)       volts AC",                             4,  7, 0, "GridVolts");

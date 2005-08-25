@@ -277,41 +277,10 @@ Database::queryInsert(vector<meter_data_t *> data)
   query << "INSERT INTO inverter () VALUES ";
 
   for (i=0; i< data.size(); i++) {
-    if (i == 0) {
-      query << "('";
-    } else {
-      query << ", ('";
-    }
-    query << gettime()               << "',";
-#if 1
-    //query << 0                          << ",";
-    //query << data[i]->inverter_amps     << ",";
-    query << "0,";//  query << data[i]->ac_input_amps       << ","; // FIXME now buy & sell amps
-    query << data[i]->ac_load_amps        << ",";
-    query << data[i]->battery_volts       << ",";
-    query << data[i]->tempcomp_volts      << ",";
-    query << data[i]->ac_volts_out        << ",";
-    query << data[i]->ac1_volts_in        << ",";
-    query << data[i]->ac2_volts_in        << ",";
-    query << data[i]->hertz;
-#endif
-    query << ")";
+    queryInsert(data[i]);
   }
-  query << ";" << ends;
   
-  // Grab the string from the stream so we don't have to ifdef this every
-    // time the query is referenced.
-#ifdef __STDC_HOSTED__
-  string str = query.str().c_str();
-#else
-  string str = query.str();
-#endif
-
-    // Execute the query
-    queryInsert(str.c_str());
-    
-    
-    return true;  
+  return true;  
 }
   
 bool
@@ -319,12 +288,18 @@ Database::queryInsert(meter_data_t *data)
 {
   DEBUGLOG_REPORT_FUNCTION;
 
-  struct tm      *ttm;
-  struct timeval tp;
-  char           query[QUERYLEN];
-  char           *type = "MX";
-  
-  memset (query, 0, QUERYLEN);
+  struct tm             *ttm;
+  struct timeval        tp;
+  //char                  query[QUERYLEN];
+  char                  *type = "MX";
+#ifdef __STDC_HOSTED__
+  std::ostringstream    query;
+#else
+  std::ostrstream       query;
+#endif
+
+  query.str("");
+  //  memset (query, 0, QUERYLEN);
   
   // EtaMsg em;
   // em.dump(*data);
@@ -334,7 +309,7 @@ Database::queryInsert(meter_data_t *data)
   ttm->tm_year+= 1900;          // years since 1900
   ttm->tm_mon+=1;               // months since January
 
-  
+#if 0  
   // FIXME: For now source is the facility
   // Build the query string to insert the data
   sprintf(query, "INSERT INTO meters () VALUES ( \
@@ -373,8 +348,36 @@ Database::queryInsert(meter_data_t *data)
           data->hertz,
           data->tempcomp_volts
           );
+#else
+  query << "INSERT INTO meters () VALUES (";
+  query << data->unit << ",";
+  query << "\'" << type << "\',";
+  query << "\'" << ttm->tm_year << "-" << ttm->tm_mon << "-" << ttm->tm_mday << " ";
+  query << ttm->tm_hour << ":" << ttm->tm_min << ":" << ttm->tm_sec << "\',";
+  query << data->charge_amps << ",";
+  query << data->ac_load_amps << ",";
+  query << data->battery_volts << ",";
+  query << data->ac_volts_out << ",";
+  query << data->ac1_volts_in << ",";
+  query << data->ac2_volts_in << ",";
+  query << data->pv_amps_in << ",";
+  query << data->pv_volts_in << ",";
+  query << data->buy_amps << ",";
+  query << data->sell_amps << ",";
+  query << data->daily_kwh << ",";
+  query << data->hertz << ",";
+  query << data->tempcomp_volts << ")";
+  query << ends;
+#endif
+
+#ifdef __STDC_HOSTED__
+  string str = query.str().c_str();
+#else
+  string str = query.str();
+#endif
+  
   // Execute the query
-  queryInsert(query);
+  queryInsert(str.c_str());
   
   return true;
 }
