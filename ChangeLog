@@ -1,3 +1,9 @@
+2005-09-16  Rob Savoye  <rob@bertha.welcomehome.org>
+
+	* web/xml.php: New script for XML parsing and creation functions.
+	* web/control.php: New script for remote control via the XML
+	interface.
+
 2005-09-15  Rob Savoye  <rob@bertha.welcomehome.org>
 
 	* daemon/main.cc: Include xml.h and msgs.h. Use new messaging
