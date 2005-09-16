@@ -64,6 +64,41 @@ class Msgs : public Tcpip {
     HERTZ,
     TEMPCOMP_VOLTS
   } xml_meters_e;
+
+  typedef enum {
+    SYSVERSION,
+    REVISION,
+    OPMODE,
+    ERRORMODE,
+    WARNINGMODE
+  } xml_status_e;
+  
+  typedef enum {
+    GENERATOR,
+    GRID,
+    RELAY,
+    AUXILARY,
+    POLL,
+    INVERTER,
+    CHARGER
+  } xml_command_e;
+  
+  typedef enum {
+    GENCONFIG,
+    GRIDCONFIG,
+    BUY,
+    SELL,
+    CHARGE
+  } xml_config_e;
+
+  typedef enum {
+    METER,
+    STATUS,
+    COMMAND,
+    CONFIG,
+    HEARTBEAT
+  } xml_msg_e;
+  
   typedef int (Msgs::*FPtr)(int); // FIXME: test code
   typedef retcode_t (Msgs::*methodPtr_t)(XMLNode *node);
 
@@ -113,16 +148,30 @@ class Msgs : public Tcpip {
   retcode_t ac1InProcess(XMLNode *node);
   retcode_t ac2InProcess(XMLNode *node);
 
+  // These are all the system commands
+  retcode_t commandProcess(XMLNode *node);
+
   // These format client side messages to the daemon
   std::string statusCreate(meter_data_t *data);
+  
   std::string heloCreate(float version);
+  
   std::string configCreate(std::string tag, int value);
   std::string configCreate(std::string tag, float value);
   std::string metersRequestCreate(std::string str);
   std::string metersRequestCreate(xml_meters_e type);
+
+  // This formats a response from the daemon to the client
   std::string metersResponseCreate(const xmlChar *tag, int val);
   std::string metersResponseCreate(const xmlChar *tag, float val);
   std::string metersResponseCreate(const xmlChar *tag, std::string);
+
+  std::string responseCreate(xml_msg_e type, const xmlChar *tag, std::string);
+  
+  std::string requestCreate(xml_meters_e tag);
+  std::string requestCreate(xml_status_e tag);
+  std::string requestCreate(xml_config_e tag);
+  std::string requestCreate(xml_command_e tag);
 
   std::string packet(void) { return _body.str(); }
   void print_msg(std::string msg);

@@ -53,6 +53,8 @@ extern char *optarg;
 #include "snmp.h"
 #include "rc.h"
 #include "tcpip.h"
+#include "msgs.h"
+#include "xml.h"
 
 using namespace std;
 using namespace rcinit;
@@ -60,6 +62,7 @@ using namespace outbackpower;
 
 static void usage (const char *);
 extern LogFile dbglogfile;
+const int INBUFSIZE = 1024;
 
 void
 alarm_handler2 (int sig);
@@ -87,7 +90,8 @@ main(int argc, char *argv[]) {
     bool background;
     bool daemon;
     bool client;
-    
+    retcode_t   ret;
+
     Database pdb;
     //    XantrexUI ui;
     //    Console con;
@@ -365,55 +369,66 @@ main(int argc, char *argv[]) {
     // publically accessible host to establish the connection the
     // other direction.
     if (daemon || client) {
-      Tcpip tcpip;
       
-      tcpip.toggleDebug(true);
+      Msgs msg;
+      msg.toggleDebug(true);
       
-      char *buffer;
+      // Make a client connection
+      if (client == true) {
+        msg.init(hostname);
+      }
       
-      buffer = (char *)new char[300];
-      memset(buffer, 0, 300);
+      // Start as a daemon
+      if (daemon == true) {
+        msg.init(true);
+      }
+      //msg.methodsDump();          // FIXME: debugging crap
       
-      // If we are in client mode, connect to the server
+      //msg.print_msg(msg.status((meter_data_t *)0));
+      
       if (client) {
-        if (tcpip.createNetClient(hostname)) {
-          dbglogfile << "Connected to server at " << hostname.c_str() << endl;
-        } else {
-          dbglogfile << "ERROR: Couldn't create connection to server" << hostname  << endl;
-        }
+        msg.writeNet(msg.metersRequestCreate(Msgs::BATTERY_VOLTS));
       }
       
-      // If we are in daemon mode, wait for the remote server to connect to us
-      // as a client. This is for when the server is behind a firewall.
-      if (daemon) {
-        if (tcpip.createNetServer()) {
-          dbglogfile << "New server started for remote client." << endl;
-        } else {
-          dbglogfile << "ERROR: Couldn't create a new server" << endl;
-        }      
+      msg.cacheDump();
+      
+      XML xml;
+      unsigned int i;
+
+      vector<const xmlChar *> messages;
+      //const xmlChar *messages[200];
         
-        if (tcpip.newNetConnection(true)) {
-          dbglogfile << "New connection started for remote client." << endl;
-        } else {
-          dbglogfile << "ERROR: Couldn't create a new connection!" << endl;
-          exit (1);
+      bool loop = true;
+      while (loop) {
+        ret = msg.anydata(messages);
+        
+        if (ret == ERROR) {
+          dbglogfile << "ERROR: Got error from socket " << endl;
+          // Start as a daemon
+          if (daemon == true) {
+            msg.closeNet();
+            // wait for the next connection
+            if (msg.newNetConnection(true)) {
+              dbglogfile << "New connection started for remote client." << endl;
+            }
+          } else {
+            if (errno != EAGAIN) {
+              dbglogfile << "ERROR: " << errno << ":\t"<< strerror(errno) << endl;
+              msg.closeNet();
+              exit (-1);
+            }
+          }
         }
+        for (i=0; i < messages.size(); i++) {
+          cerr << "Got message " << messages[i] << endl;
+          string str = (const char *)messages[i];
+          delete messages[i];
+          if (xml.parseXML(str) == ERROR) {
+            continue;
+          }
+        }
+        messages.clear();
       }
-      
-      tcpip.writeNet("\r<powerguru><version>0.2</version></powerguru>\n");
-      
-      int bytes = tcpip.readNet(buffer, 300);
-#if 1
-      if (bytes > 0) {
-        cout << "FIXME: Read bytes: " << endl << buffer << endl;
-        if (strncmp(buffer, "quit", 4) == 0) {
-          exit(0);
-        } 
-        if (strncmp(buffer, "<powerguru>quit</powerguru>", 27) == 0) {
-          exit(0);
-        } 
-      }
-#endif
     }
 }
 

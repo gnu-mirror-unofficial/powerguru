@@ -225,10 +225,30 @@ Msgs::init(void)
   
   // Status messages on the system
   _methods[BAD_CAST "status"] = &Msgs::statusProcess;
-  
+  _methods[BAD_CAST "version"] = &Msgs::statusProcess;
+  _methods[BAD_CAST "revision"] = &Msgs::statusProcess;
+  _methods[BAD_CAST "opmode"] = &Msgs::statusProcess;
+  _methods[BAD_CAST "errormode"] = &Msgs::statusProcess;
+  _methods[BAD_CAST "warningmode"] = &Msgs::statusProcess;
+
   // Configuration settings
   _methods[BAD_CAST "config"] = &Msgs::configProcess;
-  
+  //  _methods[BAD_CAST "generator"] = &Msgs::config;
+  //  _methods[BAD_CAST "grid"] = &Msgs::config;
+  //  _methods[BAD_CAST "buy"] = &Msgs::config;
+  //  _methods[BAD_CAST "sell"] = &Msgs::config;
+  //  _methods[BAD_CAST "start"] = &Msgs::config;
+  //  _methods[BAD_CAST "end"] = &Msgs::config;
+
+  // Command messages
+  _methods[BAD_CAST "command"] = &Msgs::commandProcess;
+//   _methods[BAD_CAST "auxilary"] = &Msgs::commandAuxilaryProcess;
+//   _methods[BAD_CAST "relay"] = &Msgs::commandRelayProcess;
+//   _methods[BAD_CAST "poll"] = &Msgs::commandPollProcess;;
+//   _methods[BAD_CAST "inverter"] = &Msgs::commandInverterProcess;;
+//   _methods[BAD_CAST "charger"] = &Msgs::commandChargerProcess;;
+  // _methods[BAD_CAST "restart"] = &Msgs::commandRestartProcess;;
+
   //  _methods[""] = &Msgs::heloProcess;
 
   // preload a few values
@@ -683,6 +703,203 @@ Msgs::metersResponseCreate(const xmlChar *type, string val) {
   return _body.str();  
 }
 
+std::string
+Msgs::requestCreate(xml_meters_e tag)
+{
+  DEBUGLOG_REPORT_FUNCTION;
+  _body.str("");                // erase the current string
+  _body << "<powerguru version=\"" << _version << "\"><meters>";
+  switch (tag) {
+  case CHARGE_AMPS:
+    _body << "charge-amps";
+    break;
+  case AC_LOAD_AMPS:
+    _body << "load-amps";
+    break;
+  case BATTERY_VOLTS:
+    _body << "battery-volts";
+    break;
+  case AC_VOLTS_OUT:
+    _body << "ac-volts-out";
+    break;
+  case AC1_VOLTS_IN:
+    _body << "ac1-volts-in";
+    break;
+  case AC2_VOLTS_IN:
+    _body << "ac2-volts-in";
+    break;
+  case PV_AMPS_IN:
+    _body << "pv-amps-in";
+    break;
+  case PV_VOLTS_IN:
+    _body << "pv-volts-in";
+    break;
+  case BUY_AMPS:
+    _body << "buy-amps";
+    break;
+  case SELL_AMPS:
+    _body << "sell-amps";
+    break;
+  case DAILY_KWH:
+    _body << "daily-kwh";
+    break;
+  case HERTZ:
+    _body << "hertz";
+    break;
+  case TEMPCOMP_VOLTS:
+    _body << "tempcomp";
+    break;
+  default:
+    break;                      // you should never be
+  };
+  _body << "</meters></powerguru>";
+  _body << ends;
+
+  return _body.str();  
+}
+
+string
+Msgs::requestCreate(xml_status_e tag)
+{
+  DEBUGLOG_REPORT_FUNCTION;
+
+  _body.str("");                // erase the current string
+  _body << "<powerguru version=\"" << _version << "\"><status>";
+  switch (tag) {
+  case SYSVERSION:
+    _body << "sysversion";
+    break;
+  case REVISION:
+    _body << "revision";
+    break;
+  case ERRORMODE:
+    _body << "errormode";
+    break;
+  case WARNINGMODE:
+    _body << "warningmode";
+    break;
+  case OPMODE:
+    _body << "opmode";
+    break;
+  default:
+    break;
+  };
+  _body << "</status></powerguru>";
+
+  _body << ends;  
+
+  return _body.str();  
+}
+
+string
+Msgs::requestCreate(xml_config_e tag)
+{
+  DEBUGLOG_REPORT_FUNCTION;  
+
+  _body.str("");                // erase the current string
+  _body << "<powerguru version=\"" << _version << "\"><config>";
+  switch (tag) {
+  case GENCONFIG:
+    _body << "generator";
+    break;
+  case GRIDCONFIG:
+    _body << "grid";
+    break;
+  case BUY:
+    _body << "buy";
+    break;
+  case SELL:
+    _body << "sell";
+    break;
+  case CHARGE:
+    _body << "charge";
+    break;
+  default:
+    break;
+  };
+  _body << "</config></powerguru>";
+
+  _body << ends;  
+
+  return _body.str();  
+}
+
+string
+Msgs::requestCreate(xml_command_e tag)
+{
+  DEBUGLOG_REPORT_FUNCTION;
+
+  _body.str("");                // erase the current string
+  _body << "<powerguru version=\"" << _version << "\"><status>";
+  switch (tag) {
+  case GENERATOR:
+    _body << "generator";
+    break;
+  case GRID:
+    _body << "grid";
+    break;
+  case RELAY:
+    _body << "relay";
+    break;
+  case AUXILARY:
+    _body << "auxilary";
+    break;
+  case POLL:
+    _body << "poll";
+    break;
+  case INVERTER:
+    _body << "inverter";
+    break;
+  case CHARGER:
+    _body << "charger";
+    break;
+  default:
+    break;
+  };
+  _body << "</status></powerguru>";
+
+  _body << ends;  
+
+  return _body.str();  
+}
+
+
+std::string
+Msgs::responseCreate(xml_msg_e type, const xmlChar *tag, string val)
+{
+  DEBUGLOG_REPORT_FUNCTION;
+  string str;
+  
+  switch (type) {
+  case HEARTBEAT:
+    str = "heartbeat";
+    break;
+  case STATUS:
+    str = "status";
+    break;
+  case METER:
+    str = "meters";
+    break;
+  case CONFIG:
+    str = "meters";
+    break;
+  case COMMAND:
+    str = "meters";
+    break;
+  };
+  
+  _body.str("");                // erase the current string
+  _body << "<powerguru version=\"";
+  _body << _version << "\"><" << str;
+  _body << "><" << (const char *)tag << ">";
+  _body << val;
+  _body << "</" << (const char *)tag << "></" << str; 
+  _body << "></powerguru>";
+  _body << ends;
+
+  return _body.str();  
+}
+
 string
 Msgs::configCreate(string tag, int value)
 {
@@ -760,8 +977,56 @@ retcode_t
 Msgs::statusProcess(XMLNode *node)
 {
   DEBUGLOG_REPORT_FUNCTION;
-  dbglogfile << "WARNING: unimplemented method" << endl;
+  XMLNode *child;
+  string str;
+  unsigned int i;
 
+  // dbglogfile << BAD_CAST node->valueGet() << endl;
+  
+  if (_net_mode == DAEMON) {
+    if (xmlStrcmp(node->valueGet(), BAD_CAST "sysversion") == 0) {
+      str = responseCreate(STATUS, node->valueGet(), "0.0");
+    } else if (xmlStrcmp(node->valueGet(), BAD_CAST "revision") == 0) {
+      str = responseCreate(STATUS, node->valueGet(), "0.0");
+    } else if (xmlStrcmp(node->valueGet(), BAD_CAST "opmode") == 0) {
+      str = responseCreate(STATUS, node->valueGet(), "none");
+    } else if (xmlStrcmp(node->valueGet(), BAD_CAST "warningmode") == 0) {
+      str = responseCreate(STATUS, node->valueGet(), "none");    
+    } else if (xmlStrcmp(node->valueGet(), BAD_CAST "errormode") == 0) {
+      str = responseCreate(STATUS, node->valueGet(), "none");
+    }
+    
+    if (writeNet(str)) {
+      return ERROR;
+    } else {
+      return SUCCESS;
+    }
+  }
+
+  if (_net_mode == CLIENT) {
+    if (xmlStrcmp(node->nameGet(), BAD_CAST "status") == 0) {
+      return SUCCESS;
+    }
+
+#if 0
+    if        (xmlStrcmp(node->nameGet(), BAD_CAST "revision") == 0) {
+      //cerr << "VER" << endl;
+    } else if (xmlStrcmp(node->nameGet(), BAD_CAST "sysversion") == 0) {
+      //cerr << "REV" << endl;
+    } else if (xmlStrcmp(node->nameGet(), BAD_CAST "opmode") == 0) {
+      //cerr << "OP" << endl;
+    } else if (xmlStrcmp(node->nameGet(), BAD_CAST "warningmode") == 0) {
+      //cerr << "WARN" << endl;
+    } else if (xmlStrcmp(node->nameGet(), BAD_CAST "errormode") == 0) {
+      //cerr << "ERROR" << endl;
+    }
+#endif
+    cacheAdd(node->nameGet(), (const char*)node->valueGet());
+    dbglogfile << "tag \"" << node->nameGet() << "\" has a value of: " << node->valueGet() << endl;
+    
+    return SUCCESS;
+  }
+  
   return ERROR;                 // FIXME: implement this method
 }
 
@@ -1110,3 +1375,17 @@ Msgs::ac2InProcess(XMLNode *node) {
   return SUCCESS;
 }
 
+retcode_t
+Msgs::commandProcess(XMLNode *node) {
+  DEBUGLOG_REPORT_FUNCTION;
+  
+  dbglogfile << "Node is \"" << node->nameGet()
+             << "\" with a value of " << node->valueGet() << endl;
+      
+  if (node->valueGet() <= 0) {
+    dbglogfile << "ERROR: no value in messages!" << endl;
+    return ERROR;
+  }
+      
+  return SUCCESS;
+}

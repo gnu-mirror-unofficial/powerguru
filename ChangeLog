@@ -1,3 +1,13 @@
+2005-09-15  Rob Savoye  <rob@bertha.welcomehome.org>
+
+	* daemon/main.cc: Include xml.h and msgs.h. Use new messaging
+	system. 
+	* lib/console.c: Make the console be non-blocking.
+	* lib/msgs.cc: Add handlers for more tags. Make new methods to
+	process and create more XML messages.
+	* lib/msgs.h: Add enums for more message types. Make new methods
+	to process and create more XML messages.
+
 2005-08-25  Rob Savoye  <rob@cree.moongulch.net>
 
 	* lib/xantrex-trace.cc: Change the heading to force a clear

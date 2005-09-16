@@ -167,22 +167,8 @@ main(int argc, char *argv[])
       msg.writeNet(msg.metersRequestCreate(Msgs::BATTERY_VOLTS));
     }
 
-    msg.cacheDump();
+    // msg.cacheDump();
     
-#if 1
-    if (client) {
-      //sleep(1);
-      msg.writeNet(msg.metersRequestCreate(Msgs::AC1_VOLTS_IN));
-      //sleep(1);
-      msg.writeNet(msg.metersRequestCreate(Msgs::CHARGE_AMPS));
-      //sleep(1);
-      msg.writeNet(msg.metersRequestCreate(Msgs::AC_LOAD_AMPS));
-      //sleep(1);
-      msg.writeNet(msg.metersRequestCreate(Msgs::PV_AMPS_IN));
-      //sleep(1);
-      msg.writeNet(msg.metersRequestCreate(Msgs::SELL_AMPS));
-    }
-#endif
     while ((ch = con.Getc()) != 'q') {
       if (ch > 0){                // If we have something, process it
         //con.Putc (ch);          // echo inputted character to screen
@@ -190,6 +176,29 @@ main(int argc, char *argv[])
         switch (ch) {
           // Toggle the DTR state, which is as close as we get to
           // flow control.
+        case 's':
+          if (client) {
+#if 0
+            //sleep(1);
+            msg.writeNet(msg.metersRequestCreate(Msgs::AC1_VOLTS_IN));
+            //sleep(1);
+            msg.writeNet(msg.metersRequestCreate(Msgs::CHARGE_AMPS));
+            //sleep(1);
+            msg.writeNet(msg.metersRequestCreate(Msgs::AC_LOAD_AMPS));
+            //sleep(1);
+            msg.writeNet(msg.metersRequestCreate(Msgs::PV_AMPS_IN));
+            //sleep(1);
+            msg.writeNet(msg.metersRequestCreate(Msgs::SELL_AMPS));
+            //            msg.writeNet(msg.requestCreate(""));
+#else            
+            msg.writeNet(msg.requestCreate(Msgs::REVISION));
+            msg.writeNet(msg.requestCreate(Msgs::SYSVERSION));
+            msg.writeNet(msg.requestCreate(Msgs::OPMODE));
+            msg.writeNet(msg.requestCreate(Msgs::WARNINGMODE));
+            msg.writeNet(msg.requestCreate(Msgs::ERRORMODE));
+#endif
+          }
+          break;
         case 'Q':
         case 'q':
           con.Puts("Qutting PowerGuru due to user input!\n");
@@ -233,7 +242,7 @@ main(int argc, char *argv[])
         }
       }
       for (i=0; i < messages.size(); i++) {
-        dbglogfile << "Got message " << messages[i] << endl;
+        cerr << "Got message " << messages[i] << endl;
         string str = (const char *)messages[i];
         delete messages[i];
         if (xml.parseXML(str) == ERROR) {
@@ -241,6 +250,7 @@ main(int argc, char *argv[])
         }
       }
       messages.clear();
+      msg.cacheDump();
 
 #else
       ptr = buffer;

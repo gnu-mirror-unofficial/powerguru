@@ -112,8 +112,9 @@ Console::OpenInChannel (void) {
 #endif
 
   fcntl(fileno(inchannel.fhandle), F_SETOWN, getpid());
+  fcntl(fileno(inchannel.fhandle), F_SETFL, O_NONBLOCK);
 
-  //  MakeRaw(fileno(inchannel.fhandle));
+  // MakeRaw(fileno(inchannel.fhandle));
 }
 
 void
@@ -123,7 +124,7 @@ Console::OpenOutChannel (string channel) {
     outchannel.filespec = "stdout";
     state = Console::OPEN;
   }
-  //    MakeRaw(fileno(outchannel.fhandle));
+  // MakeRaw(fileno(outchannel.fhandle));
 }
 
 void
