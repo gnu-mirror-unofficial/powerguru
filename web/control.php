@@ -32,6 +32,8 @@ $toptag = opts("toptag","status");
 $config = opts("config","");
 $gridconfig = opts("gridconfig","");
 $genconfig = opts("genconfig","");
+$xmlmsg = opts("xmlmsg","");
+$connected = opts("connected","");
 
 echo "<form action=control.php method=POST>";
 
@@ -144,6 +146,15 @@ if ($meters == "hertz") {
 }
 else {
   echo "<input type=radio name=meters value=hertz>Hertz";
+}
+echo "</td>";
+
+echo "<td>";
+if ($meters == "battery-volts") {
+  echo "<input type=radio name=meters value=battery-volts checked>Battery Volts";
+}
+else {
+  echo "<input type=radio name=meters value=battery-volts>Battery Volts";
 }
 echo "</td>";
 
@@ -359,7 +370,7 @@ echo "</td></tr>";
 echo "</table></ul>";
 
 
-echo "<p><input type=submit name=send value='Send'>";
+echo "<p><hr><input type=submit name=send value='Send'>";
 
 echo "</form><p>";
 
@@ -395,19 +406,81 @@ if ($tag == "") {
   echo "<h2>No tag supplied</h2>";
 } else {
   if ($toptag != "config") {
-    echo "<h2>", requestCreate($toptag, $tag), "</h2>";
+    $xmlmsg = requestCreate($toptag, $tag);
+    echo "<h2>", htmlspecialchars($xmlmsg), "</h2>";
   } else {
-    echo "<h2>", configRequestCreate($toptag, $tag, $subtag), "</h2>";
+    $xmlmsg = configRequestCreate($toptag, $tag, $subtag);
+    echo "<h2>", htmlspecialchars($xmlmsg), "</h2>";
+  }
+}
+
+if (true) {
+  //echo "<h2>", headerCreate(), "</h2>";
+  if ($xmlmsg != "") {
+    $socket = clientCreate();
+    
+    //    echo htmlspecialchars($xmlmsg), "<br>";
+    
+    socket_set_nonblock($socket);
+    
+    sleep(1);
+
+    $fds = array($socket);
+    $hits = socket_select($read = NULL, $fds, $except = NULL, 1);
+    if ($hits) {
+      socket_write($socket, $xmlmsg, strlen($xmlmsg));
+    }
+    
+    //    echo $out;
+      
+    $loop = 1;
+    while ($loop) {
+      $hits = socket_select($fds, $write = NULL, $except = NULL, 1);
+      if ($hits) {
+        $out = socket_read($socket, 2048);
+        if (false == $out) {
+          $error = socket_last_error(); 
+          //echo "Errno is: $error<br>";
+          sleep(1);
+          continue;
+        }
+      } else {
+        sleep(1);               // Wait for a bit
+        continue;
+      }
+      
+      //<powerguru version="0.3"><client ip=""></client><server ip="192.168.2.11">bertha.welcomehome.org</server></powerguru>
+      echo "Read from socket: ", htmlspecialchars($out), "<br>";
+      if (strpos($out, "server")) {
+        echo "Got handshake message!<br>";
+        continue;
+      }
+      
+      $loop = $loop - 1;
+      
+      //      echo htmlspecialchars($out), "<p>";
+
+      $messages = explode("<powerguru>", $out);
+      echo "Got ", count($messages), " messages<br>";
+
+      foreach ($messages as $value) {
+        echo htmlspecialchars($value), "<p>";
+        xmlParse($value);
+        $objXML = new xml2Array();
+        $arrOutput = $objXML->parse($value);
+        print_r($arrOutput); //print it out, or do whatever!
+        print_r($arrOutput[0]["name"]);
+      }
+    }
+    //  $xmlmsg="";
+    clientClose();
   }
 }
 
 
-//echo "<h2>", headerCreate(), "</h2>";
-
- 
 //phpinfo(INFO_VARIABLES);
+//phpinfo();
 
 ?>
-
 </body>
 </html>

@@ -153,6 +153,7 @@ main(int argc, char *argv[])
     // Make a client connection
     if (client == true) {
       msg.init(hostname);
+      msg.checkConsole();
     }
 
     // Start as a daemon

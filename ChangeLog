@@ -1,3 +1,17 @@
+2005-09-18  Rob Savoye  <rob@bertha.welcomehome.org>
+
+	* lib/msgs.cc: Add a warning message so unimplemented messages
+	also have a response.
+	* lib/msgs.cc: Add more accessors for the IP data.
+	* client/cmd.cc: Check the console for messages too.
+	* daemon/main.cc: Handle errors better when the socket is
+	shutdown.
+	* web/control.php: Use non blocking socket I/O.
+	* web/xml.php: Add XML parser and networking.
+	* lib/tcpip.cc: Don't check the console when blocked on a select
+	by default.
+	* lib/tcpip.cc: Add a method to toggle console checking.
+
 2005-09-16  Rob Savoye  <rob@bertha.welcomehome.org>
 
 	* web/xml.php: New script for XML parsing and creation functions.

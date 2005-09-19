@@ -34,6 +34,7 @@
 #include <termios.h>
 #include <sstream>
 #include <signal.h>
+#include <errno.h>
 
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
@@ -401,26 +402,23 @@ main(int argc, char *argv[]) {
       bool loop = true;
       while (loop) {
         ret = msg.anydata(messages);
-        
         if (ret == ERROR) {
           dbglogfile << "ERROR: Got error from socket " << endl;
-          // Start as a daemon
-          if (daemon == true) {
-            msg.closeNet();
-            // wait for the next connection
-            if (msg.newNetConnection(true)) {
-              dbglogfile << "New connection started for remote client." << endl;
-            }
-          } else {
-            if (errno != EAGAIN) {
-              dbglogfile << "ERROR: " << errno << ":\t"<< strerror(errno) << endl;
-              msg.closeNet();
-              exit (-1);
-            }
+          msg.closeNet();
+          // wait for the next connection
+          if ((ret = msg.newNetConnection(true))) {
+            dbglogfile << "New connection started for remote client."
+                       << msg.remoteIP().c_str()
+                       << msg.remoteName().c_str() << endl;
+            ret = SUCCESS;        // the error has been handled
+            continue;
           }
         }
+        if (messages.size() == 0) {
+          dbglogfile << "ERROR: client socket shutdown! " << endl;
+        }
         for (i=0; i < messages.size(); i++) {
-          cerr << "Got message " << messages[i] << endl;
+          cerr << "Got (" << messages.size() << ") messages " << messages[i] << endl;
           string str = (const char *)messages[i];
           delete messages[i];
           if (xml.parseXML(str) == ERROR) {

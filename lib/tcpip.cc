@@ -68,7 +68,7 @@ int  Tcpip::_sockfd;
 int  Tcpip::_sockIOfd;
 
 Tcpip::Tcpip(void)
-    : _ipaddr(INADDR_ANY),  _proto(0), _debug(false)// _sockfd(-1), _sockIOfd(-1), 
+    : _ipaddr(INADDR_ANY),  _proto(0), _debug(false), _console(false)// _sockfd(-1), _sockIOfd(-1), 
 {
     // Get the low level host data for this machine
     hostDataGet();
@@ -171,7 +171,8 @@ Tcpip::createNetServer(short port, string &protocol)
   _ipaddr = thisaddr->s_addr;
   memset(&sock_in, 0, sizeof(sock_in));
   
-  sock_in.sin_addr.s_addr = thisaddr->s_addr;
+  //  sock_in.sin_addr.s_addr = thisaddr->s_addr;
+  sock_in.sin_addr.s_addr = INADDR_ANY;
   
   _ipaddr = sock_in.sin_addr.s_addr;
   sock_in.sin_family = AF_INET;
@@ -314,7 +315,10 @@ Tcpip::newNetConnection(bool block)
     // We use select to wait for the read file descriptor to be
     // active, which means there is a client waiting to connect.
     FD_ZERO(&fdset);
-    FD_SET(0, &fdset);          // also return on any input from stdin
+    // also return on any input from stdin
+    if (_console) {
+      FD_SET(fileno(stdin), &fdset);
+    }
     FD_SET(_sockIOfd, &fdset);
     
     // Reset the timeout value, since select modifies it on return. To
@@ -548,12 +552,37 @@ Tcpip::createNetClient(string &hostname, short port, string &protocol)
 
 // Description: Close an open socket connection.
 retcode_t
-Tcpip::closeNet(void)
+Tcpip::closeConnection(void)
 {
   DEBUGLOG_REPORT_FUNCTION;
 
+  if (_sockfd > 0) {
+    closeConnection(_sockfd);
+    _sockIOfd = 0;
+  }
+  
+  return ERROR;
+}
+
+retcode_t
+Tcpip::closeConnection(int fd)
+{
+  DEBUGLOG_REPORT_FUNCTION;
+
+  if (fd > 0) {
+    closeConnection(fd);
+  }
+  
+  return ERROR;
+}
+
+retcode_t
+Tcpip::closeNet(void)
+{
+  DEBUGLOG_REPORT_FUNCTION;
+  
   closeNet(_sockfd);
-  _sockfd= 0;
+  _sockfd = 0;
   
   return ERROR;
 }
@@ -568,9 +597,15 @@ Tcpip::closeNet(int sockfd)
   // locked on it, so we wait a second, and try again. After a
   // few tries, we give up, cause there must be something
   // wrong.
+
+  if (sockfd <= 0) {
+    return SUCCESS;
+  }
+  
   while (retries < 3) {
     if (sockfd) {
       // Shutdown the socket connection
+#if 0
       if (shutdown(sockfd, SHUT_RDWR) < 0) {
         if (errno != ENOTCONN) {
           dbglogfile << "WARNING: Unable to shutdown socket for fd #"
@@ -581,7 +616,7 @@ Tcpip::closeNet(int sockfd)
           return SUCCESS;
         }
       }
-      
+#endif 
       if (close(sockfd) < 0) {
         dbglogfile <<
           "WARNING: Unable to close the socket for fd "
@@ -596,6 +631,7 @@ Tcpip::closeNet(int sockfd)
       }
     }
   }
+
   
   return ERROR;
 }
@@ -645,7 +681,10 @@ Tcpip::anydata(int fd, vector<const xmlChar *> &msgs)
   //msgs = (char **)realloc(msgs, sizeof(char *));
   while (retries-- > 0) {
     FD_ZERO(&fdset);
-    FD_SET(0, &fdset);          // look for STDIN too
+    // also return on any input from stdin
+    if (_console) {
+      FD_SET(fileno(stdin), &fdset);
+    }
     FD_SET(fd, &fdset);
     
     tval.tv_sec = 10;
@@ -661,7 +700,8 @@ Tcpip::anydata(int fd, vector<const xmlChar *> &msgs)
     }
     if (ret == 0) {
       dbglogfile << "There is no data in the socket for fd #" << fd << endl;
-      return ERROR;
+      msgs.clear();
+      return SUCCESS;
     }
     if (ret == -1) {
       dbglogfile << "The socket for fd #%d never was available!"
@@ -669,8 +709,9 @@ Tcpip::anydata(int fd, vector<const xmlChar *> &msgs)
       return ERROR;
     }
     if (ret > 0) {
-      if (FD_ISSET(0, &fdset)) {
+      if (FD_ISSET(fileno(stdin), &fdset)) {
         dbglogfile << "There is data at the console for stdin!" << endl;
+        msgs.clear();
         return SUCCESS;
       }
       dbglogfile << "There is data in the socket for fd #" << fd << endl;
@@ -925,7 +966,7 @@ Tcpip::writeNet(int fd, char const *buffer, int nbytes, int timeout)
   bufptr = buffer;
 
   dbglogfile << "Writing to socket: \r\n\t" << buffer << endl;
-  
+
   while (retries-- > 1) {
     // Wait for the socket to be ready for writing
     if (_sockfd > 2) {
@@ -964,6 +1005,9 @@ Tcpip::writeNet(int fd, char const *buffer, int nbytes, int timeout)
       continue;
     }
     ret = write(fd, bufptr, nbytes);
+    // Add a LF/CR to flush the buffer.
+    // write(fd, "\r\n", 2);
+    
     
     if (ret == 0) {
       dbglogfile << "Couldn't write any bytes to fd #" << fd << endl;

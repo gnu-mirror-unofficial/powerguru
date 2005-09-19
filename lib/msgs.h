@@ -99,14 +99,14 @@ class Msgs : public Tcpip {
     HEARTBEAT
   } xml_msg_e;
   
-  typedef int (Msgs::*FPtr)(int); // FIXME: test code
+  //  typedef int (Msgs::*FPtr)(int); // FIXME: test code
   typedef retcode_t (Msgs::*methodPtr_t)(XMLNode *node);
 
-  struct msg_data 
-  {
-    FPtr ptr;
-    std::string name;
-  };
+//   struct msg_data 
+//   {
+//     FPtr ptr;
+//     std::string name;
+//   };
 
   Msgs();
   Msgs(std::string host, std::string ip);
@@ -148,6 +148,8 @@ class Msgs : public Tcpip {
   retcode_t ac1InProcess(XMLNode *node);
   retcode_t ac2InProcess(XMLNode *node);
 
+  retcode_t unimplementedProcess(XMLNode *node);
+
   // These are all the system commands
   retcode_t commandProcess(XMLNode *node);
 
@@ -177,13 +179,19 @@ class Msgs : public Tcpip {
   void print_msg(std::string msg);
 
   void methodSet(const xmlChar *name, methodPtr_t func);
-  methodPtr_t methodGet(const xmlChar * name);
-  retcode_t methodProcess(const xmlChar * name, XMLNode *node);
+  methodPtr_t methodGet(const xmlChar *name);
+  retcode_t methodProcess(const xmlChar *name, XMLNode *node);
   void methodsDump(void);
 
-  std::string cacheGet(const xmlChar * name);
-  retcode_t cacheAdd(const xmlChar * name, std::string);
+  std::string cacheGet(const xmlChar *name);
+  retcode_t cacheAdd(const xmlChar *name, std::string);
   void cacheDump(void);
+
+  std::string thisIPGet(void) { return _thisip; };
+  std::string remoteIPGet(void) { return _thishost; }; 
+  std::string thisHostnameGet(void) { return _remoteip; };
+  std::string remoteHostnameGet(void) { return _remotehost; };
+ 
   
 private:
   float               _version;

@@ -233,12 +233,12 @@ Msgs::init(void)
 
   // Configuration settings
   _methods[BAD_CAST "config"] = &Msgs::configProcess;
-  //  _methods[BAD_CAST "generator"] = &Msgs::config;
-  //  _methods[BAD_CAST "grid"] = &Msgs::config;
-  //  _methods[BAD_CAST "buy"] = &Msgs::config;
-  //  _methods[BAD_CAST "sell"] = &Msgs::config;
-  //  _methods[BAD_CAST "start"] = &Msgs::config;
-  //  _methods[BAD_CAST "end"] = &Msgs::config;
+  _methods[BAD_CAST "generator"] = &Msgs::configProcess;
+  _methods[BAD_CAST "grid"] = &Msgs::configProcess;
+  _methods[BAD_CAST "buy"] = &Msgs::configProcess;
+  _methods[BAD_CAST "sell"] = &Msgs::configProcess;
+  _methods[BAD_CAST "start"] = &Msgs::configProcess;
+  _methods[BAD_CAST "end"] = &Msgs::configProcess;
 
   // Command messages
   _methods[BAD_CAST "command"] = &Msgs::commandProcess;
@@ -248,8 +248,13 @@ Msgs::init(void)
 //   _methods[BAD_CAST "inverter"] = &Msgs::commandInverterProcess;;
 //   _methods[BAD_CAST "charger"] = &Msgs::commandChargerProcess;;
   // _methods[BAD_CAST "restart"] = &Msgs::commandRestartProcess;;
-
-  //  _methods[""] = &Msgs::heloProcess;
+  _methods[BAD_CAST "auxilary"] = &Msgs::commandProcess;
+    _methods[BAD_CAST "relay"] = &Msgs::commandProcess;
+  _methods[BAD_CAST "poll"] = &Msgs::commandProcess;
+  _methods[BAD_CAST "inverter"] = &Msgs::commandProcess;
+  _methods[BAD_CAST "charger"] = &Msgs::commandProcess;
+  
+  //  _methods[""] = &Msgs::unimplementedProcess;
 
   // preload a few values
   if (_net_mode == DAEMON) {
@@ -417,6 +422,29 @@ Msgs::~Msgs()
 {
   // DEBUGLOG_REPORT_FUNCTION;
   
+}
+
+retcode_t
+Msgs::unimplementedProcess(XMLNode *xml)
+{
+  DEBUGLOG_REPORT_FUNCTION;
+
+  dbglogfile << "XML tag \"" << xml->nameGet() << "\" doesn't exist." << endl;
+
+  _body.str("");                // erase the current string
+  _body << "<powerguru version=\"" << _version << "\">";
+  _body << "<status><warningmode><";
+  _body << BAD_CAST xml->nameGet();
+  _body << ">unimplemented</" << BAD_CAST xml->nameGet();
+  _body <<  "></warningmode>" << "</status>"; 
+  _body << "</powerguru>";
+  _body << ends;
+
+  if (writeNet(_body.str())) {
+    return ERROR;
+  } else {
+    return SUCCESS;
+  }
 }
 
 void
@@ -977,9 +1005,9 @@ retcode_t
 Msgs::statusProcess(XMLNode *node)
 {
   DEBUGLOG_REPORT_FUNCTION;
-  XMLNode *child;
+  //  XMLNode *child;
+  //  unsigned int i;
   string str;
-  unsigned int i;
 
   // dbglogfile << BAD_CAST node->valueGet() << endl;
   
@@ -1021,6 +1049,7 @@ Msgs::statusProcess(XMLNode *node)
       //cerr << "ERROR" << endl;
     }
 #endif
+
     cacheAdd(node->nameGet(), (const char*)node->valueGet());
     dbglogfile << "tag \"" << node->nameGet() << "\" has a value of: " << node->valueGet() << endl;
     
@@ -1043,8 +1072,8 @@ retcode_t
 Msgs::configProcess(XMLNode *node)
 {
    DEBUGLOG_REPORT_FUNCTION;
-  dbglogfile << "WARNING: unimplemented method" << endl;
-  return ERROR;                 // FIXME: implement this method
+
+  return unimplementedProcess(node);    // FIXME: implement this method
 }
 
 retcode_t
@@ -1058,7 +1087,7 @@ Msgs::metersProcess(XMLNode *node)
 
   if(_net_mode == DAEMON) {
     //cacheDump();
-    const xmlChar *xxx = node->nameGet();
+    //    const xmlChar *xxx = node->nameGet();
     string value = cacheGet(node->valueGet());
     dbglogfile << "value for \"" << node->valueGet() << "\" is " << value.c_str() << endl;
     if (value.size() == 0) {
@@ -1386,6 +1415,6 @@ Msgs::commandProcess(XMLNode *node) {
     dbglogfile << "ERROR: no value in messages!" << endl;
     return ERROR;
   }
-      
-  return SUCCESS;
+
+  return unimplementedProcess(node);  
 }

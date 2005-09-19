@@ -87,7 +87,9 @@ class Tcpip : public Tcputil
   // Close the connection
   retcode_t closeNet();
   retcode_t closeNet(int fd);
-  
+  retcode_t closeConnection();
+  retcode_t closeConnection(int fd);
+
   // Change the debug flag
   void toggleDebug(bool val);  
   
@@ -101,7 +103,11 @@ class Tcpip : public Tcputil
   const std::string remoteName(void);
   const std::string remoteName(struct in_addr addr);
 
-  Tcpip &operator = (Tcpip &tcp);  
+  Tcpip &operator = (Tcpip &tcp);
+
+  void checkConsole(void) { _console = true; };
+  
+  
 private:
   static int               _sockfd;
   static int               _sockIOfd;
@@ -111,6 +117,7 @@ private:
   const char              *_proto;
   short                    _port;
   bool                     _debug;
+  bool                    _console;
 };
 
 // EOF __TCPIP_H__ */
