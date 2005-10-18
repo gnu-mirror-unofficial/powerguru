@@ -43,7 +43,7 @@ powerguruMIB MODULE-IDENTITY
     REVISION	 "200508060000Z"
     DESCRIPTION
 	"This is the default value for net-snmp."
-    ::= { enterprises 9999 }
+    ::= { enterprises 24051 }
 --    ::= { enterprises 8072 }
 
 powerguru          OBJECT IDENTIFIER ::= { powerguruMIB   1 }
