@@ -1,20 +1,19 @@
 // 
-//   Copyright (C) 2005 Free Software Foundation, Inc.
-//
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+// 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
-// the Free Software Foundation; either version 2 of the License, or
+// the Free Software Foundation; either version 3 of the License, or
 // (at your option) any later version.
-
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-
+// 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
 
 #ifndef  __XANTREXUI_H__
 #define __XANTREXUI_H__
@@ -51,10 +50,10 @@ class XantrexUI : public Serial
   std::string &SelectInverter(int x);
 
   // Read from the serial port
-  std::string &XantrexUI::ReadSerial(void);
+  std::string &ReadSerial(void);
 
   // Write to the serial port
-  std::string &XantrexUI::WriteSerial(const char *buf, int nbytes);
+  std::string &WriteSerial(const char *buf, int nbytes);
 
   // These methods all go with the Xantrex display buttons
   std::string &MenuHeadingMinus(void);

@@ -98,3 +98,8 @@ uninstall-hook:
 #	$(INSTALL_DATA) $(srcdir)/images/*.png $(powerguru_helpdir)/images
 
 install-doc:
+
+# db2x_xsltproc -s texi powerguru.xml -o powerguru.txml
+# db2x_texixml powerguru.txml
+# makeinfo --force powerguru_manual_v0.2.texi
+

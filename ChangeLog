@@ -1,3 +1,8 @@
+2005-11-05  Rob Savoye  <rob@bertha.welcomehome.org>
+
+	* lib/xantrex-trace.h: 
+	* lib/database.h: 
+
 2005-09-18  Rob Savoye  <rob@bertha.welcomehome.org>
 
 	* lib/msgs.cc: Add a warning message so unimplemented messages
