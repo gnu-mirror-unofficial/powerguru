@@ -1,0 +1,14 @@
+Makefile.in
+autom4te.cache
+gpv
+gpv2
+configure
+macros
+*~
+ltmain.sh
+TAGS
+aclocal.m4
+config.h.in
+.gdb_history
+x
+y
