@@ -150,14 +150,13 @@ handle_powerGuruDataLog(netsnmp_mib_handler *handler,
 
     switch (reqinfo->mode) {
 
+    long data = 0;
     case MODE_GET:
-        snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
-                                 (u_char *)
-                                 /* XXX: a pointer to the scalar's data */
-                                 ,
-                                 /*
-                                  * XXX: the length of the data in bytes 
-                                  */ );
+      snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
+                               /* XXX: a pointer to the scalar's data */
+                               (u_char *)&data,
+                               /* XXX: the length of the data in bytes */
+                               sizeof(data));
         break;
 
         /*
@@ -167,9 +166,7 @@ handle_powerGuruDataLog(netsnmp_mib_handler *handler,
          * http://www.net-snmp.org/tutorial-5/toolkit/mib_module/set-actions.jpg
          */
     case MODE_SET_RESERVE1:
-        /*
-         * or you could use netsnmp_check_vb_type_and_size instead 
-         */
+        /* or you could use netsnmp_check_vb_type_and_size instead */
         /* ret = netsnmp_check_vb_type(requests->requestvb, ASN_INTEGER); */
         if (ret != SNMP_ERR_NOERROR) {
             netsnmp_set_request_error(reqinfo, requests, ret);
@@ -177,13 +174,13 @@ handle_powerGuruDataLog(netsnmp_mib_handler *handler,
         break;
 
     case MODE_SET_RESERVE2:
-        /*
-         * XXX malloc "undo" storage buffer 
-         */
+        /* XXX malloc "undo" storage buffer */
+#if 0
         if ( /* XXX if malloc, or whatever, failed: */ ) {
             netsnmp_set_request_error(reqinfo, requests,
                                       SNMP_ERR_RESOURCEUNAVAILABLE);
         }
+#endif
         break;
 
     case MODE_SET_FREE:
@@ -195,39 +192,36 @@ handle_powerGuruDataLog(netsnmp_mib_handler *handler,
         break;
 
     case MODE_SET_ACTION:
-        /*
-         * XXX: perform the value change here 
-         */
+        /* XXX: perform the value change here */
+#if 0
         if ( /* XXX: error? */ ) {
-            netsnmp_set_request_error(reqinfo, requests, /* some error */
+            netsnmp_set_request_error(reqinfo, requests,
+                                      /* some error */
                                       );
         }
+#endif
         break;
 
     case MODE_SET_COMMIT:
-        /*
-         * XXX: delete temporary storage 
-         */
+        /* XXX: delete temporary storage */
+#if 0
         if ( /* XXX: error? */ ) {
-            /*
-             * try _really_really_ hard to never get to this point 
-             */
+            /* try _really_really_ hard to never get to this point */
             netsnmp_set_request_error(reqinfo, requests,
                                       SNMP_ERR_COMMITFAILED);
         }
+#endif
         break;
 
     case MODE_SET_UNDO:
-        /*
-         * XXX: UNDO and return to previous value for the object 
-         */
+        /* XXX: UNDO and return to previous value for the object */
+#if 0
         if ( /* XXX: error? */ ) {
-            /*
-             * try _really_really_ hard to never get to this point 
-             */
+            /* try _really_really_ hard to never get to this point */
             netsnmp_set_request_error(reqinfo, requests,
                                       SNMP_ERR_UNDOFAILED);
         }
+#endif
         break;
 
     default:
@@ -260,21 +254,18 @@ handle_powerGuruUnitAddress(netsnmp_mib_handler *handler,
 
     switch (reqinfo->mode) {
 
+    long data = 0;
     case MODE_GET:
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
-                                 (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 ,
-                                 /*
-                                  * XXX: the length of the data in bytes 
-                                  */ );
+                                 (u_char *)&data,
+                                 /* XXX: the length of the data in bytes */
+                                 sizeof(data));
         break;
 
 
     default:
-        /*
-         * we should never get here, so this is a really bad error 
-         */
+        /* we should never get here, so this is a really bad error */
         snmp_log(LOG_ERR,
                  "unknown mode (%d) in handle_powerGuruUnitAddress\n",
                  reqinfo->mode);
@@ -302,14 +293,13 @@ handle_powerGuruChargeAmps(netsnmp_mib_handler *handler,
 
     switch (reqinfo->mode) {
 
+    long data = 0;
     case MODE_GET:
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
-                                 (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 ,
-                                 /*
-                                  * XXX: the length of the data in bytes 
-                                  */ );
+                                 (u_char *)&data,
+                                 /* XXX: the length of the data in bytes */
+                                 sizeof(data));
         break;
 
 
@@ -344,14 +334,13 @@ handle_powerGuruPVAmps(netsnmp_mib_handler *handler,
 
     switch (reqinfo->mode) {
 
+    long data = 0;
     case MODE_GET:
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
-                                 (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 ,
-                                 /*
-                                  * XXX: the length of the data in bytes 
-                                  */ );
+                                 (u_char *)&data,
+                                 /* XXX: the length of the data in bytes */
+                                 sizeof(data));
         break;
 
 
@@ -385,14 +374,13 @@ handle_powerGuruPVVolts(netsnmp_mib_handler *handler,
 
     switch (reqinfo->mode) {
 
+    long data = 0;
     case MODE_GET:
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
-                                 (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 ,
-                                 /*
-                                  * XXX: the length of the data in bytes 
-                                  */ );
+                                 (u_char *)&data,
+                                 /* XXX: the length of the data in bytes */
+                                 sizeof(data));
         break;
 
 
@@ -426,14 +414,13 @@ handle_powerGuruDailyKW(netsnmp_mib_handler *handler,
 
     switch (reqinfo->mode) {
 
+    long data = 0;
     case MODE_GET:
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
-                                 (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 ,
-                                 /*
-                                  * XXX: the length of the data in bytes 
-                                  */ );
+                                 (u_char *)&data,
+                                 /* XXX: the length of the data in bytes */
+                                 sizeof(data));
         break;
 
 
@@ -467,14 +454,13 @@ handle_powerGuruAuxMode(netsnmp_mib_handler *handler,
 
     switch (reqinfo->mode) {
 
+    long data = 0;
     case MODE_GET:
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
-                                 (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 ,
-                                 /*
-                                  * XXX: the length of the data in bytes 
-                                  */ );
+                                 (u_char *)&data,
+                                 /* XXX: the length of the data in bytes */
+                                 sizeof(data));
         break;
 
 
@@ -508,14 +494,13 @@ handle_powerGuruErrorMode(netsnmp_mib_handler *handler,
 
     switch (reqinfo->mode) {
 
+    long data = 0;
     case MODE_GET:
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
-                                 (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 ,
-                                 /*
-                                  * XXX: the length of the data in bytes 
-                                  */ );
+                                 (u_char *)&data,
+                                 /* XXX: the length of the data in bytes */
+                                 sizeof(data));
         break;
 
 
@@ -550,14 +535,13 @@ handle_powerGuruChargerMode(netsnmp_mib_handler *handler,
 
     switch (reqinfo->mode) {
 
+    long data = 0;
     case MODE_GET:
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
-                                 (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 ,
-                                 /*
-                                  * XXX: the length of the data in bytes 
-                                  */ );
+                                 (u_char *)&data,
+                                 /* XXX: the length of the data in bytes */
+                                 sizeof(data));
         break;
 
 
@@ -592,14 +576,13 @@ handle_powerGuruBatteryVolts(netsnmp_mib_handler *handler,
 
     switch (reqinfo->mode) {
 
+    long data = 0;
     case MODE_GET:
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
-                                 (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 ,
-                                 /*
-                                  * XXX: the length of the data in bytes 
-                                  */ );
+                                 (u_char *)&data,
+                                 /* XXX: the length of the data in bytes */
+                                 sizeof(data));
         break;
 
 
@@ -634,14 +617,13 @@ handle_powerGuruLoadAmps(netsnmp_mib_handler *handler,
 
     switch (reqinfo->mode) {
 
+    long data = 0;
     case MODE_GET:
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
-                                 (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 ,
-                                 /*
-                                  * XXX: the length of the data in bytes 
-                                  */ );
+                                 (u_char *)&data,
+                                 /* XXX: the length of the data in bytes */
+                                 sizeof(data));
         break;
 
 
@@ -676,14 +658,13 @@ handle_powerGuruACBuyAmps(netsnmp_mib_handler *handler,
 
     switch (reqinfo->mode) {
 
+    long data = 0;
     case MODE_GET:
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
-                                 (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 ,
-                                 /*
-                                  * XXX: the length of the data in bytes 
-                                  */ );
+                                 (u_char *)&data,
+                                 /* XXX: the length of the data in bytes */
+                                 sizeof(data));
         break;
 
 
@@ -718,14 +699,13 @@ handle_powerGuruACInputVolts(netsnmp_mib_handler *handler,
 
     switch (reqinfo->mode) {
 
+    long data = 0;
     case MODE_GET:
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
-                                 (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 ,
-                                 /*
-                                  * XXX: the length of the data in bytes 
-                                  */ );
+                                 (u_char *)&data,
+                                 /* XXX: the length of the data in bytes */
+                                 sizeof(data));
         break;
 
 
@@ -758,16 +738,15 @@ handle_powerGuruACOutputVolts(netsnmp_mib_handler *handler,
      * we don't need to loop over a list of requests; we'll only get one. 
      */
 
-    switch (reqinfo->mode) {
+  switch (reqinfo->mode) {
 
+    long data = 0;
     case MODE_GET:
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
-                                 (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 ,
-                                 /*
-                                  * XXX: the length of the data in bytes 
-                                  */ );
+                                 (u_char *)&data,
+                                 /* XXX: the length of the data in bytes */
+                                 sizeof(data));
         break;
 
 
@@ -800,23 +779,20 @@ handle_powerGuruACSellAmps(netsnmp_mib_handler *handler,
      * we don't need to loop over a list of requests; we'll only get one. 
      */
 
+  long data = 0;
     switch (reqinfo->mode) {
 
     case MODE_GET:
         snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
-                                 (u_char *)
                                  /* XXX: a pointer to the scalar's data */
-                                 ,
-                                 /*
-                                  * XXX: the length of the data in bytes 
-                                  */ );
+                                 (u_char *)&data,
+                                 /* XXX: the length of the data in bytes */
+                                 sizeof (data));
         break;
 
 
     default:
-        /*
-         * we should never get here, so this is a really bad error 
-         */
+        /* we should never get here, so this is a really bad error */
         snmp_log(LOG_ERR,
                  "unknown mode (%d) in handle_powerGuruACSellAmps\n",
                  reqinfo->mode);
