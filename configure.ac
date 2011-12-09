@@ -135,10 +135,18 @@ AC_SUBST(PACKAGE_CFLAGS)
 AC_SUBST(PACKAGE_LIBS)
 
 AM_PATH_MYSQL
-if test x$snmp = xtrue; then
-  AM_PATH_SNMP
-fi
-AM_CONDITIONAL(SNMP, test x$snmp = xtrue)
+AM_PATH_SNMP
+AM_CONDITIONAL(BUILD_SNMP, test x$snmp = xtrue)
+
+sim=false
+AC_ARG_ENABLE(sim, [  --enable-sim           enable support for Sim (default=yes)],
+[case "${enableval}" in
+  yes) sim=true ;;
+  no)  sim=false ;;
+  *)   AC_MSG_ERROR([bad value ${enableval} for enable-malloc option]) ;;
+esac])
+
+AM_CONDITIONAL(BUILD_SIM, test x${sim} = xtrue)
 
 dnl link to the images so we can browse the HTML output before
 dnl installing it.
@@ -167,6 +175,12 @@ if test x$snmp = xtrue; then
   echo "        Using SNMP"
 else
   echo "        Not using SNMP"
+fi
+
+if test x$sim = xtrue; then
+  echo "        Using the simulator"
+else
+  echo "        Not using the simulator"
 fi
 
 dnl Dmalloc
