@@ -21,11 +21,20 @@ AUTOMAKE_OPTIONS = dejagnu
 
 ACLOCAL_AMFLAGS = -I macros
 
-STD_DIRS = lib daemon doc sim client # testsuite
-if SNMP
-SUBDIRS = snmp $(STD_DIRS) #src
-else
-SUBDIRS = $(STD_DIRS) #src
+# these have to be built first
+SUBDIRS = lib doc
+
+# this is an optional build directory
+if BUILD_SNMP
+SUBDIRS += snmp $(STD_DIRS) #src
+endif
+
+# These are built now, as they depend on the the libraries
+SUBDIRS += daemon client # testsuite
+
+# this is an optional build directory
+if BUILD_SIM
+SUBDIRS += sim
 endif
 
 EXTRA_DIST = \

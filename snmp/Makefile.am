@@ -32,31 +32,13 @@ libpgsnmp_la_SOURCES = \
 #		ifTable_data_set.c
 
 INCLUDES = -I$(srcdir) -I.. $(SNMP_CFLAGS)
+libpgsnmp_la_LIBDADD =  $(SNMP_LIBS)
 
 generate-templates:
 	@echo "Generating templates from PowerGuru MIB for Xantrex"
 	@mib2c xantrex
 	@echo "Generating templates from PowerGuru MIB for Outback"
 	@mib2c outback
-
-install-libLTLIBRARIES: $(lib_LTLIBRARIES)
-	@$(NORMAL_INSTALL)
-	test -z "$(pkglibdir)" || $(mkdir_p) "$(DESTDIR)$(pkglibdir)"
-	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
-	  if test -f $$p; then \
-	    f=$(am__strip_dir) \
-	    echo " $(LIBTOOL) --mode=install $(libLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(pkglibdir)/$$f'"; \
-	    $(LIBTOOL) --mode=install $(libLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(pkglibdir)/$$f"; \
-	  else :; fi; \
-	done
-
-uninstall-libLTLIBRARIES:
-	@$(NORMAL_UNINSTALL)
-	@set -x; list='$(lib_LTLIBRARIES)'; for p in $$list; do \
-	  p=$(am__strip_dir) \
-	  echo " $(LIBTOOL) --mode=uninstall rm -f '$(DESTDIR)$(pkglibdir)/$$p'"; \
-	  $(LIBTOOL) --mode=uninstall rm -f "$(DESTDIR)$(pkglibdir)/$$p"; \
-	done
 
 # snmptranslate -M+. -mPOWERGURU-MIB -Tp -IR powerguru
 # mib2c -c mib2c.scalar.conf powerGuru

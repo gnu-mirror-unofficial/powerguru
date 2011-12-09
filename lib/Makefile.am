@@ -34,9 +34,9 @@ INCLUDES = \
 	-I.. $(XML_CPPFLAGS) \
 	$(MYSQL_CFLAGS)
 
-if SNMP
+if BUILD_SNMP
 SNMP_FILES = snmp.cc snmp.h
-libpguru_la_LIBDADD =  $(SNMP_LIBS)
+libpguru_la_LIBDADD =  $(SNMP_LIBS) ../snmp/libpgsnmp.la
 endif
 
 # Bulding sharedlib requires adding all the libtool libraries
@@ -74,53 +74,6 @@ include_HEADERS = \
 	xml.h
 
 #libpguru_la_LDFLAGS = -module -avoid-version -no-undefined
-
-# These are basically copied from the Makefile.in produced by Automake.
-# Unfortunately the -local options for changing these don't work...
-# so we have to redefine them since we want to install with the package
-# name for our library and headers to avoid any problems. So the only
-# thing changes is includedir to pkgincludedir and libdir to pkglibdir.
-install-includeHEADERS:
-	@$(NORMAL_INSTALL)
-	test -z "$(pkgincludedir)" || $(mkdir_p) "$(DESTDIR)$(pkgincludedir)"
-	@list='$(include_HEADERS)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(includeHEADERS_INSTALL) '$$d$$p' '$(DESTDIR)$(pkgincludedir)/$$f'"; \
-	  $(includeHEADERS_INSTALL) "$$d$$p" "$(DESTDIR)$(pkgincludedir)/$$f"; \
-	done
-
-uninstall-includeHEADERS: uninstall-libLTLIBRARIES
-	@$(NORMAL_UNINSTALL)
-	@list='$(include_HEADERS)'; for p in $$list; do \
-	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(pkgincludedir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(pkgincludedir)/$$f"; \
-	done
-
-install-libLTLIBRARIES: $(lib_LTLIBRARIES)
-	@$(NORMAL_INSTALL)
-	test -z "$(pkglibdir)" || $(mkdir_p) "$(DESTDIR)$(pkglibdir)"
-	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
-	  if test -f $$p; then \
-	    f=$(am__strip_dir) \
-	    echo " $(LIBTOOL) --mode=install $(libLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(pkglibdir)/$$f'"; \
-	    $(LIBTOOL) --mode=install $(libLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(pkglibdir)/$$f"; \
-	  else :; fi; \
-	done
-
-uninstall-libLTLIBRARIES:
-	@$(NORMAL_UNINSTALL)
-	@set -x; list='$(lib_LTLIBRARIES)'; for p in $$list; do \
-	  p=$(am__strip_dir) \
-	  echo " $(LIBTOOL) --mode=uninstall rm -f '$(DESTDIR)$(pkglibdir)/$$p'"; \
-	  $(LIBTOOL) --mode=uninstall rm -f "$(DESTDIR)$(pkglibdir)/$$p"; \
-	done
-
-# Rebuild with GCC 4.x Mudflap support
-mudflap:
-	@echo "Rebuilding with GCC Mudflap support"
-	$(MAKE) CXXFLAGS="$(CXXFLAGS) -fmudflap" LDFLAGS="$(LDFLAGS) -lmudflap"
 
 clean-hook:
 	-rm -f core.*

@@ -24,7 +24,11 @@ bin_PROGRAMS = pguru
 INCLUDES = -I$(top_srcdir)/lib $(XML_CPPFLAGS)
 
 pguru_SOURCES = cmd.cc
-pguru_LDADD =  $(PGURU) $(XML_LIBS) $(MYSQL_LIBS) -lpthread
+pguru_LDADD = $(PGURU) $(XML_LIBS) $(MYSQL_LIBS) -lpthread $(SNMP_LIBS)
+if BUILD_SNMP
+pguru_LDADD += ../snmp/libpgsnmp.la
+endif
+
 pguru_DEPENDENCIES = $(PGURU)
 
 

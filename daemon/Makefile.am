@@ -21,7 +21,7 @@ AUTOMAKE_OPTIONS = # dejagnu
 
 AM_CPPFLAGS = -Wall
 
-if SNMP
+if BUILD_SNMP
   SNMP_LA = ../snmp/libpgsnmp.la
   SNMP_FILES = $(SNMP_LA) $(SNMP_LIBS)
   SNMP_INCLUDES =  -I$(SNMP_CFLAGS)
