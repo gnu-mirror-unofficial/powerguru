@@ -18,12 +18,13 @@ dnl  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(configure.ac)
+AC_PREREQ(2.59c)
+AC_INIT(snmp/POWERGURU-MIB.txt)
 dnl AC_CANONICAL_SYSTEM
 AC_CANONICAL_TARGET
-AM_INIT_AUTOMAKE(powerguru, 0.3)
-AM_MAINTAINER_MODE
-AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE(powerguru, 0.3dev)
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_MACRO_DIR([macros])
 
 dnl Use the DMalloc library, if specified.
 AC_ARG_ENABLE(dmalloc, [  --enable-dmalloc        enable support for DMalloc],
@@ -107,8 +108,8 @@ else
    AC_DOCBOOK_STYLES
 fi
 
-AC_CHECK_HEADERS([stdarg.h])
-AC_CHECK_HEADERS([syslog])
+AC_CANONICAL_BUILD
+AC_CANONICAL_HOST
 
 AC_ISC_POSIX
 AC_PROG_CXX
@@ -116,25 +117,18 @@ AM_PROG_CC_STDC
 AC_HEADER_STDC
 dnl AC_PROG_AR
 AC_CHECK_TOOL(AR, ar)
-AC_PROG_RANLIB
-AC_PROG_LD
 
 dnl These are for MinGW or Cygwin support.
 AC_EXEEXT
 AC_CHECK_TOOL(DLLTOOL, dlltool)
 AC_CHECK_TOOL(WINDRES, windres)
 
-AR=${AR-ar}
-AC_SUBST(AR)
-
-LD=${LD-ld}
-AC_SUBST(LD)
-
-RANLIB=${RANLIB-ranlib}
-AC_SUBST(RANLIB)
+AC_CHECK_HEADERS([stdarg.h])
+AC_CHECK_HEADERS([syslog])
 
 AC_PROG_LIBTOOL
-dnl We only use these defnitions if we want to dynamically load
+
+dnl We only use these definitions if we want to dynamically load
 dnl shared libraries from our application code.
 
 dnl Look for libltdl, which we use for dealing with shared libraries
@@ -158,7 +152,10 @@ AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"powerguru", [Gettext package.])
 
 AM_PATH_MYSQL
-AM_PATH_SNMP
+if test x$snmp = xtrue; then
+  AM_PATH_SNMP
+fi
+AM_CONDITIONAL(SNMP, test x$snmp = xtrue)
 
 dnl link to the images so we can browse the HTML output before
 dnl installing it.

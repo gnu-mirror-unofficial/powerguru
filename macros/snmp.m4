@@ -13,8 +13,6 @@ AC_ARG_ENABLE(snmp, [  --enable-snmp           enable support for Snmp (default=
   *)   AC_MSG_ERROR([bad value ${enableval} for enable-malloc option]) ;;
 esac])
 
-AM_CONDITIONAL(SNMP, test x$snmp = xtrue)
-
 if test x$snmp = xtrue; then
     AC_DEFINE([USE_SNMP], [], [Use SNMP])
 
