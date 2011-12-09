@@ -227,4 +227,3 @@ SnmpDaemon::process(void)
 }
 #endif
 
-#endif
