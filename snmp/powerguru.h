@@ -22,9 +22,36 @@
 #ifndef POWERGURU_H
 #define POWERGURU_H
 
+#include <net-snmp/net-snmp-config.h>
+#include <net-snmp/net-snmp-includes.h>
+#include <net-snmp/agent/net-snmp-agent-includes.h>
+#include <net-snmp/agent/scalar.h>
+
 /*
  * function declarations 
  */
+#if defined(__cplusplus) && defined(__GNUC__)
+extern "C" {
+  
+void            init_powerguru(void);
+  
+Netsnmp_Node_Handler handle_powerGuruDataLog;
+Netsnmp_Node_Handler handle_powerGuruUnitAddress;
+Netsnmp_Node_Handler handle_powerGuruChargeAmps;
+Netsnmp_Node_Handler handle_powerGuruPVAmps;
+Netsnmp_Node_Handler handle_powerGuruPVVolts;
+Netsnmp_Node_Handler handle_powerGuruDailyKW;
+Netsnmp_Node_Handler handle_powerGuruAuxMode;
+Netsnmp_Node_Handler handle_powerGuruErrorMode;
+Netsnmp_Node_Handler handle_powerGuruChargerMode;
+Netsnmp_Node_Handler handle_powerGuruBatteryVolts;
+Netsnmp_Node_Handler handle_powerGuruLoadAmps;
+Netsnmp_Node_Handler handle_powerGuruACBuyAmps;
+Netsnmp_Node_Handler handle_powerGuruACInputVolts;
+Netsnmp_Node_Handler handle_powerGuruACOutputVolts;
+Netsnmp_Node_Handler handle_powerGuruACSellAmps;
+}
+#else
 void            init_powerguru(void);
 Netsnmp_Node_Handler handle_powerGuruDataLog;
 Netsnmp_Node_Handler handle_powerGuruUnitAddress;
@@ -42,4 +69,5 @@ Netsnmp_Node_Handler handle_powerGuruACInputVolts;
 Netsnmp_Node_Handler handle_powerGuruACOutputVolts;
 Netsnmp_Node_Handler handle_powerGuruACSellAmps;
 
-#endif                          /* POWERGURU_H */
+#endif  /* cplusplus */
+#endif  /* POWERGURU_H */
