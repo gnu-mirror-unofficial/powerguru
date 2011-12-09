@@ -131,25 +131,8 @@ AC_PROG_LIBTOOL
 dnl We only use these definitions if we want to dynamically load
 dnl shared libraries from our application code.
 
-dnl Look for libltdl, which we use for dealing with shared libraries
-dnl AC_LIBTOOL_DLOPEN
-dnl AC_LIBLTDL_CONVENIENCE
-dnl AC_LIB_LTDL
-dnl DLOPEN="-dlopen"
-dnl DLPREOPEN="-dlpreopen"
-dnl AC_SUBST(DLOPEN)
-dnl AC_SUBST(DLPREOPEN)
-
-dnl Substitute INCLTDL and LIBLTDL in the Makefiles
-dnl AC_SUBST(INCLTDL)
-dnl AC_SUBST(LIBLTDL)
-dnl AC_SUBST(LIBTOOL_DEPS)
-
 AC_SUBST(PACKAGE_CFLAGS)
 AC_SUBST(PACKAGE_LIBS)
-
-AC_SUBST(GETTEXT_PACKAGE)
-AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"powerguru", [Gettext package.])
 
 AM_PATH_MYSQL
 if test x$snmp = xtrue; then
