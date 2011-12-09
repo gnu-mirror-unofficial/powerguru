@@ -19,6 +19,8 @@
 ## Process this file with automake to produce Makefile.in
 AUTOMAKE_OPTIONS = dejagnu
 
+ACLOCAL_AMFLAGS = -I macros
+
 STD_DIRS = lib daemon doc sim client # testsuite
 if SNMP
 SUBDIRS = snmp $(STD_DIRS) #src
