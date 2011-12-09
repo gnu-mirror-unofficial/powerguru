@@ -36,8 +36,7 @@ INCLUDES = \
 
 if SNMP
 SNMP_FILES = snmp.cc snmp.h
-else
-SNMP_FILES = 
+libpguru_la_LIBDADD =  $(SNMP_LIBS)
 endif
 
 # Bulding sharedlib requires adding all the libtool libraries
@@ -53,7 +52,8 @@ libpguru_la_SOURCES = \
 	xantrex-trace.cc xantrex-trace.h \
 	outbackpower.cc outbackpower.h \
 	menuitem.cc menuitem.h \
-	mysql.cc database.h $(SNMP_FILES) \
+	mysql.cc database.h\
+	$(SNMP_FILES) \
 	tcputil.cc tcputil.h \
 	tcpip.cc tcpip.h \
 	msgs.cc msgs.h \
@@ -74,7 +74,6 @@ include_HEADERS = \
 	xml.h
 
 #libpguru_la_LDFLAGS = -module -avoid-version -no-undefined
-#libpguru_la_LIBDADD =  #@DL_LIB@  # $(LIBLTDL)
 
 # These are basically copied from the Makefile.in produced by Automake.
 # Unfortunately the -local options for changing these don't work...
