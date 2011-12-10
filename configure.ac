@@ -139,25 +139,29 @@ AM_PATH_MYSQL
 AM_PATH_SNMP
 AM_CONDITIONAL(BUILD_SNMP, test x$snmp = xtrue)
 
-sim=false
 AC_ARG_ENABLE(sim, [  --enable-sim           enable support for Sim (default=no)],
 [case "${enableval}" in
   yes) sim=true ;;
   no)  sim=false ;;
   *)   AC_MSG_ERROR([bad value ${enableval} for enable-malloc option]) ;;
-esac])
+esac], sim=false)
 
 AM_CONDITIONAL(BUILD_SIM, test x${sim} = xtrue)
 
-client=false
 AC_ARG_ENABLE(client, [  --enable-client           enable support for Client (default=no)],
 [case "${enableval}" in
   yes) client=true ;;
   no)  client=false ;;
   *)   AC_MSG_ERROR([bad value ${enableval} for enable-malloc option]) ;;
-esac])
+esac], client=false)
 
 AM_CONDITIONAL(BUILD_CLIENT, test x${client} = xtrue)
+
+AC_ARG_WITH(tty,
+  AC_HELP_STRING([--with-tty=], [Specify which TTY's to read data from]),
+  TTYS=${with_tty}
+  AC_SUBST(TTYS)
+)
 
 dnl link to the images so we can browse the HTML output before
 dnl installing it.

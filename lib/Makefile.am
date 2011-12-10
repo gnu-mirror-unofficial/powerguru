@@ -26,6 +26,9 @@ AM_CPPFLAGS = -Wall
 
 lib_LTLIBRARIES = libpguru.la
 
+# The list of tty's to use by default
+TTYS=@TTYS@
+
 # These headers get installed
 # include_HEADERS = log.h err.h proc.h serial.h xantrex.h outback.h
 
