@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -46,112 +47,113 @@ RCinitFile::~RCinitFile()
 retcode_t
 RCinitFile::load_files()
 {
-  char *home;
-  string loadfile;
+    char *home;
+    string loadfile;
   
-  // Check the default system location
-  loadfile = "/etc/powerguru/config";
-  parse_file(loadfile);
+    // Check the default system location
+    loadfile = "/etc/powerguru/config";
+    parse_file(loadfile);
 
-  // Check the default config location
-  loadfile = "/usr/local/etc/powerguru/config";
-  parse_file(loadfile);
+    // Check the default config location
+    loadfile = "/usr/local/etc/powerguru/config";
+    parse_file(loadfile);
   
-  // Check the users home directory
-  home = getenv("HOME");
-  if (home) {
-    loadfile = home;
-    loadfile += "/.powerguru/config";
-    return parse_file(loadfile);
-  }
+    // Check the users home directory
+    home = getenv("HOME");
+    if (home) {
+        loadfile = home;
+        loadfile += "/.powerguru/config";
+        return parse_file(loadfile);
+    }
   
-  return ERROR;
+    return ERROR;
 }
 
 // Parse the config file and set the variables.
 retcode_t
 RCinitFile::parse_file(string filespec)
 {
-  struct stat stats;
-  string action;
-  string variable;
-  string value;
-  ifstream in;
+    struct stat stats;
+    string action;
+    string variable;
+    string value;
+    ifstream in;
 
-  dbglogfile << "Seeing if " << filespec << " exists." << endl;
-  if (filespec.size() == 0) {
-    return ERROR;
-  }
+    dbglogfile << "Seeing if " << filespec << " exists." << endl;
+    if (filespec.size() == 0) {
+        return ERROR;
+    }
   
-  if (stat(filespec.c_str(), &stats) == 0) {
-    in.open(filespec.c_str());
+    if (stat(filespec.c_str(), &stats) == 0) {
+        in.open(filespec.c_str());
     
-    if (!in) {
-      dbglogfile << "ERROR: Couldn't open file: " << filespec << endl;
-      return ERROR;
-    }
+        if (!in) {
+            dbglogfile << "ERROR: Couldn't open file: " << filespec << endl;
+            return ERROR;
+        }
 
-    // Read in each line and parse it
-    while (!in.eof()) {
-      // Get the first token
-      in >> action;
-      // Ignore comment lines
-      if (action == "#" ) {
-        dbglogfile << "Ignoring comment line " << endl;
-        continue;
-      }
+        // Read in each line and parse it
+        while (!in.eof()) {
+            // Get the first token
+            in >> action;
+            // Ignore comment lines
+            if (action == "#" ) {
+                dbglogfile << "Ignoring comment line " << endl;
+                continue;
+            }
       
-      in >> variable >> value;
-      //      dbglogfile << action << variable << value << endl;
+            in >> variable >> value;
+            //      dbglogfile << action << variable << value << endl;
 
-      if (action == "set") {
-        if (variable == "dbhost") {
-          dbglogfile << "Database host configured to be " << value << endl;
-          _dbhost = value;
+            if (action == "set") {
+                if (variable == "dbhost") {
+                    dbglogfile << "Database host configured to be " << value << endl;
+                    _dbhost = value;
+                }
+                if (variable == "dbuser") {
+                    dbglogfile << "Database user configured to be " << value << endl;
+                    _dbuser = value;
+                }
+                if (variable == "dbpasswd") {
+                    dbglogfile << "Database password configured to be " << value << endl;
+                    _dbpasswd = value;
+                }
+                if (variable == "dbname") {
+                    dbglogfile << "Database name configured to be " << value << endl;
+                    _dbname = value;
+                }
+                if (variable == "devmode") {
+                    dbglogfile << "Device mode configured to be " << value << endl;
+                    _devmode = value;
+                }
+                if (variable == "device") {
+                    dbglogfile << "Device is " << value << endl;
+                    _device = value;
+                }
+            }
         }
-        if (variable == "dbuser") {
-          dbglogfile << "Database user configured to be " << value << endl;
-          _dbuser = value;
+    } else {
+        if (in) {
+            in.close();
         }
-        if (variable == "dbpasswd") {
-          dbglogfile << "Database password configured to be " << value << endl;
-          _dbpasswd = value;
-        }
-        if (variable == "dbname") {
-          dbglogfile << "Database name configured to be " << value << endl;
-          _dbname = value;
-        }
-        if (variable == "devmode") {
-          dbglogfile << "Device mode configured to be " << value << endl;
-          _devmode = value;
-        }
-        if (variable == "device") {
-          dbglogfile << "Device is " << value << endl;
-          _device = value;
-        }
-      }
-    }
-  } else {
+        return ERROR;
+    }  
+
     if (in) {
-      in.close();
+        in.close();
     }
-    return ERROR;
-  }  
-
-  if (in) {
-    in.close();
-  }
-  return SUCCESS;
+    return SUCCESS;
 }
 
 // Write the changed settings to the config file
 retcode_t
 RCinitFile::update_file(string filespec)
 {
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
-  return ERROR;
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    return ERROR;
 }
 
-
-
-
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

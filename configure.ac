@@ -1,6 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl  Copyright (C) 2005 Free Software Foundation, Inc.
+dnl  Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+dnl	Free Software Foundation, Inc.
 dnl
 dnl  This program is free software; you can redistribute it and/or modify
 dnl  it under the terms of the GNU General Public License as published by
@@ -139,7 +140,7 @@ AM_PATH_SNMP
 AM_CONDITIONAL(BUILD_SNMP, test x$snmp = xtrue)
 
 sim=false
-AC_ARG_ENABLE(sim, [  --enable-sim           enable support for Sim (default=yes)],
+AC_ARG_ENABLE(sim, [  --enable-sim           enable support for Sim (default=no)],
 [case "${enableval}" in
   yes) sim=true ;;
   no)  sim=false ;;
@@ -147,6 +148,16 @@ AC_ARG_ENABLE(sim, [  --enable-sim           enable support for Sim (default=yes
 esac])
 
 AM_CONDITIONAL(BUILD_SIM, test x${sim} = xtrue)
+
+client=false
+AC_ARG_ENABLE(client, [  --enable-client           enable support for Client (default=no)],
+[case "${enableval}" in
+  yes) client=true ;;
+  no)  client=false ;;
+  *)   AC_MSG_ERROR([bad value ${enableval} for enable-malloc option]) ;;
+esac])
+
+AM_CONDITIONAL(BUILD_CLIENT, test x${client} = xtrue)
 
 dnl link to the images so we can browse the HTML output before
 dnl installing it.

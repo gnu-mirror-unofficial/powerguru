@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -62,9 +63,9 @@ Database::Database()
 
 Database::~Database()
 {
-  if (_connection) {
-    //closeDB();
-  }
+    if (_connection) {
+        //closeDB();
+    }
 }
 
 // Accessors
@@ -96,7 +97,7 @@ Database::dbHostSet(std::string host)
 bool
 Database::openDB (void)
 {
-  // DEBUGLOG_REPORT_FUNCTION;
+    // DEBUGLOG_REPORT_FUNCTION;
 
     unsigned long flag = 0;
 
@@ -106,12 +107,12 @@ Database::openDB (void)
 
     mysql_init(&_mysql);
     _connection = mysql_real_connect(&_mysql, _dbhost.c_str(), _dbuser.c_str(),
-        _dbpasswd.c_str(), _dbname.c_str(), 0, NULL, flag);
+                                     _dbpasswd.c_str(), _dbname.c_str(), 0, NULL, flag);
 
     /* check for a connection error */
     if(_connection == NULL) {
         /* print the error message */
-      dbglogfile << "MySQL error when connecting: \n" << mysql_error(&_mysql) << endl;
+        dbglogfile << "MySQL error when connecting: \n" << mysql_error(&_mysql) << endl;
         return false;
     }
 
@@ -121,7 +122,7 @@ Database::openDB (void)
 #if 0
     if(mysql_select_db(&_mysql, "mydb")){ 
         DBG_MSG(DBG_EROR, "%s: MySQL error when selecting database: %s\n",
-            (mysql_error(&_mysql)));
+                (mysql_error(&_mysql)));
         exit(1);
     }
 #endif
@@ -141,59 +142,59 @@ Database::closeDB (void)
 bool
 Database::queryInsert(const char *query)
 {
-  DEBUGLOG_REPORT_FUNCTION;
+    DEBUGLOG_REPORT_FUNCTION;
 
-  int retries, result;
+    int retries, result;
   
-  retries = 2;
+    retries = 2;
   
-  dbglogfile << "Query is: " << query << endl;
+    dbglogfile << "Query is: " << query << endl;
   
 #if 0
-  string str = query;
-  // FIXME: We shouldn't ever get this condition
-  if (str.find("INSERT", 10) != string::npos) {        
-    dbglogfile << "Extra INSERT in query!\n", query << endl;
-  }
+    string str = query;
+    // FIXME: We shouldn't ever get this condition
+    if (str.find("INSERT", 10) != string::npos) {        
+        dbglogfile << "Extra INSERT in query!\n", query << endl;
+    }
 #endif
   
-  while (retries--) {
-    result = mysql_real_query(&_mysql, query, strlen(query));
+    while (retries--) {
+        result = mysql_real_query(&_mysql, query, strlen(query));
     
-    switch (result) {
-    case CR_SERVER_LOST:
-    case CR_COMMANDS_OUT_OF_SYNC:
-    case CR_SERVER_GONE_ERROR:
-      dbglogfile << "MySQL connection error: " << mysql_error(&_mysql) << endl;
-      // Try to reconnect to the database
-      closeDB();
-      openDB();
-      continue;
-      break;
-    case -1:
-    case CR_UNKNOWN_ERROR:
-      dbglogfile << "MySQL error on query for:\n\t " <<
-        mysql_error(&_mysql) << endl;
-      dbglogfile << "Query was: " << query << endl;
-            return false;
-            break;            
-    default:
-      return true;
+        switch (result) {
+          case CR_SERVER_LOST:
+          case CR_COMMANDS_OUT_OF_SYNC:
+          case CR_SERVER_GONE_ERROR:
+              dbglogfile << "MySQL connection error: " << mysql_error(&_mysql) << endl;
+              // Try to reconnect to the database
+              closeDB();
+              openDB();
+              continue;
+              break;
+          case -1:
+          case CR_UNKNOWN_ERROR:
+              dbglogfile << "MySQL error on query for:\n\t " <<
+                  mysql_error(&_mysql) << endl;
+              dbglogfile << "Query was: " << query << endl;
+              return false;
+              break;            
+          default:
+              return true;
+        }
+    
+        dbglogfile << "Lost connection to the database server, shutting down..." << endl;
+    
+        return false;
     }
-    
-    dbglogfile << "Lost connection to the database server, shutting down..." << endl;
-    
-    return false;
-  }
   
-  return false;
+    return false;
 }
 
   
 void *
 Database::queryResults(const char *query)
 {
-  DEBUGLOG_REPORT_FUNCTION;
+    DEBUGLOG_REPORT_FUNCTION;
 
     MYSQL_RES	*result;
     MYSQL_ROW	row;
@@ -206,23 +207,23 @@ Database::queryResults(const char *query)
     res = mysql_real_query(&_mysql, query, strlen(query));
     
     switch (res)
-    {
-      case CR_SERVER_LOST:
-      case CR_COMMANDS_OUT_OF_SYNC:
-      case CR_SERVER_GONE_ERROR:
-        dbglogfile << "MySQL connection error: "
-             << mysql_error(&_mysql) << endl;
-        // Try to reconnect to the database
-        closeDB();
-        openDB();
-        break;
-      case CR_UNKNOWN_ERROR:
-        dbglogfile << "MySQL error on query for:" << mysql_error(&_mysql) << endl;
+        {
+          case CR_SERVER_LOST:
+          case CR_COMMANDS_OUT_OF_SYNC:
+          case CR_SERVER_GONE_ERROR:
+              dbglogfile << "MySQL connection error: "
+                         << mysql_error(&_mysql) << endl;
+              // Try to reconnect to the database
+              closeDB();
+              openDB();
+              break;
+          case CR_UNKNOWN_ERROR:
+              dbglogfile << "MySQL error on query for:" << mysql_error(&_mysql) << endl;
 //        ACE_DEBUG((LM_INFO, "Query was: %s\n", query));
 //        return false;
 //      default:
 //        return true;
-    }
+        }
     
     
     result = mysql_store_result(&_mysql);
@@ -232,14 +233,14 @@ Database::queryResults(const char *query)
     mysql_num_fields(result);      
 
     while((row = mysql_fetch_row(result)))
-    {
-        for (i=0; i<mysql_num_fields(result); i++)
         {
+            for (i=0; i<mysql_num_fields(result); i++)
+                {
 //        fields = mysql_fetch_fields(result);
 //        ACE_DEBUG((LM_INFO, "%s: ", field->name));
 //            ACE_DEBUG((LM_INFO, "Row is: %s\n", row[i]));
+                }
         }
-    }
 
     mysql_free_result(result);
 
@@ -250,68 +251,68 @@ Database::queryResults(const char *query)
 bool
 Database::queryInsert(vector<meter_data_t *> data)
 {
-  DEBUGLOG_REPORT_FUNCTION;
+    DEBUGLOG_REPORT_FUNCTION;
 
-  struct tm      *ttm;
-  struct timeval tp;
-  unsigned int   i;
-  //char           query[QUERYLEN];
-  //char           *ptr;
+    struct tm      *ttm;
+    struct timeval tp;
+    unsigned int   i;
+    //char           query[QUERYLEN];
+    //char           *ptr;
 #ifdef __STDC_HOSTED__
-  ostringstream  query;
+    ostringstream  query;
 #else
-  ostrstream     query;
+    ostrstream     query;
 #endif
 
-  if (data.size() == 0) {
-    dbglogfile << "No data to insert." << endl;
-    return false;
-  }
+    if (data.size() == 0) {
+        dbglogfile << "No data to insert." << endl;
+        return false;
+    }
   
-  gettimeofday(&tp, 0);
-  ttm = localtime (&tp.tv_sec);
-  ttm->tm_year+= 1900;          // years since 1900
-  ttm->tm_mon+=1;               // months since January
+    gettimeofday(&tp, 0);
+    ttm = localtime (&tp.tv_sec);
+    ttm->tm_year+= 1900;          // years since 1900
+    ttm->tm_mon+=1;               // months since January
 
-  query << "INSERT INTO inverter () VALUES ";
+    query << "INSERT INTO inverter () VALUES ";
 
-  for (i=0; i< data.size(); i++) {
-    queryInsert(data[i]);
-  }
+    for (i=0; i< data.size(); i++) {
+        queryInsert(data[i]);
+    }
   
-  return true;  
+    return true;  
 }
   
 bool
 Database::queryInsert(meter_data_t *data)
 {
-  DEBUGLOG_REPORT_FUNCTION;
+    DEBUGLOG_REPORT_FUNCTION;
 
-  struct tm             *ttm;
-  struct timeval        tp;
-  //char                  query[QUERYLEN];
-  char                  *type = "MX";
+    struct tm             *ttm;
+    struct timeval        tp;
+    //char                  query[QUERYLEN];
+    char                  *type = "MX";
 #ifdef __STDC_HOSTED__
-  std::ostringstream    query;
+    std::ostringstream    query;
 #else
-  std::ostrstream       query;
+    std::ostrstream       query;
 #endif
 
-  query.str("");
-  //  memset (query, 0, QUERYLEN);
+    query.str("");
+    //  memset (query, 0, QUERYLEN);
   
-  // EtaMsg em;
-  // em.dump(*data);
+    // EtaMsg em;
+    // em.dump(*data);
   
-  gettimeofday(&tp, 0);
-  ttm = localtime (&tp.tv_sec);
-  ttm->tm_year+= 1900;          // years since 1900
-  ttm->tm_mon+=1;               // months since January
+    gettimeofday(&tp, 0);
+    ttm = localtime (&tp.tv_sec);
+    ttm->tm_year+= 1900;          // years since 1900
+    ttm->tm_mon+=1;               // months since January
 
 #if 0  
-  // FIXME: For now source is the facility
-  // Build the query string to insert the data
-  sprintf(query, "INSERT INTO meters () VALUES ( \
+    // FIXME: For now source is the facility
+    // Build the query string to insert the data
+    sprintf(query, "INSERT INTO meters () VALUES ( \
         '%d',                   // Unit address (int)\
         '%s',                   // Device Type enum)\
         '%d-%d-%d %d:%d:%d',    // timestamp\
@@ -329,56 +330,56 @@ Database::queryInsert(meter_data_t *data)
         '%d',                   // Frequency in Hertz (int)\
         '%f'                    // Battery Temperature Compenation (float)\
         )",
-          //  sprintf(query, "INSERT INTO meters () VALUES ('%d','%s','%0.4d-%0.2d-%d %0.2d:%0.2d:%0.2d','%d','%d','%f','%f','%f','%f','%d','%f','%f','%f','%d','%f','%f')",
-          data->unit,
-          type,
-          ttm->tm_year,ttm->tm_mon,ttm->tm_mday,ttm->tm_hour,ttm->tm_min,ttm->tm_sec,
-          data->charge_amps,
-          data->ac_load_amps,
-          data->battery_volts,
-          data->ac_volts_out,
-          data->ac1_volts_in,
-          data->ac2_volts_in,
-          data->pv_amps_in,
-          data->pv_volts_in,
-          data->buy_amps,
-          data->sell_amps,
-          data->daily_kwh,
-          data->hertz,
-          data->tempcomp_volts
-          );
+            //  sprintf(query, "INSERT INTO meters () VALUES ('%d','%s','%0.4d-%0.2d-%d %0.2d:%0.2d:%0.2d','%d','%d','%f','%f','%f','%f','%d','%f','%f','%f','%d','%f','%f')",
+            data->unit,
+            type,
+            ttm->tm_year,ttm->tm_mon,ttm->tm_mday,ttm->tm_hour,ttm->tm_min,ttm->tm_sec,
+            data->charge_amps,
+            data->ac_load_amps,
+            data->battery_volts,
+            data->ac_volts_out,
+            data->ac1_volts_in,
+            data->ac2_volts_in,
+            data->pv_amps_in,
+            data->pv_volts_in,
+            data->buy_amps,
+            data->sell_amps,
+            data->daily_kwh,
+            data->hertz,
+            data->tempcomp_volts
+        );
 #else
-  query << "INSERT INTO meters () VALUES (";
-  query << data->unit << ",";
-  query << "\'" << type << "\',";
-  query << "\'" << ttm->tm_year << "-" << ttm->tm_mon << "-" << ttm->tm_mday << " ";
-  query << ttm->tm_hour << ":" << ttm->tm_min << ":" << ttm->tm_sec << "\',";
-  query << data->charge_amps << ",";
-  query << data->ac_load_amps << ",";
-  query << data->battery_volts << ",";
-  query << data->ac_volts_out << ",";
-  query << data->ac1_volts_in << ",";
-  query << data->ac2_volts_in << ",";
-  query << data->pv_amps_in << ",";
-  query << data->pv_volts_in << ",";
-  query << data->buy_amps << ",";
-  query << data->sell_amps << ",";
-  query << data->daily_kwh << ",";
-  query << data->hertz << ",";
-  query << data->tempcomp_volts << ")";
-  query << ends;
+    query << "INSERT INTO meters () VALUES (";
+    query << data->unit << ",";
+    query << "\'" << type << "\',";
+    query << "\'" << ttm->tm_year << "-" << ttm->tm_mon << "-" << ttm->tm_mday << " ";
+    query << ttm->tm_hour << ":" << ttm->tm_min << ":" << ttm->tm_sec << "\',";
+    query << data->charge_amps << ",";
+    query << data->ac_load_amps << ",";
+    query << data->battery_volts << ",";
+    query << data->ac_volts_out << ",";
+    query << data->ac1_volts_in << ",";
+    query << data->ac2_volts_in << ",";
+    query << data->pv_amps_in << ",";
+    query << data->pv_volts_in << ",";
+    query << data->buy_amps << ",";
+    query << data->sell_amps << ",";
+    query << data->daily_kwh << ",";
+    query << data->hertz << ",";
+    query << data->tempcomp_volts << ")";
+    query << ends;
 #endif
 
 #ifdef __STDC_HOSTED__
-  string str = query.str().c_str();
+    string str = query.str().c_str();
 #else
-  string str = query.str();
+    string str = query.str();
 #endif
   
-  // Execute the query
-  queryInsert(str.c_str());
+    // Execute the query
+    queryInsert(str.c_str());
   
-  return true;
+    return true;
 }
 
 char *
@@ -398,3 +399,8 @@ Database::gettime()
 //    DBG_MSG(DBG_INFO, "TIMESTAMP is %s\n", tmpbuf);
     return tmpbuf;
 }
+
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -53,63 +54,67 @@ typedef enum { NO_DEVICE, MX_OUTBACK, FX_OUTBACK, SW_XANTREX } device_t;
 
 typedef struct
 {
-  int   unit;                   // The unit number for the device
-  device_t type;                // The type of the device
-  int   charge_amps;            // The amperage being put into the batteries
-  int   ac_load_amps;           // The load in amps
-  float battery_volts;          // Actual Battery Voltage
-  float ac_volts_out;           // The voltage the inverter is producing
-  float ac1_volts_in;           // Grid AC input
-  float ac2_volts_in;           // Generator AC input. Xantrex only
-  int   pv_amps_in;             // The current coming from the PV panels.
-  float pv_volts_in;            // The DC voltage coming from the PV panels.
-  float buy_amps;               // The AC current taken from the Grid
-                                // and used to charge the batteries; 
-  float sell_amps;              // The AC current the batteries are
-                                // putting into the grid.
-  float daily_kwh;              // The daily kilowatts put into the
-                                // batteries from the PV
-                                // source. Outback only.
-  int   hertz;                  // Frequency in Hertz. Xantrex only
-  float tempcomp_volts;         // Battery Voltage temperate
-                                // compensated. Xantrex Only.
+    int   unit;                   // The unit number for the device
+    device_t type;                // The type of the device
+    int   charge_amps;            // The amperage being put into the batteries
+    int   ac_load_amps;           // The load in amps
+    float battery_volts;          // Actual Battery Voltage
+    float ac_volts_out;           // The voltage the inverter is producing
+    float ac1_volts_in;           // Grid AC input
+    float ac2_volts_in;           // Generator AC input. Xantrex only
+    int   pv_amps_in;             // The current coming from the PV panels.
+    float pv_volts_in;            // The DC voltage coming from the PV panels.
+    float buy_amps;               // The AC current taken from the Grid
+    // and used to charge the batteries; 
+    float sell_amps;              // The AC current the batteries are
+    // putting into the grid.
+    float daily_kwh;              // The daily kilowatts put into the
+    // batteries from the PV
+    // source. Outback only.
+    int   hertz;                  // Frequency in Hertz. Xantrex only
+    float tempcomp_volts;         // Battery Voltage temperate
+    // compensated. Xantrex Only.
   
 }  meter_data_t ;
 
 class Database
 {
- public:
-  Database();
-  ~Database();
+public:
+    Database();
+    ~Database();
   
-  bool openDB ();
-  bool closeDB ();
-  bool queryInsert(std::vector<meter_data_t *> data);
-  bool queryInsert(meter_data_t *data);
-  bool queryInsert(const char *query);
-  void *queryResults(const char *query);
-  //bool deleteDB(etamsg_t *data);
-  //bool insertDB(etamsg_t *data);
-  char *gettime();
+    bool openDB ();
+    bool closeDB ();
+    bool queryInsert(std::vector<meter_data_t *> data);
+    bool queryInsert(meter_data_t *data);
+    bool queryInsert(const char *query);
+    void *queryResults(const char *query);
+    //bool deleteDB(etamsg_t *data);
+    //bool insertDB(etamsg_t *data);
+    char *gettime();
 
-  // Accessors
-  void dbUserSet(std::string user);
-  void dbPasswdSet(std::string passwd);
-  void dbNameSet(std::string name);
-  void dbHostSet(std::string host);
- private:
-  enum {CLOSED, OPENED} state;
-  dbtype          _dbtype;
-  int             _dbport;
-  std::string     _dbuser;
-  std::string     _dbpasswd;
-  std::string     _dbhost;
-  std::string     _dbname;
-  std::string     _tblname;
-  MYSQL           *_connection;
-  MYSQL           _mysql;
+    // Accessors
+    void dbUserSet(std::string user);
+    void dbPasswdSet(std::string passwd);
+    void dbNameSet(std::string name);
+    void dbHostSet(std::string host);
+private:
+    enum {CLOSED, OPENED} state;
+    dbtype          _dbtype;
+    int             _dbport;
+    std::string     _dbuser;
+    std::string     _dbpasswd;
+    std::string     _dbhost;
+    std::string     _dbname;
+    std::string     _tblname;
+    MYSQL           *_connection;
+    MYSQL           _mysql;
 };
 
 // __DATABASE_H__
 #endif
 
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

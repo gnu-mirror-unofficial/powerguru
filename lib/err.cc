@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -83,12 +84,12 @@ ErrCond::SetMsg (const char *filein, int linein, const char *funcin, int codein,
 
 void
 ErrCond::SetMsg (string &s) {
-  emsg = s;
+    emsg = s;
 }
 
 void
 ErrCond::SetMsg (const char *s) {
-  emsg = s;
+    emsg = s;
 }
  
 void
@@ -101,69 +102,74 @@ ErrCond::SetMsg (int x, const char *s) {
 // formatting the string. We currently don't do anything with this.
 ostream&
 ErrCond::operator << (ostream & (&)(ostream &)) {
-  //  ClearErr();
-  cerr << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
-  // FIXME: This return value is tottaly bogus, and exists only to
-  // shut up GCC until this actually gets implemented.
-  return cout;
+    //  ClearErr();
+    cerr << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
+    // FIXME: This return value is tottaly bogus, and exists only to
+    // shut up GCC until this actually gets implemented.
+    return cout;
 }
 
 ErrCond& 
 ErrCond::operator << (const char *x)
 {
-  emsg += x;
-  return *this;
+    emsg += x;
+    return *this;
 }
 
 ErrCond& 
 ErrCond::operator << (string &x)
 {
-  emsg += x;
-  return *this;
+    emsg += x;
+    return *this;
 }
 
 ErrCond& 
 ErrCond::operator << (void *x)
 {
-  char buf[10];
-  sprintf ((char *)&buf, "%p", x);
-  emsg += buf;
-  return *this;
+    char buf[10];
+    sprintf ((char *)&buf, "%p", x);
+    emsg += buf;
+    return *this;
 }
 
 ErrCond& 
 ErrCond::operator << (int x)
 {
-  char buf[10];
-  sprintf ((char *)&buf, "%d", x);
-  emsg += buf;
-  return *this;
+    char buf[10];
+    sprintf ((char *)&buf, "%d", x);
+    emsg += buf;
+    return *this;
 }
 
 ostream& 
 operator << (ostream &os, ErrCond& e) {
-  string msg;
+    string msg;
   
-  if (e.GetCode() > EMEDIUMTYPE) {
-    msg = "WARNING: ";
-  } else {
-    msg = "ERROR: ";
-  }
+    if (e.GetCode() > EMEDIUMTYPE) {
+        msg = "WARNING: ";
+    } else {
+        msg = "ERROR: ";
+    }
   
-  if (e.GetFunc().size() > 0)
-    msg += e.GetFunc();
+    if (e.GetFunc().size() > 0)
+        msg += e.GetFunc();
 
-  if (e.GetLine() > 0)
-    msg += e.GetFunc();
+    if (e.GetLine() > 0)
+        msg += e.GetFunc();
   
-  if (e.GetMsg().size() > 0)
-    msg += e.GetMsg();
+    if (e.GetMsg().size() > 0)
+        msg += e.GetMsg();
 
-  if (errno) {
-    msg += " (";
-    msg += strerror(errno);
-    msg += ") ";
-  }
+    if (errno) {
+        msg += " (";
+        msg += strerror(errno);
+        msg += ") ";
+    }
   
-  return os << msg;
+    return os << msg;
 }
+
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

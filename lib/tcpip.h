@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -41,84 +42,89 @@
 
 class Tcpip : public Tcputil
 {
- public:
-  Tcpip();
-  ~Tcpip();
+public:
+    Tcpip();
+    ~Tcpip();
 
-  // Create a new server. After creating it, then you have to wait for an
-  // incoming connection.
-  retcode_t createNetServer(void);
-  retcode_t createNetServer(short port);
-  retcode_t createNetServer(std::string &service);
-  retcode_t createNetServer(std::string &service, std::string &protocol);
-  retcode_t createNetServer(short port, std::string &protocol);
+    // Create a new server. After creating it, then you have to wait for an
+    // incoming connection.
+    retcode_t createNetServer(void);
+    retcode_t createNetServer(short port);
+    retcode_t createNetServer(std::string &service);
+    retcode_t createNetServer(std::string &service, std::string &protocol);
+    retcode_t createNetServer(short port, std::string &protocol);
 
-  // Accept a client connection for the current server.
-  retcode_t newNetConnection(void);
-  retcode_t newNetConnection(bool block);
+    // Accept a client connection for the current server.
+    retcode_t newNetConnection(void);
+    retcode_t newNetConnection(bool block);
   
-  // Create a client connection to a tcp/ip server
-  retcode_t createNetClient(void);
-  retcode_t createNetClient(short port);
-  retcode_t createNetClient(std::string &hostname);
-  retcode_t createNetClient(std::string &hostname, short port);
-  retcode_t createNetClient(std::string &hostname, std::string &service);
-  retcode_t createNetClient(std::string &hostname, std::string &service, std::string &protocol);
-  retcode_t createNetClient(std::string &hostname, short port, std::string &protocol);
+    // Create a client connection to a tcp/ip server
+    retcode_t createNetClient(void);
+    retcode_t createNetClient(short port);
+    retcode_t createNetClient(std::string &hostname);
+    retcode_t createNetClient(std::string &hostname, short port);
+    retcode_t createNetClient(std::string &hostname, std::string &service);
+    retcode_t createNetClient(std::string &hostname, std::string &service, std::string &protocol);
+    retcode_t createNetClient(std::string &hostname, short port, std::string &protocol);
 
-  // If there is any data, process it
-  retcode_t anydata(std::vector<const xmlChar *> &msgs);
-  retcode_t anydata(int sockfd, std::vector<const xmlChar *> &msgs);
+    // If there is any data, process it
+    retcode_t anydata(std::vector<const xmlChar *> &msgs);
+    retcode_t anydata(int sockfd, std::vector<const xmlChar *> &msgs);
 
-  // Read from the socket
-  int readNet(char *buffer, int nbytes);
-  int readNet(char *buffer, int nbytes, int timeout);
-  int readNet(int fd, char *buffer, int nbytes);
-  int readNet(int fd, char *buffer, int nbytes, int timeout);
+    // Read from the socket
+    int readNet(char *buffer, int nbytes);
+    int readNet(char *buffer, int nbytes, int timeout);
+    int readNet(int fd, char *buffer, int nbytes);
+    int readNet(int fd, char *buffer, int nbytes, int timeout);
   
-  // Write to the socket  
-  int writeNet(std::string buffer);
-  int writeNet(char const *buffer);
-  int writeNet(char const *buffer, int nbytes);
-  int writeNet(int fd, char const *buffer);
-  int writeNet(int fd, char const *buffer, int nbytes);
-  int writeNet(int fd, char const *buffer, int nbytes, int timeout);
+    // Write to the socket  
+    int writeNet(std::string buffer);
+    int writeNet(char const *buffer);
+    int writeNet(char const *buffer, int nbytes);
+    int writeNet(int fd, char const *buffer);
+    int writeNet(int fd, char const *buffer, int nbytes);
+    int writeNet(int fd, char const *buffer, int nbytes, int timeout);
                                                                            
-  // Close the connection
-  retcode_t closeNet();
-  retcode_t closeNet(int fd);
-  retcode_t closeConnection();
-  retcode_t closeConnection(int fd);
+    // Close the connection
+    retcode_t closeNet();
+    retcode_t closeNet(int fd);
+    retcode_t closeConnection();
+    retcode_t closeConnection(int fd);
 
-  // Change the debug flag
-  void toggleDebug(bool val);  
+    // Change the debug flag
+    void toggleDebug(bool val);  
   
-  // Authenticate the socket connection
-  retcode_t authNetClient(void);
-  retcode_t authNetServer(void);
+    // Authenticate the socket connection
+    retcode_t authNetClient(void);
+    retcode_t authNetServer(void);
 
-  // Extract some info from the other end of the connection.
-  const std::string remoteIP(void);
-  const std::string remoteIP(struct in_addr addr);
-  const std::string remoteName(void);
-  const std::string remoteName(struct in_addr addr);
+    // Extract some info from the other end of the connection.
+    const std::string remoteIP(void);
+    const std::string remoteIP(struct in_addr addr);
+    const std::string remoteName(void);
+    const std::string remoteName(struct in_addr addr);
 
-  Tcpip &operator = (Tcpip &tcp);
+    Tcpip &operator = (Tcpip &tcp);
 
-  void checkConsole(void) { _console = true; };
+    void checkConsole(void) { _console = true; };
   
   
 private:
-  static int               _sockfd;
-  static int               _sockIOfd;
-  in_addr_t                _ipaddr;
-  std::string              _hostname;
-  struct sockaddr_in	   _client;
-  const char              *_proto;
-  short                    _port;
-  bool                     _debug;
-  bool                    _console;
+    static int               _sockfd;
+    static int               _sockIOfd;
+    in_addr_t                _ipaddr;
+    std::string              _hostname;
+    struct sockaddr_in	   _client;
+    const char              *_proto;
+    short                    _port;
+    bool                     _debug;
+    bool                    _console;
 };
 
 // EOF __TCPIP_H__ */
 #endif
+
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -76,8 +77,8 @@ extern "C" int hex2digit (int);
 
 
 ostream& operator<<(ostream& os, Verbose& b) {
-  // dbglogfile.verbosity(b);
-  return os;
+    // dbglogfile.verbosity(b);
+    return os;
 }
 
 #if 0
@@ -93,38 +94,38 @@ ostream& stampoff(ostream& x) {
 #endif
 
 ostream& timestamp(ostream& x) {
-  time_t t;
-  char buf[10];
+    time_t t;
+    char buf[10];
 
-  memset (buf, '0', 10);	// this terminates the string
-  time (&t);			// get the current time
-  strftime (buf, sizeof(buf), "%H:%M:%S", localtime (&t));
+    memset (buf, '0', 10);	// this terminates the string
+    time (&t);			// get the current time
+    strftime (buf, sizeof(buf), "%H:%M:%S", localtime (&t));
 
-  return x << buf << ": ";
+    return x << buf << ": ";
 }
 
 string timestamp() {
-  time_t t;
-  string sbuf;
-  char buf[10];
+    time_t t;
+    string sbuf;
+    char buf[10];
 
-  memset (buf, '0', 10);	// this terminates the string
-  time (&t);			// get the current time
-  strftime (buf, sizeof(buf), "%H:%M:%S", localtime (&t));
-  sbuf = buf;
+    memset (buf, '0', 10);	// this terminates the string
+    time (&t);			// get the current time
+    strftime (buf, sizeof(buf), "%H:%M:%S", localtime (&t));
+    sbuf = buf;
 
-  return sbuf;
+    return sbuf;
 }
 
 ostream& datetimestamp(ostream& x) {
-  time_t t;
-  char buf[20];
+    time_t t;
+    char buf[20];
 
-  memset (buf, '0', 20);	// this terminates the string
-  time (&t);			// get the current time
-  strftime (buf, sizeof(buf), "%Y-%m-%d %H:%M:%S ", localtime (&t));
+    memset (buf, '0', 20);	// this terminates the string
+    time (&t);			// get the current time
+    strftime (buf, sizeof(buf), "%Y-%m-%d %H:%M:%S ", localtime (&t));
 
-  return x << buf;
+    return x << buf;
 }
 
 // FIXME: This controls the entire output stream
@@ -159,21 +160,21 @@ LogFile::LogFile (const char *filespec) {
     verbose = 0;
     stamp = true;
     if (state == OPEN)
-      LogFile::outstream.close ();
+        LogFile::outstream.close ();
     LogFile::outstream.open (filespec, ios::out);
     state = OPEN;
 }
 
 retcode_t
 LogFile::Open (const char *filespec) {
-  if (state == OPEN)
-    LogFile::outstream.close ();
-  LogFile::outstream.open (filespec, ios::out);
-  state = OPEN;
+    if (state == OPEN)
+        LogFile::outstream.close ();
+    LogFile::outstream.open (filespec, ios::out);
+    state = OPEN;
   
-  // LogFile::outstream << "Opened " << filespec << endl;
+    // LogFile::outstream << "Opened " << filespec << endl;
   
-  return SUCCESS;
+    return SUCCESS;
 }
 
 retcode_t
@@ -191,7 +192,7 @@ LogFile::Close (void) {
 LogFile&
 LogFile::operator << (ErrCond& e) {
     if (verbose > 0)
-      cout << e << endl;
+        cout << e << endl;
     LogFile::outstream << e;
     state = INPROGRESS;
 
@@ -201,48 +202,48 @@ LogFile::operator << (ErrCond& e) {
 LogFile&
 LogFile::operator << (long x)
 {
-  if (verbose > 0)
-    cout << x;
-  LogFile::outstream << x;
-  state = INPROGRESS;
+    if (verbose > 0)
+        cout << x;
+    LogFile::outstream << x;
+    state = INPROGRESS;
   
-  return *this;
+    return *this;
 }
 
 LogFile&
 LogFile::operator << (unsigned int x)
 {
-  if (verbose > 0)
-    cout << x;
-  LogFile::outstream << x;
-  state = INPROGRESS;
+    if (verbose > 0)
+        cout << x;
+    LogFile::outstream << x;
+    state = INPROGRESS;
   
-  return *this;
+    return *this;
 }
 
 LogFile&
 LogFile::operator << (float x)
 { 
-  LogFile::outstream << x;
-  if (verbose > 0) {
-    cout << x;
-  }
-  state = INPROGRESS;
+    LogFile::outstream << x;
+    if (verbose > 0) {
+        cout << x;
+    }
+    state = INPROGRESS;
 
-  return *this;
+    return *this;
 }
 
 LogFile&
 LogFile::operator << (double &x)
 {
-  LogFile::outstream << x; 
-  if (verbose > 0) {
-    cout << x;
-  }
+    LogFile::outstream << x; 
+    if (verbose > 0) {
+        cout << x;
+    }
   
-  state = INPROGRESS;
+    state = INPROGRESS;
 
-  return *this;
+    return *this;
 }
 
 LogFile&
@@ -269,8 +270,8 @@ LogFile::operator << (void *ptr) {
 
 LogFile& 
 LogFile::operator << (string s) {
-  outstream << s;
-  return *this;
+    outstream << s;
+    return *this;
 }
 
 LogFile& 
@@ -279,7 +280,7 @@ LogFile::operator << (const char *c) {
     logentry += ": ";
 
     if (stamp == true && (state == IDLE || state == OPEN)) {
-      LogFile::state = INPROGRESS;
+        LogFile::state = INPROGRESS;
 	if (verbose > 0)
 	    cout << logentry  << c;
         outstream << logentry << c;
@@ -299,11 +300,11 @@ LogFile::operator << (const xmlChar *c) {
     logentry += ": ";
 
     if (c == -0) {
-      return *this;
+        return *this;
     }
     
     if (stamp == true && (state == IDLE || state == OPEN)) {
-      LogFile::state = INPROGRESS;
+        LogFile::state = INPROGRESS;
 	if (verbose > 0)
 	    cout << logentry  << c;
         outstream << logentry << c;
@@ -321,7 +322,7 @@ LogFile::operator << (const xmlChar *c) {
 ostream&
 LogFile::operator << (ostream & (&)(ostream &)) {
     if (verbose > 0)
-      cout << "\r" << endl;
+        cout << "\r" << endl;
     LogFile::outstream << endl;;
     LogFile::outstream.flush();
     LogFile::state = IDLE;
@@ -343,7 +344,7 @@ LogFile::note (int level, const char *fmt, ...) {
 #ifdef _WIN32
     SYSTEMTIME system_time, local_time;
 #else
-     time_t t;
+    time_t t;
 #endif // _WIN32
     const char *errmsg;
 
@@ -356,7 +357,7 @@ LogFile::note (int level, const char *fmt, ...) {
     SystemTimeToTzSpecificLocalTime (NULL, &system_time, &local_time);
     sprintf (buf, "%02u:%02u:%02u.%03u", local_time.wHour,
 
-        local_time.wMinute, local_time.wSecond, local_time.wMilliseconds);
+             local_time.wMinute, local_time.wSecond, local_time.wMilliseconds);
 #else
     time (&t);			// get the current time
     strftime (buf, sizeof(buf), "%H:%M:%S", localtime (&t));
@@ -370,8 +371,8 @@ LogFile::note (int level, const char *fmt, ...) {
     // don't ever print log messages to the screen.
 #if 0
     if (verbose >= level) {
-      cout << tmp;       ;
-      cout.flush();
+        cout << tmp;       ;
+        cout.flush();
     }
 #endif
 
@@ -399,8 +400,8 @@ LogFile::printf (int level, const char *fmt, ...) {
     // don't ever print log messages to the screen.
 #if 0
     if (verbose >= level) {
-      cout << tmp;
-      cout.flush();
+        cout << tmp;
+        cout.flush();
     }
 #endif    
 
@@ -545,26 +546,26 @@ ascify_buffer (unsigned char *p, const unsigned char *s, int x) {
     for (i=0 ; i<x; i++) {
 //        dbglogfile.note (3, "\tascify 0x%x", s[i]);
         switch (s[i]) {
-        case '\012':		// newlines
-            *p++ = '\\';
-            *p++ = 'n';
-            continue;
-        case '\015':		// carriage returns
-            *p++ = '\\';
-            *p++ = 'r';
-            continue;
-        case '\033':		// escape
-            *p++ = '\\';
-            *p++ = 'e';
-            continue;
-        case '\011':		// tab
-            *p++ = '\\';
-            *p++ = 't';
-            continue;
-        case '\010':		// backspace
-            *p++ = '\\';
-            *p++ = 'b';
-            continue;
+          case '\012':		// newlines
+              *p++ = '\\';
+              *p++ = 'n';
+              continue;
+          case '\015':		// carriage returns
+              *p++ = '\\';
+              *p++ = 'r';
+              continue;
+          case '\033':		// escape
+              *p++ = '\\';
+              *p++ = 'e';
+              continue;
+          case '\011':		// tab
+              *p++ = '\\';
+              *p++ = 't';
+              continue;
+          case '\010':		// backspace
+              *p++ = '\\';
+              *p++ = 'b';
+              continue;
         }
         
         if (s[i] < 26) {	// modify control characters
@@ -602,7 +603,7 @@ hexify_buffer (unsigned char *p, const unsigned char *s, int x) {
         *p++ = hexchars[s[i] & 0xf];
         *p++ = ' ';
 //        dbglogfile.note (3, "\thexify s[%d] = 0x%02x", i, s[i]);
-        }
+    }
 
     *p = '\0';                                  // terminate the string
 
@@ -614,10 +615,10 @@ hexify_buffer (unsigned char *p, const unsigned char *s, int x) {
 //      returns a hex digit.
 extern "C" char
 digit2hex(int digit) {
-  if (digit < 10)
-    return '0' + digit;
-  else
-    return 'a' + digit - 10;
+    if (digit < 10)
+        return '0' + digit;
+    else
+        return 'a' + digit - 10;
 }
 
 // convert an ascii hex digit to a number.
@@ -626,18 +627,23 @@ digit2hex(int digit) {
 extern "C" int
 hex2digit (int digit)
 {
-if (digit == 0)
-  return 0;
+    if (digit == 0)
+        return 0;
 
-  if (digit >= '0' && digit <= '9')
-    return digit - '0';
-  if (digit >= 'a' && digit <= 'f')
-    return digit - 'a' + 10;
-  if (digit >= 'A' && digit <= 'F')
-    return digit - 'A' + 10;
+    if (digit >= '0' && digit <= '9')
+        return digit - '0';
+    if (digit >= 'a' && digit <= 'f')
+        return digit - 'a' + 10;
+    if (digit >= 'A' && digit <= 'F')
+        return digit - 'A' + 10;
 
-  /* shouldn't ever get this far */
-  return -1;
+    /* shouldn't ever get this far */
+    return -1;
 }
 
 #endif
+
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

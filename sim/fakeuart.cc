@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//       Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -57,119 +58,119 @@ retcode_t
 //FakeUart::Open(string &filespec, ErrCond &Err)
 FakeUart::Open(ErrCond *Err)
 {
-  DEBUGLOG_REPORT_FUNCTION;
+    DEBUGLOG_REPORT_FUNCTION;
 
-  string filespec;
-  int i,j, flag;
-  int master = -1;
-  struct termios newtty, oldtty;
-  char *letterpart = "pqrstuvwxyzPQRST";
-  char *numberpart = "0123456789abcdef";
+    string filespec;
+    int i,j, flag;
+    int master = -1;
+    struct termios newtty, oldtty;
+    char *letterpart = "pqrstuvwxyzPQRST";
+    char *numberpart = "0123456789abcdef";
 
-  filespec = "/dev/ptmx";
-  dbglogfile << "Opening " << filespec << endl;
-  if (filespec.size() > 0) {
-    if ((master = open(filespec.c_str(), O_RDWR | O_NONBLOCK)) < 0) {
-      if (errno == ENOENT) {
-	cerr << "ERROR: no more pty's available";
-	return ERROR;
-      }
+    filespec = "/dev/ptmx";
+    dbglogfile << "Opening " << filespec << endl;
+    if (filespec.size() > 0) {
+        if ((master = open(filespec.c_str(), O_RDWR | O_NONBLOCK)) < 0) {
+            if (errno == ENOENT) {
+                cerr << "ERROR: no more pty's available";
+                return ERROR;
+            }
+        }
     }
-  }
 
-  // filespec = "/dev/pty??";
-  filespec = "/dev/ptmx";
+    // filespec = "/dev/pty??";
+    filespec = "/dev/ptmx";
   
-  // Search for a free pty
-  for(i=0; i<16 && master <= 0; i++) {
-    for(j=0; j<16 && master <= 0; j++) {
-      filespec[8] = letterpart[i];
-      filespec[9] = numberpart[j];
-      if ((master = open(filespec.c_str(), O_RDWR | O_NONBLOCK)) < 0) {
-	if (errno == ENOENT) {
-	  cerr << "ERROR: no more pty's available";
-	  return ERROR;
-	}
-      }
-    } // for j loop
-  } // for i loop
+    // Search for a free pty
+    for(i=0; i<16 && master <= 0; i++) {
+        for(j=0; j<16 && master <= 0; j++) {
+            filespec[8] = letterpart[i];
+            filespec[9] = numberpart[j];
+            if ((master = open(filespec.c_str(), O_RDWR | O_NONBLOCK)) < 0) {
+                if (errno == ENOENT) {
+                    cerr << "ERROR: no more pty's available";
+                    return ERROR;
+                }
+            }
+        } // for j loop
+    } // for i loop
 
-  if ((master < 0) && (i == 16) && (j == 16)) {
-    // failed to found an available pty
-    cerr << "ERROR: couldn't open a pty";
-    return(ERROR);
-  }
+    if ((master < 0) && (i == 16) && (j == 16)) {
+        // failed to found an available pty
+        cerr << "ERROR: couldn't open a pty";
+        return(ERROR);
+    }
 
-  state = OPEN;
+    state = OPEN;
   
-  // create the name of the slave pty
-  //filespec[5] = 't';
-  filespec = ptsname(master);
+    // create the name of the slave pty
+    //filespec[5] = 't';
+    filespec = ptsname(master);
 
-  dbglogfile << "Opened " << ptsname(master) << " with file descriptor " << master << endl;
+    dbglogfile << "Opened " << ptsname(master) << " with file descriptor " << master << endl;
 
-  grantpt(master);
-  unlockpt(master);
+    grantpt(master);
+    unlockpt(master);
 
-  uartfd = master;
-  uartStream = fdopen(uartfd, "w+");
+    uartfd = master;
+    uartStream = fdopen(uartfd, "w+");
 
-  tcgetattr(master, &oldtty);
-  newtty = oldtty;
-  newtty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON);
-  newtty.c_oflag &= ~OPOST;
-  newtty.c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
-  newtty.c_cflag &= ~(CSIZE|PARENB);
-  newtty.c_cflag |= CS8;
-  newtty.c_cc[VMIN] = 1;
-  newtty.c_cc[VTIME] = 1;
+    tcgetattr(master, &oldtty);
+    newtty = oldtty;
+    newtty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON);
+    newtty.c_oflag &= ~OPOST;
+    newtty.c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
+    newtty.c_cflag &= ~(CSIZE|PARENB);
+    newtty.c_cflag |= CS8;
+    newtty.c_cc[VMIN] = 1;
+    newtty.c_cc[VTIME] = 1;
 
-  tcsetattr(master, TCSANOW, &newtty);
+    tcsetattr(master, TCSANOW, &newtty);
 
-  //  fcntl(master, F_SETFL, flag | O_NDELAY);
+    //  fcntl(master, F_SETFL, flag | O_NDELAY);
 
-  // return(master);
-  return SUCCESS;
+    // return(master);
+    return SUCCESS;
 }
 
 retcode_t
 FakeUart::Close(string &filespec, ErrCond &Err)
 {
-  DEBUGLOG_REPORT_FUNCTION;
+    DEBUGLOG_REPORT_FUNCTION;
 
-  if (state == OPEN)
-    close(uartfd);
+    if (state == OPEN)
+        close(uartfd);
   
-  uartfd = 0;
-  state = CLOSED;
-  return SUCCESS;
+    uartfd = 0;
+    state = CLOSED;
+    return SUCCESS;
 }
 
 int
 FakeUart::Read(unsigned char *buf, int nbytes, ErrCond &Err)
 {
-  // DEBUGLOG_REPORT_FUNCTION;
+    // DEBUGLOG_REPORT_FUNCTION;
 
-  return read (uartfd, buf, nbytes);
+    return read (uartfd, buf, nbytes);
 }
 
 int
 FakeUart::Write(unsigned char *buf, int nbytes, ErrCond &Err)
 {
-  //  DEBUGLOG_REPORT_FUNCTION;
+    //  DEBUGLOG_REPORT_FUNCTION;
 
-  write (uartfd, buf, nbytes);
+    write (uartfd, buf, nbytes);
 }
 
 #if 0
 int
 FakeUart::GetChar(char *buf, ErrCond &Err)
 {
-  //  DEBUGLOG_REPORT_FUNCTION;
+    //  DEBUGLOG_REPORT_FUNCTION;
 
-  read (uartfd, buf, 1);
+    read (uartfd, buf, 1);
   
-  return (int)*buf;
+    return (int)*buf;
 }
 
 ostream &operator<<(ostream &os, FakeUart &l) {
@@ -179,27 +180,27 @@ ostream &operator<<(ostream &os, FakeUart &l) {
 FakeUart&
 FakeUart::operator << (int x) {
 
-  dbglogfile << x;
+    dbglogfile << x;
 
-  if (state == OPEN)
-    write (uartfd, (char *)&x, sizeof(int)); 
+    if (state == OPEN)
+        write (uartfd, (char *)&x, sizeof(int)); 
 }
 
 FakeUart& 
 FakeUart::operator << (string &s) {
-  dbglogfile << s;
+    dbglogfile << s;
   
-  if (state == OPEN)
-    *this << s.c_str();
+    if (state == OPEN)
+        *this << s.c_str();
 }
 
 FakeUart& 
 FakeUart::operator << (const char *c) {
-  dbglogfile << c;
+    dbglogfile << c;
   
-  if (state == OPEN) {
-    write (uartfd, c, strlen(c));
-  }
+    if (state == OPEN) {
+        write (uartfd, c, strlen(c));
+    }
 }
 #endif
 
@@ -207,24 +208,29 @@ FakeUart::operator << (const char *c) {
 inline void
 FakeUart::SetName (string &newname)
 {
-  name = newname;
+    name = newname;
 }
 
 void 
 FakeUart::SetState (state_e s)
 {
-  state = s;
+    state = s;
 }
 
 FakeUart::state_e
 FakeUart::GetState (void)
 {
-  return state;
+    return state;
 }
 
 void 
 FakeUart::SendEOL (void)
 {
-  Putc('\r');
-  Putc('\n');  
+    Putc('\r');
+    Putc('\n');  
 }
+
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

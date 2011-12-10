@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -46,10 +47,10 @@ extern std::ostream& datetimestamp(std::ostream& x);
 
 // Print a number in binary:
 class Verbose {
-  int level;
+    int level;
 public:
-  Verbose(int l) { level = l; }
-  friend std::ostream& operator<<(std::ostream&, Verbose&);
+    Verbose(int l) { level = l; }
+    friend std::ostream& operator<<(std::ostream&, Verbose&);
 };
 
 // Get the current timestamp
@@ -58,67 +59,67 @@ std::string timestamp();
 // This is a basic file logging class
 class LogFile { // public std::ofstream {
 public:
-  LogFile (void);
-  LogFile (const char *);
-  ~LogFile(void) {
-    if (state == OPEN) {
-      //      flush();
-      //      state = CLOSED;
-      Close();
+    LogFile (void);
+    LogFile (const char *);
+    ~LogFile(void) {
+        if (state == OPEN) {
+            //      flush();
+            //      state = CLOSED;
+            Close();
+        }
     }
-  }
-  enum file_state {
-    CLOSED,
-    OPEN,
-    INPROGRESS,
-    IDLE
-  } state;
+    enum file_state {
+        CLOSED,
+        OPEN,
+        INPROGRESS,
+        IDLE
+    } state;
   
-  file_state GetState (void) { return state; }
-  LogFile& operator << (ErrCond&);
-  LogFile& operator << (int x);
-  LogFile& operator << (long x);
-  LogFile& operator << (unsigned int x);
-  // These both resolve to an unsigned int.
-  // LogFile& operator << (size_t x);
-  // LogFile& operator << (time_t x);
-  LogFile& operator << (float x);
-  LogFile& operator << (double &x);
-  LogFile& operator << (bool x);
-  LogFile& operator << (void *);
-  LogFile& operator << (const char *);
-  LogFile& operator << (const xmlChar *);
-  LogFile& operator << (std::string );
-  std::ostream& operator << (std::ostream & (&)(std::ostream &));
-  const char *GetEntry(void);
+    file_state GetState (void) { return state; }
+    LogFile& operator << (ErrCond&);
+    LogFile& operator << (int x);
+    LogFile& operator << (long x);
+    LogFile& operator << (unsigned int x);
+    // These both resolve to an unsigned int.
+    // LogFile& operator << (size_t x);
+    // LogFile& operator << (time_t x);
+    LogFile& operator << (float x);
+    LogFile& operator << (double &x);
+    LogFile& operator << (bool x);
+    LogFile& operator << (void *);
+    LogFile& operator << (const char *);
+    LogFile& operator << (const xmlChar *);
+    LogFile& operator << (std::string );
+    std::ostream& operator << (std::ostream & (&)(std::ostream &));
+    const char *GetEntry(void);
   
-  retcode_t Open(const char *);
-  retcode_t Close(void);
-  // accessors for the verbose level
-  void set_verbosity (void) {
-    verbose++;
-    //        note (3, "Verbosity now set to %d", verbose);
-  }
-  void set_verbosity (int x) {
-    verbose = x;
-    //        note (3, "Verbosity now set to %d", verbose);
-  }
+    retcode_t Open(const char *);
+    retcode_t Close(void);
+    // accessors for the verbose level
+    void set_verbosity (void) {
+        verbose++;
+        //        note (3, "Verbosity now set to %d", verbose);
+    }
+    void set_verbosity (int x) {
+        verbose = x;
+        //        note (3, "Verbosity now set to %d", verbose);
+    }
 
-  void SetStamp (bool b) {
-    stamp = b;
-  }
-  bool GetStamp (void) {
-    return stamp;
-  }
-  //std::string gettimestamp();
+    void SetStamp (bool b) {
+        stamp = b;
+    }
+    bool GetStamp (void) {
+        return stamp;
+    }
+    //std::string gettimestamp();
   
 private:
-  static std::ofstream console;
-  std::ofstream outstream;
-  static int verbose;
-  bool stamp;
-  std::string logentry;
-  friend std::ostream & operator << (std::ostream &os, LogFile& e);
+    static std::ofstream console;
+    std::ofstream outstream;
+    static int verbose;
+    bool stamp;
+    std::string logentry;
+    friend std::ostream & operator << (std::ostream &os, LogFile& e);
 };
 
 extern LogFile dbglogfile;
@@ -127,8 +128,8 @@ struct __Host_Function_Report__ {
     const char *func;
 
     __Host_Function_Report__(void) {
-      if (dbglogfile.GetState() == LogFile::OPEN)
-	dbglogfile  << "enter" << std::endl;
+        if (dbglogfile.GetState() == LogFile::OPEN)
+            dbglogfile  << "enter" << std::endl;
     }
 
     __Host_Function_Report__(char *_func) {
@@ -146,7 +147,7 @@ struct __Host_Function_Report__ {
     }
 };
 
-#define DEBUGLOG_REPORT_FUNCTION	\
+#define DEBUGLOG_REPORT_FUNCTION                                        \
     __Host_Function_Report__ __host_function_report__( __PRETTY_FUNCTION__)
 
 #define DEBUGLOG_REPORT_RETURN
@@ -164,4 +165,7 @@ ascify_buffer (unsigned char *p, const unsigned char *s, int x);
 // __LOG_H__
 #endif
 
-
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

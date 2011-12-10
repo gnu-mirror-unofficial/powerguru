@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -42,136 +43,141 @@ Console::Console (void) {
 }
 
 Console::~Console (void) {
-  Close();
-  inchannel.filespec.erase();
-  outchannel.filespec.erase();
-  state = Console::UNSET;
+    Close();
+    inchannel.filespec.erase();
+    outchannel.filespec.erase();
+    state = Console::UNSET;
 }
 
 void
 Console::Open (void) {
-  // Open a console for the end user to type at. We default to stdio (cin)
-  //  string str = "stdin";
+    // Open a console for the end user to type at. We default to stdio (cin)
+    //  string str = "stdin";
   
-  OpenInChannel();
+    OpenInChannel();
   
-  //  str = "stdout";
+    //  str = "stdout";
 
-  // Open a the output channel for the console. We default to stdio (cout)
-  OpenOutChannel();
+    // Open a the output channel for the console. We default to stdio (cout)
+    OpenOutChannel();
 }
 
 void
 Console::OpenInChannel (string channel) {
-  if (channel == "stdin") {
-    inchannel.fhandle = stdin;
-    inchannel.filespec = "stdin";
-    state = Console::OPEN;
-  }
+    if (channel == "stdin") {
+        inchannel.fhandle = stdin;
+        inchannel.filespec = "stdin";
+        state = Console::OPEN;
+    }
 
 #if 1
-  signal (SIGINT, signal_handler);
-  signal (SIGQUIT, signal_handler);
+    signal (SIGINT, signal_handler);
+    signal (SIGQUIT, signal_handler);
 #else
-  struct sigaction saio;
+    struct sigaction saio;
 
-  // FIXME: we want to trap ^C on the console, but this doesn't seem to work
-  saio.sa_handler = signal_handler;
-  saio.sa_mask = 0;
-  saio.sa_flags = 0;
-  saio.sa_restorer = 0;
+    // FIXME: we want to trap ^C on the console, but this doesn't seem to work
+    saio.sa_handler = signal_handler;
+    saio.sa_mask = 0;
+    saio.sa_flags = 0;
+    saio.sa_restorer = 0;
 
-  sigaction(SIGIO, &saio, 0);
+    sigaction(SIGIO, &saio, 0);
 #endif
 
-  fcntl(fileno(inchannel.fhandle), F_SETOWN, getpid());
+    fcntl(fileno(inchannel.fhandle), F_SETOWN, getpid());
 
-  //  MakeRaw(fileno(inchannel.fhandle));
+    //  MakeRaw(fileno(inchannel.fhandle));
 }
 
 void
 Console::OpenInChannel (void) {
-  inchannel.fhandle = stdin;
-  inchannel.filespec = "stdin";
-  state = Console::OPEN;
+    inchannel.fhandle = stdin;
+    inchannel.filespec = "stdin";
+    state = Console::OPEN;
 
 #if 1
-  signal (SIGINT, signal_handler);
-  signal (SIGQUIT, signal_handler);
+    signal (SIGINT, signal_handler);
+    signal (SIGQUIT, signal_handler);
 #else
-  struct sigaction saio;
+    struct sigaction saio;
 
-  // FIXME: we want to trap ^C on the console, but this doesn't seem to work
-  saio.sa_handler = signal_handler;
-  saio.sa_mask = 0;
-  saio.sa_flags = 0;
-  saio.sa_restorer = 0;
+    // FIXME: we want to trap ^C on the console, but this doesn't seem to work
+    saio.sa_handler = signal_handler;
+    saio.sa_mask = 0;
+    saio.sa_flags = 0;
+    saio.sa_restorer = 0;
 
-  sigaction(SIGIO, &saio, 0);
+    sigaction(SIGIO, &saio, 0);
 #endif
 
-  fcntl(fileno(inchannel.fhandle), F_SETOWN, getpid());
-  fcntl(fileno(inchannel.fhandle), F_SETFL, O_NONBLOCK);
+    fcntl(fileno(inchannel.fhandle), F_SETOWN, getpid());
+    fcntl(fileno(inchannel.fhandle), F_SETFL, O_NONBLOCK);
 
-  // MakeRaw(fileno(inchannel.fhandle));
+    // MakeRaw(fileno(inchannel.fhandle));
 }
 
 void
 Console::OpenOutChannel (string channel) {
-  if (channel == "stdout") {
-    outchannel.fhandle = stdout;
-    outchannel.filespec = "stdout";
-    state = Console::OPEN;
-  }
-  // MakeRaw(fileno(outchannel.fhandle));
+    if (channel == "stdout") {
+        outchannel.fhandle = stdout;
+        outchannel.filespec = "stdout";
+        state = Console::OPEN;
+    }
+    // MakeRaw(fileno(outchannel.fhandle));
 }
 
 void
 Console::OpenOutChannel (void) {
-  outchannel.fhandle = stdout;
-  outchannel.filespec = "stdout";
-  state = Console::OPEN;
+    outchannel.fhandle = stdout;
+    outchannel.filespec = "stdout";
+    state = Console::OPEN;
 }
 
 // Reset the input channel to be where it was when we started
 void
 Console::Close (void) {
-  state = Console::CLOSED;
-  Reset();
+    state = Console::CLOSED;
+    Reset();
 }
 
 void
 Console::Reset (void) {
-  tcsetattr(fileno(inchannel.fhandle), TCSANOW, &oldtty);
+    tcsetattr(fileno(inchannel.fhandle), TCSANOW, &oldtty);
 }
 
 void
 Console::MakeRaw (int x) {
-  termios newtty;
-  int flag;
+    termios newtty;
+    int flag;
 
-  tcgetattr(x, &oldtty);
-  newtty = oldtty;
-  newtty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON);
-  newtty.c_oflag &= ~OPOST;
-  newtty.c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
-  newtty.c_cflag &= ~(CSIZE|PARENB);
-  newtty.c_cflag |= CS8;
-  tcsetattr(x, TCSANOW, &newtty);
+    tcgetattr(x, &oldtty);
+    newtty = oldtty;
+    newtty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON);
+    newtty.c_oflag &= ~OPOST;
+    newtty.c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
+    newtty.c_cflag &= ~(CSIZE|PARENB);
+    newtty.c_cflag |= CS8;
+    tcsetattr(x, TCSANOW, &newtty);
   
-  flag = fcntl(x, F_GETFL, 0);
-  fcntl(x, F_SETFL, flag | O_NDELAY);
+    flag = fcntl(x, F_GETFL, 0);
+    fcntl(x, F_SETFL, flag | O_NDELAY);
 }
 
 void
 Console::SendEOL (void) {
-  Putc('\r');
-  Putc('\n'); 
+    Putc('\r');
+    Putc('\n'); 
 }
 
 void
 signal_handler (int sig)
 {
-  dbglogfile << "Got a " << sig << " from the console" << endl;
-  exit(sig);
+    dbglogfile << "Got a " << sig << " from the console" << endl;
+    exit(sig);
 }
+
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -88,158 +89,160 @@ int SysVSem::semid;
 string SysVSem::keypath;
 
 Sem::Sem (void) {
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
 }
 
 Sem::~Sem (void) {
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
 }
 
 int
 Sem::Init (void) {
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
-  return -1;
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    return -1;
 }
 
 int
 Sem::Try (void) {
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
-  return -1;
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    return -1;
 }
 
 int
 Sem::Wait (void) {
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
-  return -1;
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    return -1;
 }
 
 int
 Sem::Destroy (void) {
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
-  return -1;
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    return -1;
 }
 
 int
 Sem::GetValue (void) {
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
-  return -1;
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    return -1;
 }
 
 int
 Sem::Post (void) {
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
-  return -1;
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    return -1;
 }
 
 // SysV style semaphores
 SysVSem::SysVSem (void) {
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
 }
 
 SysVSem::~SysVSem (void) {
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
 }
 
 int
 SysVSem::Init (void) {
-  union semun semopts;
-  int i;
+    union semun semopts;
+    int i;
 
-  key = ftok(".", 's');
+    key = ftok(".", 's');
 
-  if((semid = semget(key, MEMBERS, IPC_CREAT|IPC_EXCL|0666)) == -1) {
-    fprintf(stderr, "Semaphore set already exists!\n");
-    exit(1);
-  }
+    if((semid = semget(key, MEMBERS, IPC_CREAT|IPC_EXCL|0666)) == -1) {
+        fprintf(stderr, "Semaphore set already exists!\n");
+        exit(1);
+    }
   
-  semopts.val = 1;
+    semopts.val = 1;
   
-  /* Initialize all members (could be done with SETALL) */        
-  for(i=0; i < MEMBERS; i++) {
-    semctl(semid, i, SETVAL, semopts);
-  }
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
-  return -1;
+    /* Initialize all members (could be done with SETALL) */        
+    for(i=0; i < MEMBERS; i++) {
+        semctl(semid, i, SETVAL, semopts);
+    }
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    return -1;
 }
 
 int
 SysVSem::Try (void) {
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
-  return -1;
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    return -1;
 }
 
 int
 SysVSem::Wait (void) {
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
-  return -1;
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    return -1;
 }
 
 int
 SysVSem::Destroy (void) {
-  return semctl(semid, 0, IPC_RMID, 0);
+    return semctl(semid, 0, IPC_RMID, 0);
 }
 
 int
 SysVSem::GetValue (void) {
-  return semctl(semid, MEMBERS, GETVAL, 0);
+    return semctl(semid, MEMBERS, GETVAL, 0);
 }
 
 int
 SysVSem::Post (void) {
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
-  return -1;
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    return -1;
 }
 
 
 // POSIX pthread style semaphores
 POSIXSem::POSIXSem (void) {
-  Init();
+    Init();
 }
 
 POSIXSem::~POSIXSem (void) {
-  Destroy();
+    Destroy();
 }
 
 int
 POSIXSem::Init (void) {
-  // the middle paramemter must be 0 on Linux, cause process
-  // side semaphores aren't supported.
-  return sem_init(sem, 0, 1);
+    // the middle paramemter must be 0 on Linux, cause process
+    // side semaphores aren't supported.
+    return sem_init(sem, 0, 1);
 }
 
 int
 POSIXSem::Try (void) {
-  //  return sem_trywait(sem);
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
-  return -1;
+    //  return sem_trywait(sem);
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    return -1;
 }
 
 int
 POSIXSem::Wait (void) {
-  //  return sem_wait(sem);
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
-  return -1;
+    //  return sem_wait(sem);
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    return -1;
 }
 
 int
 POSIXSem::Destroy (void) {
-  //  return sem_destroy(sem);
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
-  return -1;
+    //  return sem_destroy(sem);
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    return -1;
 }
 
 int
 POSIXSem::GetValue (void) {
-  //  return sem_getvalue(sem);
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
-  return -1;
+    //  return sem_getvalue(sem);
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    return -1;
 }
 
 int
 POSIXSem::Post (void) {
-  cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
-  return -1;
+    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    return -1;
 }
 
-
-
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

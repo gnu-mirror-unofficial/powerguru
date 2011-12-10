@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -40,8 +41,8 @@ Proc::~Proc (void) {
 
 bool
 Proc::Start (void) {
-  cerr << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
-  return false;
+    cerr << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
+    return false;
 }
 
 bool
@@ -117,8 +118,8 @@ Proc::Find (string procname) {
 
 bool
 Proc::Stop (void) {
-  cerr << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
-  return false;
+    cerr << __PRETTY_FUNCTION__ << ": not implemented!" << endl;
+    return false;
 }
     
 bool
@@ -148,7 +149,7 @@ Proc::GetOutput (string procname) {
     return output[procname];
 }
 
-
-
-
-
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -41,96 +42,101 @@ const char FILLCHAR = ' ';
 // Each menu item has associated data, and it's location indexes into which
 // item number of which header this is.
 union mval {
-  float  floatval;
-  int    intval;
-  bool   boolval;
-  time_t timeval;
+    float  floatval;
+    int    intval;
+    bool   boolval;
+    time_t timeval;
 };
 
 class MenuItem 
 {
 public:
-  MenuItem();
-  ~MenuItem() { };
+    MenuItem();
+    ~MenuItem() { };
 
-  enum datatype
+    enum datatype
     { NONE, INFO, MENUHEAD, MENUITEM, TIME, DATE, FLOAT, INT, EOL, BOOL, CLOCK, ENUM };
-  MenuItem(std::string label, int x); // make a menuheader label
-  // make a menuitem label
-  MenuItem(std::string label, int x, int y, std::string abbrev);
-  MenuItem(std::string label, int x, int y, bool z, std::string abbrev);
-  //  MenuItem(std::string label, int x, int y, enum datatype z);
-  MenuItem(std::string label, int x, int y, int z, std::string abbrev);
-  MenuItem(std::string label, int x, int y, float z, std::string abbrev);
-  MenuItem(std::string label, int x, int y, time_t z, std::string abbrev);
+    MenuItem(std::string label, int x); // make a menuheader label
+    // make a menuitem label
+    MenuItem(std::string label, int x, int y, std::string abbrev);
+    MenuItem(std::string label, int x, int y, bool z, std::string abbrev);
+    //  MenuItem(std::string label, int x, int y, enum datatype z);
+    MenuItem(std::string label, int x, int y, int z, std::string abbrev);
+    MenuItem(std::string label, int x, int y, float z, std::string abbrev);
+    MenuItem(std::string label, int x, int y, time_t z, std::string abbrev);
 
-  // Set the data
-  void SetItem(std::string label, int x, int y, union mval val, enum datatype dtype);
-  void SetItem(std::string label, int x, int y, union mval val, enum datatype dtype, std::string);
+    // Set the data
+    void SetItem(std::string label, int x, int y, union mval val, enum datatype dtype);
+    void SetItem(std::string label, int x, int y, union mval val, enum datatype dtype, std::string);
 
-  void SetRange(int x, int y);
-  void SetRange(float x, float y);
-  void SetItem(std::string label, int x); // make a menuheader label
-  // make a menuitem label
-  void SetItem(std::string label, int x, int y);
-  void SetItem(std::string label, int x, int y, std::string abbrev);
-  void SetItem(std::string label, int x, int y, bool z);
-  void SetItem(std::string label, int x, int y, bool z, std::string abbrev);
-  //  void SetItem(std::string label, int x, int y, enum datatype z);
-  void SetItem(std::string label, int x, int y, int z);
-  void SetItem(std::string label, int x, int y, int z, std::string abbrev);
-  void SetItem(std::string label, int x, int y, float z);
-  void SetItem(std::string label, int x, int y, float z, std::string abbrev);
-  void SetItem(std::string label, int x, int y, time_t z, std::string abbrev);
+    void SetRange(int x, int y);
+    void SetRange(float x, float y);
+    void SetItem(std::string label, int x); // make a menuheader label
+    // make a menuitem label
+    void SetItem(std::string label, int x, int y);
+    void SetItem(std::string label, int x, int y, std::string abbrev);
+    void SetItem(std::string label, int x, int y, bool z);
+    void SetItem(std::string label, int x, int y, bool z, std::string abbrev);
+    //  void SetItem(std::string label, int x, int y, enum datatype z);
+    void SetItem(std::string label, int x, int y, int z);
+    void SetItem(std::string label, int x, int y, int z, std::string abbrev);
+    void SetItem(std::string label, int x, int y, float z);
+    void SetItem(std::string label, int x, int y, float z, std::string abbrev);
+    void SetItem(std::string label, int x, int y, time_t z, std::string abbrev);
   
-  std::string &GetLabel(void)   { return label; }
-  std::string &GetAlias(void)   { return cmdname; }
-  int GetHeaderIndex(void)      { return headidx; }
-  int GetItemIndex(void)        { return itemidx; }
+    std::string &GetLabel(void)   { return label; }
+    std::string &GetAlias(void)   { return cmdname; }
+    int GetHeaderIndex(void)      { return headidx; }
+    int GetItemIndex(void)        { return itemidx; }
   
 
-  // Overload so we can extract the various data types
-  union mval GetValue(union mval *x) { return (*x = value); }
-  int GetInt(void)             { return value.intval; }
-  float GetFloat(void)         { return value.floatval; }
-  bool GetBool(void)           { return value.boolval; }      
-  bool GetValue(bool *x)       { return (*x = value.boolval); }
-  int GetValue(int *x)         { return (*x = value.intval); }
-  float GetValue(float *x)     { return (*x = value.floatval); }
-  time_t GetValue(time_t *x)   { return (*x = value.timeval); }
-  void SetValue(int x)         { value.intval = x; }
-  void SetValue(float x)       { value.floatval = x; }
-  void SetValue(time_t x)      { value.timeval = x; }
-  enum datatype GetType(void)  { return type; }
-  int GetIntMin (void)         { return minrange.intval; }
-  int GetIntMax (void)         { return maxrange.intval; }
-  float GetFloatMin (void)       { return minrange.floatval; }
-  float GetFloatMax (void)       { return maxrange.floatval; }
-  void Dump(void);
+    // Overload so we can extract the various data types
+    union mval GetValue(union mval *x) { return (*x = value); }
+    int GetInt(void)             { return value.intval; }
+    float GetFloat(void)         { return value.floatval; }
+    bool GetBool(void)           { return value.boolval; }      
+    bool GetValue(bool *x)       { return (*x = value.boolval); }
+    int GetValue(int *x)         { return (*x = value.intval); }
+    float GetValue(float *x)     { return (*x = value.floatval); }
+    time_t GetValue(time_t *x)   { return (*x = value.timeval); }
+    void SetValue(int x)         { value.intval = x; }
+    void SetValue(float x)       { value.floatval = x; }
+    void SetValue(time_t x)      { value.timeval = x; }
+    enum datatype GetType(void)  { return type; }
+    int GetIntMin (void)         { return minrange.intval; }
+    int GetIntMax (void)         { return maxrange.intval; }
+    float GetFloatMin (void)       { return minrange.floatval; }
+    float GetFloatMax (void)       { return maxrange.floatval; }
+    void Dump(void);
   
-  std::string &SetDisplay(std::string &label);
-  std::string &SetDisplay(std::string &label, int x);
-  std::string &SetDisplay(int x);
-  std::string &SetDisplay(std::string &label, float x);
-  std::string &SetDisplay(float x);
-  std::string &SetDisplay(std::string &label, bool x);
-  std::string &SetDisplay(bool x);
-  std::string &SetDisplay(time_t x);
-  std::string &SetDisplay(std::string &label, time_t x);
-  std::string &GetDisplay(void)   { return display; }
+    std::string &SetDisplay(std::string &label);
+    std::string &SetDisplay(std::string &label, int x);
+    std::string &SetDisplay(int x);
+    std::string &SetDisplay(std::string &label, float x);
+    std::string &SetDisplay(float x);
+    std::string &SetDisplay(std::string &label, bool x);
+    std::string &SetDisplay(bool x);
+    std::string &SetDisplay(time_t x);
+    std::string &SetDisplay(std::string &label, time_t x);
+    std::string &GetDisplay(void)   { return display; }
 
- private:
-  std::string cmdname;          // this is an abbreviation used for
-                                // the command line interface
-  std::string label;
-  std::string display;
-  int headidx;
-  int itemidx;
-  enum datatype type;
-  union mval value;
-  union mval minrange;
-  union mval maxrange;
+private:
+    std::string cmdname;          // this is an abbreviation used for
+    // the command line interface
+    std::string label;
+    std::string display;
+    int headidx;
+    int itemidx;
+    enum datatype type;
+    union mval value;
+    union mval minrange;
+    union mval maxrange;
 };
 
 // end of __MENUITEM_H__
 #endif
+
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

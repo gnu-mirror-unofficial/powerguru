@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -65,59 +66,59 @@ main(int argc, char *argv[])
 
     // scan for the two main standard GNU options
     for (c=0; c<argc; c++) {
-      if (strcmp("--help", argv[c]) == 0) {
-        usage(argv[0]);
-        exit(0);
-      }
-      if (strcmp("--version", argv[c]) == 0) {
-        cerr << "PowerGuru version: " << VERSION << endl;
-        exit(0);
-      }
+        if (strcmp("--help", argv[c]) == 0) {
+            usage(argv[0]);
+            exit(0);
+        }
+        if (strcmp("--version", argv[c]) == 0) {
+            cerr << "PowerGuru version: " << VERSION << endl;
+            exit(0);
+        }
     }
     
     while ((c = getopt (argc, argv, "hvdcm:u:p:V")) != -1) {
-      switch (c) {
-      case 'h':
-        usage (argv[0]);
-        break;
+        switch (c) {
+          case 'h':
+              usage (argv[0]);
+              break;
         
-      case 'v':
-        dbglogfile.set_verbosity();
-        break;
+          case 'v':
+              dbglogfile.set_verbosity();
+              break;
         
-      case 'm':
-        hostname = strdup(optarg);
-        break;
+          case 'm':
+              hostname = strdup(optarg);
+              break;
         
-        // Specify database user name.
-      case 'u': 
-        user = strdup(optarg);
-        break;
+              // Specify database user name.
+          case 'u': 
+              user = strdup(optarg);
+              break;
         
-        // Specify database user password.
-      case 'p':
-        passwd = strdup(optarg);
-        break;   
+              // Specify database user password.
+          case 'p':
+              passwd = strdup(optarg);
+              break;   
         
-      case 'c':
-        client = true;
-        daemon = false;
-        break;   
+          case 'c':
+              client = true;
+              daemon = false;
+              break;   
         
-      case 'V':
-        cerr << "PowerGuru version " << VERSION << endl;
-        exit (0);
-        break;   
+          case 'V':
+              cerr << "PowerGuru version " << VERSION << endl;
+              exit (0);
+              break;   
         
-      case 'd':
-        client = false;
-        daemon = true;
-        break;   
+          case 'd':
+              client = false;
+              daemon = true;
+              break;   
         
-      default:
-        usage (argv[0]);
-        break;
-      }
+          default:
+              usage (argv[0]);
+              break;
+        }
     }
     
     // get the file name from the command line
@@ -151,128 +152,128 @@ main(int argc, char *argv[])
 
     // Make a client connection
     if (client == true) {
-      msg.init(hostname);
-      msg.checkConsole();
+        msg.init(hostname);
+        msg.checkConsole();
     }
 
     // Start as a daemon
     if (daemon == true) {
-      msg.init(true);
+        msg.init(true);
     }
     //msg.methodsDump();          // FIXME: debugging crap
     
     //msg.print_msg(msg.status((meter_data_t *)0));
 
     if (client) {
-      msg.writeNet(msg.metersRequestCreate(Msgs::BATTERY_VOLTS));
+        msg.writeNet(msg.metersRequestCreate(Msgs::BATTERY_VOLTS));
     }
 
     // msg.cacheDump();
     
     while ((ch = con.Getc()) != 'q') {
-      if (ch > 0){                // If we have something, process it
-        //con.Putc (ch);          // echo inputted character to screen
+        if (ch > 0){                // If we have something, process it
+            //con.Putc (ch);          // echo inputted character to screen
         
-        switch (ch) {
-          // Toggle the DTR state, which is as close as we get to
-          // flow control.
-        case 's':
-          if (client) {
+            switch (ch) {
+                // Toggle the DTR state, which is as close as we get to
+                // flow control.
+              case 's':
+                  if (client) {
 #if 0
-            //sleep(1);
-            msg.writeNet(msg.metersRequestCreate(Msgs::AC1_VOLTS_IN));
-            //sleep(1);
-            msg.writeNet(msg.metersRequestCreate(Msgs::CHARGE_AMPS));
-            //sleep(1);
-            msg.writeNet(msg.metersRequestCreate(Msgs::AC_LOAD_AMPS));
-            //sleep(1);
-            msg.writeNet(msg.metersRequestCreate(Msgs::PV_AMPS_IN));
-            //sleep(1);
-            msg.writeNet(msg.metersRequestCreate(Msgs::SELL_AMPS));
-            //            msg.writeNet(msg.requestCreate(""));
+                      //sleep(1);
+                      msg.writeNet(msg.metersRequestCreate(Msgs::AC1_VOLTS_IN));
+                      //sleep(1);
+                      msg.writeNet(msg.metersRequestCreate(Msgs::CHARGE_AMPS));
+                      //sleep(1);
+                      msg.writeNet(msg.metersRequestCreate(Msgs::AC_LOAD_AMPS));
+                      //sleep(1);
+                      msg.writeNet(msg.metersRequestCreate(Msgs::PV_AMPS_IN));
+                      //sleep(1);
+                      msg.writeNet(msg.metersRequestCreate(Msgs::SELL_AMPS));
+                      //            msg.writeNet(msg.requestCreate(""));
 #else            
-            msg.writeNet(msg.requestCreate(Msgs::REVISION));
-            msg.writeNet(msg.requestCreate(Msgs::SYSVERSION));
-            msg.writeNet(msg.requestCreate(Msgs::OPMODE));
-            msg.writeNet(msg.requestCreate(Msgs::WARNINGMODE));
-            msg.writeNet(msg.requestCreate(Msgs::ERRORMODE));
+                      msg.writeNet(msg.requestCreate(Msgs::REVISION));
+                      msg.writeNet(msg.requestCreate(Msgs::SYSVERSION));
+                      msg.writeNet(msg.requestCreate(Msgs::OPMODE));
+                      msg.writeNet(msg.requestCreate(Msgs::WARNINGMODE));
+                      msg.writeNet(msg.requestCreate(Msgs::ERRORMODE));
 #endif
-          }
-          break;
-        case 'Q':
-        case 'q':
-          con.Puts("Qutting PowerGuru due to user input!\n");
-          msg.writeNet("quit");
-          exit(0);
-          break;
-        case '?':
-          con.Puts("PowerGuru client\n");
-          con.Puts("\t? - help\r\n");
-          con.Puts("\tq - Quit\r\n");
-          con.Puts("\tQ - Quit\r\n");
-          sleep(2);
-        default:
-          break;
-        };
-      }
+                  }
+                  break;
+              case 'Q':
+              case 'q':
+                  con.Puts("Qutting PowerGuru due to user input!\n");
+                  msg.writeNet("quit");
+                  exit(0);
+                  break;
+              case '?':
+                  con.Puts("PowerGuru client\n");
+                  con.Puts("\t? - help\r\n");
+                  con.Puts("\tq - Quit\r\n");
+                  con.Puts("\tQ - Quit\r\n");
+                  sleep(2);
+              default:
+                  break;
+            };
+        }
 
-      XML xml;
-      unsigned int i;
-      memset(buffer, 0, INBUFSIZE);
+        XML xml;
+        unsigned int i;
+        memset(buffer, 0, INBUFSIZE);
 #if 1
-      vector<const xmlChar *> messages;
-      //const xmlChar *messages[200];
-      ret = msg.anydata(messages);
+        vector<const xmlChar *> messages;
+        //const xmlChar *messages[200];
+        ret = msg.anydata(messages);
 
-      if (ret == ERROR) {
-        dbglogfile << "ERROR: Got error from socket " << endl;
-        // Start as a daemon
-        if (daemon == true) {
-          msg.closeNet();
-          // wait for the next connection
-          if (msg.newNetConnection(true)) {
-            dbglogfile << "New connection started for remote client." << endl;
-          }
-        } else {
-          if (errno != EAGAIN) {
-            dbglogfile << "ERROR: " << errno << ":\t"<< strerror(errno) << endl;
-            msg.closeNet();
-            exit (-1);
-          }
+        if (ret == ERROR) {
+            dbglogfile << "ERROR: Got error from socket " << endl;
+            // Start as a daemon
+            if (daemon == true) {
+                msg.closeNet();
+                // wait for the next connection
+                if (msg.newNetConnection(true)) {
+                    dbglogfile << "New connection started for remote client." << endl;
+                }
+            } else {
+                if (errno != EAGAIN) {
+                    dbglogfile << "ERROR: " << errno << ":\t"<< strerror(errno) << endl;
+                    msg.closeNet();
+                    exit (-1);
+                }
+            }
         }
-      }
-      for (i=0; i < messages.size(); i++) {
-        cerr << "Got message " << messages[i] << endl;
-        string str = (const char *)messages[i];
-        delete messages[i];
-        if (xml.parseXML(str) == ERROR) {
-          continue;
+        for (i=0; i < messages.size(); i++) {
+            cerr << "Got message " << messages[i] << endl;
+            string str = (const char *)messages[i];
+            delete messages[i];
+            if (xml.parseXML(str) == ERROR) {
+                continue;
+            }
         }
-      }
-      messages.clear();
-      msg.cacheDump();
+        messages.clear();
+        msg.cacheDump();
 
 #else
-      ptr = buffer;
-      int bytes = msg.readNet(buffer, INBUFSIZE, 0);      
-      if (bytes > 0) {
-        while (ptr != NULL) {
-          if (ptr != buffer) {
-            ptr++;
-          }
-          // We're at the end of the messages
-          if (strlen(ptr) == 0) {
-            break;
-          }
-          if (xml.parseXML(ptr) == false) {
-            break;
-          }
-          if (strncmp(buffer, "quit", 4) == 0) {
-            exit(0);
-          }
-          ptr = strchr(ptr, '\0');
+        ptr = buffer;
+        int bytes = msg.readNet(buffer, INBUFSIZE, 0);      
+        if (bytes > 0) {
+            while (ptr != NULL) {
+                if (ptr != buffer) {
+                    ptr++;
+                }
+                // We're at the end of the messages
+                if (strlen(ptr) == 0) {
+                    break;
+                }
+                if (xml.parseXML(ptr) == false) {
+                    break;
+                }
+                if (strncmp(buffer, "quit", 4) == 0) {
+                    exit(0);
+                }
+                ptr = strchr(ptr, '\0');
+            }
         }
-      }
 #endif
     }
     //con.Close();
@@ -293,3 +294,8 @@ usage (const char *prog)
     cerr << "-p\tRemote Machine password" << endl;
     exit (-1);
 }
+
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

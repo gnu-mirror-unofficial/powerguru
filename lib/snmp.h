@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -73,39 +74,43 @@
 
 class SnmpClient
 {
- public:
-  SnmpClient();
-  ~SnmpClient();
-  retcode_t open(std::string init, std::string mibname);
-  retcode_t close(void);
-  struct snmp_pdu *read(std::string mibnode);
- private:
-  std::string           *_hostname;
+public:
+    SnmpClient();
+    ~SnmpClient();
+    retcode_t open(std::string init, std::string mibname);
+    retcode_t close(void);
+    struct snmp_pdu *read(std::string mibnode);
+private:
+    std::string           *_hostname;
 #ifdef USE_SNMP
-  struct snmp_session   _session;
-  struct snmp_session   *_handle;
-  struct tree           *_mibtree;
-  struct snmp_pdu       *_pdu;
-  struct snmp_pdu       *_response;
+    struct snmp_session   _session;
+    struct snmp_session   *_handle;
+    struct tree           *_mibtree;
+    struct snmp_pdu       *_pdu;
+    struct snmp_pdu       *_response;
 #endif
 };
 
 
 class SnmpDaemon
 {
- public:
-  SnmpDaemon();
-  ~SnmpDaemon();
-  retcode_t master(bool background);
-  retcode_t start(std::string init, std::string mibname);
-  retcode_t close(void);
-  struct snmp_pdu *readSnmp(std::string mibnode);
-  retcode_t process(void);
+public:
+    SnmpDaemon();
+    ~SnmpDaemon();
+    retcode_t master(bool background);
+    retcode_t start(std::string init, std::string mibname);
+    retcode_t close(void);
+    struct snmp_pdu *readSnmp(std::string mibnode);
+    retcode_t process(void);
   
- private:
-  std::string           *_hostname;
+private:
+    std::string           *_hostname;
 };
-
 
 // end of __SNMP_H__
 #endif
+
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

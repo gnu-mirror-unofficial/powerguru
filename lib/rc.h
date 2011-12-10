@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -30,29 +31,29 @@ namespace rcinit {
   
 class RCinitFile 
 {
- public:
-  RCinitFile();
-  ~RCinitFile();
-  retcode_t load_files();
-  retcode_t parse_file(std::string filespec);
-  retcode_t update_file(std::string filespec);
+public:
+    RCinitFile();
+    ~RCinitFile();
+    retcode_t load_files();
+    retcode_t parse_file(std::string filespec);
+    retcode_t update_file(std::string filespec);
 
-  // Database config options
-  std::string dbhostGet()   { return _dbhost; }
-  std::string dbuserGet()   { return _dbuser; };
-  std::string dbpasswdGet() { return _dbpasswd; };
-  std::string dbnameGet()   { return _dbname; };
-  std::string devmodeGet()  { return _devmode; };
-  std::string deviceGet()   { return _device; };
+    // Database config options
+    std::string dbhostGet()   { return _dbhost; }
+    std::string dbuserGet()   { return _dbuser; };
+    std::string dbpasswdGet() { return _dbpasswd; };
+    std::string dbnameGet()   { return _dbname; };
+    std::string devmodeGet()  { return _devmode; };
+    std::string deviceGet()   { return _device; };
 
- private:
-  std::string _filespec;
-  std::string _dbhost;
-  std::string _dbuser;
-  std::string _dbpasswd;
-  std::string _dbname;
-  std::string _devmode;
-  std::string _device;
+private:
+    std::string _filespec;
+    std::string _dbhost;
+    std::string _dbuser;
+    std::string _dbpasswd;
+    std::string _dbname;
+    std::string _devmode;
+    std::string _device;
 }; 
 
 // End of rcinit namespace 
@@ -60,3 +61,8 @@ class RCinitFile
 
 // __RC_H__
 #endif
+
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

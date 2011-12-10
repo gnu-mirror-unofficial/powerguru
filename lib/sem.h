@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -108,47 +109,51 @@ extern "C" {
 #define MEMBERS 1
 
 class Sem {
- private:
-  static bool initialized;
-  std::map<std::string, int> tbl;
- public:
-  Sem (void);
-  ~Sem (void);
-  virtual int Init (void);
-  virtual int Try (void);
-  virtual int Wait (void);
-  virtual int Destroy (void);
-  virtual int GetValue (void);
-  virtual int Post (void);
+private:
+    static bool initialized;
+    std::map<std::string, int> tbl;
+public:
+    Sem (void);
+    ~Sem (void);
+    virtual int Init (void);
+    virtual int Try (void);
+    virtual int Wait (void);
+    virtual int Destroy (void);
+    virtual int GetValue (void);
+    virtual int Post (void);
 };
 
 class SysVSem: public Sem {
- private:
-  static key_t key;
-  static int semid;
-  static std::string keypath;
- public:
-  SysVSem (void);
-  ~SysVSem (void);
-  int Init (void);
-  int Try (void);
-  int Wait (void);
-  int Destroy (void);
-  int GetValue (void);
-  int Post (void);
+private:
+    static key_t key;
+    static int semid;
+    static std::string keypath;
+public:
+    SysVSem (void);
+    ~SysVSem (void);
+    int Init (void);
+    int Try (void);
+    int Wait (void);
+    int Destroy (void);
+    int GetValue (void);
+    int Post (void);
 };
 
 class POSIXSem: public Sem {
- private:
-  sem_t *sem;
- public:
-  POSIXSem (void);
-  ~POSIXSem (void);
-  int Init (void);
-  int Try (void);
-  int Wait (void);
-  int Destroy (void);
-  int GetValue (void);
-  int Post (void);
+private:
+    sem_t *sem;
+public:
+    POSIXSem (void);
+    ~POSIXSem (void);
+    int Init (void);
+    int Try (void);
+    int Wait (void);
+    int Destroy (void);
+    int GetValue (void);
+    int Post (void);
 };
 
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

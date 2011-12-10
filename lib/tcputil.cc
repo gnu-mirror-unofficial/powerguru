@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -64,13 +65,13 @@ const int
 Tcputil::servicePortGet(struct servent *x)
 {
     if (_debug)
-    {
-        if (x)
         {
-          dbglogfile <<  "Port for service entry " << x->s_name
-                     << " is " << ntohs(x->s_port) << endl;
+            if (x)
+                {
+                    dbglogfile <<  "Port for service entry " << x->s_name
+                               << " is " << ntohs(x->s_port) << endl;
+                }
         }
-    }
     
     return x->s_port;
 }
@@ -86,16 +87,16 @@ Tcputil::serviceNameGet(void)
 const std::string
 Tcputil::serviceNameGet(struct servent *x)
 {
-  if (_debug) {
-    if (x) {
-      if (x->s_name) {
-        dbglogfile << "Name for this service entry is " << x->s_name << endl;
-        return x->s_name;
-      }
+    if (_debug) {
+        if (x) {
+            if (x->s_name) {
+                dbglogfile << "Name for this service entry is " << x->s_name << endl;
+                return x->s_name;
+            }
+        }
     }
-  }
   
-  return "";
+    return "";
 }
 
 // Description: get the protocol (tcp or udp) from a struct servent
@@ -110,12 +111,12 @@ const std::string
 Tcputil::serviceProtoGet(struct servent *x)
 {
     if (_debug)
-    {
-        if (x)
         {
-          dbglogfile <<  "Protocol for this service entry is " << x->s_proto << endl;
+            if (x)
+                {
+                    dbglogfile <<  "Protocol for this service entry is " << x->s_proto << endl;
+                }
         }
-    }
 
     return x->s_proto;
 }
@@ -140,20 +141,20 @@ Tcputil::lookupService(struct servent *entry, string name, string protocol)
     entry = getservbyname(name.c_str(), protocol.c_str());
 
     if (entry)
-    {
-        memcpy(&_service, entry, sizeof(struct servent));
-        if (_debug)
         {
-          dbglogfile <<  "Found service file entry for " << name << endl;
+            memcpy(&_service, entry, sizeof(struct servent));
+            if (_debug)
+                {
+                    dbglogfile <<  "Found service file entry for " << name << endl;
+                }
         }
-    }
     else
-    {
-        if (_debug)
         {
-          dbglogfile << "Services file entry " << name << " was not found!" << endl;
+            if (_debug)
+                {
+                    dbglogfile << "Services file entry " << name << " was not found!" << endl;
+                }
         }
-    }
 
     return entry;
 }
@@ -186,27 +187,27 @@ Tcputil::hostDataGet(struct hostent *entry, string name)
     memset(hostname, 0, MAXHOSTNAMELEN);
     
     if (name.size() != 0) {
-      strcpy(hostname, name.c_str());
+        strcpy(hostname, name.c_str());
     } else {
-      if (gethostname(hostname, MAXHOSTNAMELEN) == 0) {
-        if (_debug) {
-          dbglogfile << "The hostname for this machine is " << hostname << endl;
+        if (gethostname(hostname, MAXHOSTNAMELEN) == 0) {
+            if (_debug) {
+                dbglogfile << "The hostname for this machine is " << hostname << endl;
+            }
+        } else {
+            dbglogfile << "WARNING: Couldn't get the hostname for this machine!" << endl;
         }
-      } else {
-        dbglogfile << "WARNING: Couldn't get the hostname for this machine!" << endl;
-      }
     }
     
     entry = gethostbyname(hostname);
     
     if (entry) {
-      memcpy(&_host, entry, sizeof(struct hostent));
-      if (_debug) {
-        dbglogfile <<  "The IP number for this machine is "
-                   << inet_ntoa(*(struct in_addr *)entry->h_addr_list[0]) << endl;
-      }
+        memcpy(&_host, entry, sizeof(struct hostent));
+        if (_debug) {
+            dbglogfile <<  "The IP number for this machine is "
+                       << inet_ntoa(*(struct in_addr *)entry->h_addr_list[0]) << endl;
+        }
     } else {
-      dbglogfile << "WARNING: Couldn't get the host entry for this machine!" << endl;
+        dbglogfile << "WARNING: Couldn't get the host entry for this machine!" << endl;
     }
 
     return entry;
@@ -223,9 +224,9 @@ const string
 Tcputil::hostNameGet(struct hostent *x)
 {
     if (x != 0)
-    {
-        return x->h_name;
-    }
+        {
+            return x->h_name;
+        }
 
     return "";
 }
@@ -306,34 +307,34 @@ Tcputil::protoDataGet(struct protoent *entry)
 
 const struct protoent *
 Tcputil::protoDataGet(struct protoent *entry,
-    std::string name)
+                      std::string name)
 {
     char protoname[MAXHOSTNAMELEN];
     
     if (name.size() != 0)
-    {
-        strcpy(protoname, name.c_str());
-    }
+        {
+            strcpy(protoname, name.c_str());
+        }
 
     entry = getprotobyname(protoname);
  
     if (_debug)
-    {
-        if (entry)
         {
-          dbglogfile << "The proto number for " << entry->p_name
-                                             << " is " << entry->p_proto << endl;
+            if (entry)
+                {
+                    dbglogfile << "The proto number for " << entry->p_name
+                               << " is " << entry->p_proto << endl;
+                }
+            else
+                {
+                    dbglogfile << "WARNING: Couldn't get the host entry for this machine!" << endl;
+                }
         }
-        else
-        {
-          dbglogfile << "WARNING: Couldn't get the host entry for this machine!" << endl;
-        }
-    }
 
     if (entry != 0) 
-    {
-        memcpy(&_proto, entry, sizeof(struct protoent));
-    }
+        {
+            memcpy(&_proto, entry, sizeof(struct protoent));
+        }
     
     return &_proto;
 }
@@ -380,7 +381,7 @@ const string
 Tcputil::hostByAddrGet(void)
 {
     return hostNameGet(gethostbyaddr(_host.h_addr_list[0], _host.h_length,
-                           AF_INET));
+                                     AF_INET));
 }
 
 // Description: Get the host data based on the host name
@@ -414,10 +415,10 @@ Tcputil::numberOfInterfaces(void)
     struct ifreq *ifr;
 #endif
     if (0 > (fd = socket(AF_INET, SOCK_DGRAM,0)))
-    {
-      dbglogfile << "WARNING: Couldn't get file descriptor for AF_INET socket!" << endl;
-        return -1;
-    }
+        {
+            dbglogfile << "WARNING: Couldn't get file descriptor for AF_INET socket!" << endl;
+            return -1;
+        }
 #ifdef SIOCGLIFNUM
     // use AF_INET for IPv4 only or AF_INET6 for IPv6 only
     // note: if using AF_UNSPEC, some interface names may appear twice,
@@ -427,11 +428,11 @@ Tcputil::numberOfInterfaces(void)
 
 
     if(ioctl(fd,SIOCGLIFNUM,&ln) == -1)
-    {
-      dbglogfile << "Couldn't get ethernet interface data!: %s\n"
-                 << strerror(errno) << endl;
-        return -1;
-    }
+        {
+            dbglogfile << "Couldn't get ethernet interface data!: %s\n"
+                       << strerror(errno) << endl;
+            return -1;
+        }
 
     dbglogfile << "There are " <<  << ln.lifn_count " ethernet interfaces." << endl;
 
@@ -441,24 +442,28 @@ Tcputil::numberOfInterfaces(void)
     ifc.ifc_req = (struct ifreq *)buf;
     
     if(ioctl(fd, SIOCGIFCONF, &ifc) == -1)
-    {
-      dbglogfile << "Couldn't get ethernet interface data!: %s"
-                 << strerror(errno) << endl;
-        return -1;
-    }
+        {
+            dbglogfile << "Couldn't get ethernet interface data!: %s"
+                       << strerror(errno) << endl;
+            return -1;
+        }
 
     ifr = ifc.ifc_req;
     cplim = buf + ifc.ifc_len;
     for (cp = buf; cp < cplim; cp += sizeof(ifr->ifr_name) + sizeof(ifr->ifr_addr))
-    {
-        ifr = (struct ifreq *) cp;
+        {
+            ifr = (struct ifreq *) cp;
 #ifdef NET_DEBUG
-        dbglogfile << "interface name is: " << ifr->ifr_name << endl;
+            dbglogfile << "interface name is: " << ifr->ifr_name << endl;
 #endif
-        count++;
-    }
+            count++;
+        }
 #endif
 
     return count;
 }
 
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -54,14 +55,15 @@ extern LogFile dbglogfile;
 retcode_t sim_mx(const char *filespec);
 retcode_t sim_fx(const char *filespec);
   
-main(int argc, char *argv[]) {
+main(int argc, char *argv[])
+{
     int c, i, ch, ret;
     char *filespec = 0;
     ErrCond Err;
     outback_type_t otype;
-
+    
     if (argc == 1) {
-      //usage(argv[0]);
+        //usage(argv[0]);
     }
 
     // Load the database config variable so they can be overridden by
@@ -123,69 +125,73 @@ main(int argc, char *argv[]) {
 
 }
 
-
 static void
 usage (const char *prog)
 {
-  cerr <<"This program implements a command line interface" << endl; 
-  cerr << "for an Outback Power Systems Device" << endl;
-  cerr << "Usage: " << prog << " [hvd]" << endl;
-  cerr << "\t-h\t\t\t\tHelp (this display)" << endl;
-  cerr << "\t-v\t\t\t\tVerbose mode" << endl;
-  cerr << "\t-d [filespec]\t\t\tSpecify Serial Port (default=/dev/ttyS0)" << endl;
-  cerr << "\t-t [t]\t\t\t\tSpecify Device Type (default=mx)" << endl;
-
-  exit (-1);
+    cerr <<"This program implements a command line interface" << endl; 
+    cerr << "for an Outback Power Systems Device" << endl;
+    cerr << "Usage: " << prog << " [hvd]" << endl;
+    cerr << "\t-h\t\t\t\tHelp (this display)" << endl;
+    cerr << "\t-v\t\t\t\tVerbose mode" << endl;
+    cerr << "\t-d [filespec]\t\t\tSpecify Serial Port (default=/dev/ttyS0)" << endl;
+    cerr << "\t-t [t]\t\t\t\tSpecify Device Type (default=mx)" << endl;
+    
+    exit (-1);
 }
 
 retcode_t
 sim_mx(const char *filespec)
 {
-  struct stat stats;
-  char *home;
-  string loadfile;
-  ErrCond Err;
-  string line, newline;
-  ifstream in;
-  FakeUart fu;
-  if (filespec == 0) {
+    struct stat stats;
+    char *home;
+    string loadfile;
+    ErrCond Err;
+    string line, newline;
+    ifstream in;
+    FakeUart fu;
+    if (filespec == 0) {
+        return ERROR;
+    }
+    
+    fu.Open(&Err);
+    
+    // Check the users home directory
+    home = getenv("HOME");
+    if (home) {
+        loadfile = home;
+        loadfile += "/.powerguru/mx60.data";
+    }
+    
+    // See if it exists in the right place
+    dbglogfile << "Seeing if " << loadfile.c_str() << " exists." << endl;
+    if (stat(loadfile.c_str(), &stats) == 0) {
+        in.open(loadfile.c_str());
+        
+        if (!in) {
+            dbglogfile << "ERROR: Couldn't open file: " << filespec << endl;
+            return ERROR;
+        }
+        
+        // Read in each line and send it
+        while (getline(in, line)) {
+            newline = '*';
+            newline += line;
+            newline += '\n';
+            fu.Write((unsigned char *)newline.c_str(), newline.size(), Err);
+            // All outback products send their data at 1 second intervals
+            sleep(1);
+        }
+    } 
+    in.close();
     return ERROR;
-  }
-
-  fu.Open(&Err);
-  
-  // Check the users home directory
-  home = getenv("HOME");
-  if (home) {
-    loadfile = home;
-    loadfile += "/.powerguru/mx60.data";
-  }
-
-  // See if it exists in the right place
-  dbglogfile << "Seeing if " << loadfile.c_str() << " exists." << endl;
-  if (stat(loadfile.c_str(), &stats) == 0) {
-    in.open(loadfile.c_str());
-    
-    if (!in) {
-      dbglogfile << "ERROR: Couldn't open file: " << filespec << endl;
-      return ERROR;
-    }
-    
-    // Read in each line and send it
-    while (getline(in, line)) {
-      newline = '*';
-      newline += line;
-      newline += '\n';
-      fu.Write((unsigned char *)newline.c_str(), newline.size(), Err);
-      // All outback products send their data at 1 second intervals
-      sleep(1);
-    }
-  } 
-  in.close();
-  return ERROR;
 }
 
 retcode_t
 sim_fx(const char *filespec)
 {
 }
+
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

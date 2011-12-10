@@ -16,3 +16,8 @@ init_xantrex(void)
     DEBUGMSGTL(("xantrex", "Initializing\n"));
 
 }
+
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -73,45 +74,45 @@ typedef enum retcode {
 
 // Clear the error code and message
 static inline void CLEARERR (struct errcond *x) {
-  x->code=0;
-  x->msg[0] = STRTERM;
+    x->code=0;
+    x->msg[0] = STRTERM;
 };
 
 // Set an error message based on just an error message
 static inline void SETERRMSG (struct errcond *x, const char *y) {
-  x->code=-1;
-  strncpy (x->msg, y, ERRMSGSIZE);
-  x->msg[ERRMSGSIZE] = STRTERM;
+    x->code=-1;
+    strncpy (x->msg, y, ERRMSGSIZE);
+    x->msg[ERRMSGSIZE] = STRTERM;
 };
 
 // Get the error message
 static inline char *GETERRMSG (struct errcond *x) {
-  return x->msg;
+    return x->msg;
 };
 
 // Set an error message based on an error code
 static inline void SETERRCODE (struct errcond *x, int y) {
-  x->code=y;
-  x->msg[0] = STRTERM;
+    x->code=y;
+    x->msg[0] = STRTERM;
 };
 
 // Get the error code
 static inline int GETERRCODE (struct errcond *x) {
-  return x->code;
+    return x->code;
 };
 
 // Get the error code
 static inline int ERRCOND (struct errcond *x) {
-	return ((x->code > 0 || x->msg[0] > 'a') ? x->code : 0);
+    return ((x->code > 0 || x->msg[0] > 'a') ? x->code : 0);
 };
 
 // Set an error message based on the message and an error code
 static inline void SETERR(struct errcond *x, const char *y, int z) {
-  x->code=z;
-  if (y!=NULL) {
-    strncpy (x->msg, y, ERRMSGSIZE);
-    x->msg[ERRMSGSIZE] = STRTERM;
-  }
+    x->code=z;
+    if (y!=NULL) {
+        strncpy (x->msg, y, ERRMSGSIZE);
+        x->msg[ERRMSGSIZE] = STRTERM;
+    }
 };
 
 #ifdef __cplusplus
@@ -126,62 +127,65 @@ static inline void SETERR(struct errcond *x, const char *y, int z) {
 // Do this in C++ instead
 class ErrCond {
 public:
-  ErrCond(void) {
-    ecode = 0;
-    line = 0;
-  }
-  ErrCond(int x) {
-    ecode = x;
-  }
+    ErrCond(void) {
+        ecode = 0;
+        line = 0;
+    }
+    ErrCond(int x) {
+        ecode = x;
+    }
 
-  ~ErrCond(void);
-  ErrCond(const char *filein, int linein, const char *funcin, int codein, std::string &s);
-  // methods
-  void ClearErr(void);
+    ~ErrCond(void);
+    ErrCond(const char *filein, int linein, const char *funcin, int codein, std::string &s);
+    // methods
+    void ClearErr(void);
   
-  ErrCond &SetMsg (const char *filein, int linein, const char *funcin, int codein, std::string s);
+    ErrCond &SetMsg (const char *filein, int linein, const char *funcin, int codein, std::string s);
 
-  void SetMsg (std::string &s);
-  void SetMsg (const char *s);
-  void SetMsg (int x, const char *s);
-  void SetCode(int x) { 
-    ecode = x;
-  }
-  int GetCode(void) { 
-    return ecode;
-  }
-  int GetLine(void) { 
-    return line;
-  }
-  std::string &GetFile(void) { 
-    return file;
-  }
+    void SetMsg (std::string &s);
+    void SetMsg (const char *s);
+    void SetMsg (int x, const char *s);
+    void SetCode(int x) { 
+        ecode = x;
+    }
+    int GetCode(void) { 
+        return ecode;
+    }
+    int GetLine(void) { 
+        return line;
+    }
+    std::string &GetFile(void) { 
+        return file;
+    }
   
-  std::string &GetFunc(void) { 
-    return func;
-  }
+    std::string &GetFunc(void) { 
+        return func;
+    }
   
-  std::string &GetMsg(void) { 
-    return emsg;
-  }
+    std::string &GetMsg(void) { 
+        return emsg;
+    }
 
-  ErrCond& operator << (ErrCond&);
-  ErrCond& operator << (int x);
-  ErrCond& operator << (char const *str);
-  ErrCond& operator << (std::string &str);
-  ErrCond& operator << (void *addr);
+    ErrCond& operator << (ErrCond&);
+    ErrCond& operator << (int x);
+    ErrCond& operator << (char const *str);
+    ErrCond& operator << (std::string &str);
+    ErrCond& operator << (void *addr);
 
-  friend std::ostream & operator << (std::ostream &os, ErrCond& e);
-  std::ostream& operator << (std::ostream & (&)(std::ostream &));
+    friend std::ostream & operator << (std::ostream &os, ErrCond& e);
+    std::ostream& operator << (std::ostream & (&)(std::ostream &));
 private:
-  std::string file;
-  std::string func;
-  int line;
-  int ecode;
-  std::string emsg;
+    std::string file;
+    std::string func;
+    int line;
+    int ecode;
+    std::string emsg;
 };
 
 #endif
 #endif		// __ERR_H__
 
-
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -31,18 +32,23 @@ typedef retcode_t IOentrypoint (FILE *, struct errcond *err);
 class SharedLib
 {
 public:
-  retcode_t OpenLib (std::string &name, ErrCond &Err);
-  retcode_t CloseLib (ErrCond &Err);
-  entrypoint *GetSymbol (std::string &name, ErrCond &Err);
+    retcode_t OpenLib (std::string &name, ErrCond &Err);
+    retcode_t CloseLib (ErrCond &Err);
+    entrypoint *GetSymbol (std::string &name, ErrCond &Err);
 
-  // Accessors for the protocol name
-  std::string &GetDllName (void) { return dlname; }
-  void SetDllName (std::string &x) { dlname = x; }
+    // Accessors for the protocol name
+    std::string &GetDllName (void) { return dlname; }
+    void SetDllName (std::string &x) { dlname = x; }
 
 protected:
-  lt_dlhandle dlhandle;
-  std::string dlname;
+    lt_dlhandle dlhandle;
+    std::string dlname;
 };
 
 // __SHAREDLIB_H__
 #endif
+
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:

@@ -801,3 +801,8 @@ handle_powerGuruACSellAmps(netsnmp_mib_handler *handler,
 
     return SNMP_ERR_NOERROR;
 }
+
+// local Variables:
+// mode: C++
+// indent-tabs-mode: nil
+// End:
