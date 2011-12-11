@@ -22,7 +22,7 @@ AUTOMAKE_OPTIONS = dejagnu
 ACLOCAL_AMFLAGS = -I macros
 
 # these have to be built first
-SUBDIRS = lib doc
+SUBDIRS = lib # doc
 
 # this is an optional build directory
 if BUILD_SNMP
@@ -62,11 +62,12 @@ EXTRA_DIST = \
 # 	  done \
 # 	fi
 
-install-doc:
-	@cd doc/C ; $(MAKE) install-doc
+#install-doc:
+#	@cd doc/C ; $(MAKE) install-doc
 
-doc:
-	@cd doc/C ; $(MAKE) alldocs
+#doc:
+#	@cd doc/C ; $(MAKE) alldocs
+
 #dist-hook:
 # 	if test -d pixmaps; then \
 # 	  mkdir $(distdir)/pixmaps; \
