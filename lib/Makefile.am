@@ -54,6 +54,7 @@ libpguru_la_SOURCES = \
 	serial.cc serial.h \
 	console.cc console.h \
 	xantrex-trace.cc xantrex-trace.h \
+	xanbus.cc xanbus.h \
 	outbackpower.cc outbackpower.h \
 	menuitem.cc menuitem.h \
 	mysql.cc database.h\
