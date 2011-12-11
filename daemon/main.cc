@@ -266,9 +266,6 @@ main(int argc, char *argv[])
     }
 #endif
 
-    //
-
-        
     // Talk to an Outback Power Systems device
     if (outbackmode) {
         Console con;
@@ -365,7 +362,7 @@ main(int argc, char *argv[])
     
     // Network daemon/client mode. Normally we're a network daemon that
     // responses to requests by a remote client. Many house networks
-    // are behind a firewall,so the daemon can also connect to a
+    // are behind a firewall, so the daemon can also connect to a
     // publically accessible host to establish the connection the
     // other direction.
     if (daemon || client) {
