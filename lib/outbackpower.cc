@@ -1,5 +1,5 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+// Copyright (C) 2005, 2006 - 2018
 //      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
@@ -172,7 +172,7 @@ outback::main(Console &con, Database &db)
                   con.Puts("\t? - help\r\n");
                   con.Puts("\tq - Quit\r\n");
                   con.Puts("\tQ - Quit\r\n");
-                  sleep(2);
+                  // sleep(2); FIXME
               default:
                   break;
             };
