@@ -36,11 +36,11 @@
 #include <iostream>
 #include <sys/param.h>
 #include <fcntl.h>
-#ifdef HAVE_LIBXML
-# include <libxml/encoding.h>
-# include <libxml/xmlwriter.h>
-# include <libxml/debugXML.h>
-#endif
+// #ifdef HAVE_LIBXML
+// # include <libxml/encoding.h>
+// # include <libxml/xmlwriter.h>
+// # include <libxml/debugXML.h>
+// #endif
 
 #include "tcpip.h"
 #include "tcputil.h"

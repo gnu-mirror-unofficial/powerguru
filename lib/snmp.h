@@ -37,7 +37,6 @@
 #include <sys/timeb.h>
 */
 
-#ifdef USE_SNMP
 /* if on windows: */
 #ifdef WIN32
 #include <winsock.h>
@@ -59,15 +58,21 @@
    minimal requirements */
 #define NET_SNMP_CONFIG_H
 
-#undef SNMP_TRANSPORT_UDPIPV6_DOMAIN
-#undef SNMP_TRANSPORT_TCPIPV6_DOMAIN
+//#undef SNMP_TRANSPORT_UDPIPV6_DOMAIN
+//#undef SNMP_TRANSPORT_TCPIPV6_DOMAIN
+
+// FIXME: including <net-snmp/net-snmp-includes.h> causes problems unless
+// this is defined.
+#ifndef NETSNMP_ATTRIBUTE_DEPRECATED
+#define NETSNMP_ATTRIBUTE_DEPRECATED
+#endif
 
 /* include the core Net-SNMP functionality headers */
 #include <net-snmp/net-snmp-config.h>
+#include <net-snmp/types.h>
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/agent/scalar.h>
-#endif
 
 #include <string>
 #include "err.h"
@@ -82,7 +87,7 @@ public:
     struct snmp_pdu *read(std::string mibnode);
 private:
     std::string           *_hostname;
-#ifdef USE_SNMP
+#ifdef HAVE_SNMP
     struct snmp_session   _session;
     struct snmp_session   *_handle;
     struct tree           *_mibtree;

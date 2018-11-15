@@ -34,8 +34,14 @@ TTYS=@TTYS@
 AM_CPPFLAGS = -Wall \
 	-I$(srcdir) \
 	-I$(top_srcdir)/snmp \
-	-I.. $(XML_CPPFLAGS) \
-	$(MYSQL_CFLAGS)
+	-I.. $(XML_CPPFLAGS)
+#	$(MARIADB_CFLAGS) \
+#	${POSTGRESQL_CFLAGS)
+
+if BUILD_LIBXML
+SNMP_FILES = xml.cc xml.h
+libpguru_la_LIBDADD =  $(SNMP_LIBS) -lxml2
+endif
 
 if BUILD_SNMP
 SNMP_FILES = snmp.cc snmp.h
@@ -52,8 +58,6 @@ LIBPQ_FILES = postgresql.cc
 libpguru_la_LIBDADD =  $(LIBPQ_LIBS)
 endif
 
-# Bulding sharedlib requires adding all the libtool libraries
-# sharedlib.cc
 libpguru_la_SOURCES = \
 	proc.cc proc.h \
 	err.cc err.h \
@@ -73,7 +77,7 @@ libpguru_la_SOURCES = \
 	tcputil.cc tcputil.h \
 	tcpip.cc tcpip.h \
 	msgs.cc msgs.h \
-	xml.cc xml.h
+	$(XML_FILES)
 
 include_HEADERS = \
 	proc.h \

@@ -31,10 +31,11 @@
 //#include <netdb.h>
 #include <string>
 #include <vector>
-#include <libxml/encoding.h>
-#include <libxml/xmlwriter.h>
-#include <libxml/debugXML.h>
-
+// #ifdef HAVE_LIBXML
+// # include <libxml/encoding.h>
+// # include <libxml/xmlwriter.h>
+// # include <libxml/debugXML.h>
+// #endif
 
 #include "log.h"
 #include "err.h"
@@ -68,8 +69,8 @@ public:
     retcode_t createNetClient(std::string &hostname, short port, std::string &protocol);
 
     // If there is any data, process it
-    retcode_t anydata(std::vector<const xmlChar *> &msgs);
-    retcode_t anydata(int sockfd, std::vector<const xmlChar *> &msgs);
+    retcode_t anydata(std::vector<const unsigned char *> &msgs);
+    retcode_t anydata(int sockfd, std::vector<const unsigned char *> &msgs);
 
     // Read from the socket
     int readNet(char *buffer, int nbytes);
