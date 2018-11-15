@@ -26,7 +26,7 @@ AM_INCLUDES =  $(MYSQLH) # $(INCLTDL)
 
 noinst_PROGRAMS = tcpip tutil childtcpip
 
-INCLUDES = -I$(top_srcdir)/lib
+AM_CPPFLAGS = -I$(top_srcdir)/lib
 
 LOG = ../../lib/log.lo ../../lib/err.lo
 # Tcpip.C test case
