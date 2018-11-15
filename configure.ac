@@ -74,6 +74,7 @@ else
    AC_DOCBOOK_STYLES
 fi
 
+db="none"
 AC_ARG_WITH(db, [  --with-db          database to use, mariadb or the default of postgresql],
 [case "${withval}" in
   p*) db=postgresql ;;
@@ -81,7 +82,7 @@ AC_ARG_WITH(db, [  --with-db          database to use, mariadb or the default of
   *)   AC_MSG_ERROR([bad value ${withval} for with-db option]) ;;
 esac])
 AM_CONDITIONAL(BUILD_MARIADB, [ test x${db} = xmariadb ])
-AM_CONDITIONAL(BUILD_POSTGRESQL, [ test x${db} = xpostgressql ])
+AM_CONDITIONAL(BUILD_POSTGRESQL, [ test x${db} = xpostgresql ])
 
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -127,12 +128,33 @@ else
 fi
 AM_CONDITIONAL(CROSS_COMPILING, [ test x$cross_compiling = xyes ])
 
+AC_ARG_WITH(sysroot,
+  AC_HELP_STRING([--with-sysroot], [system root directory for cross compiling]),
+  with_top_level=${withval};
+  cross_compiling=yes)
+
+with_top_level=""
+if test x"${cross_compiling}" = xyes; then
+  dnl Check if /usr isn't part of the specified path
+  if test -d ${with_top_level}/usr; then
+    with_top_level=${withval}/usr
+  else 
+    dnl Check if the specified path supplies /usr
+    if test -d ${with_top_level}/include; then
+      with_top_level=${withval}
+    else
+      AC_MSG_ERROR([Specified sysroot \"${with_top_level}/include\" doesn't exist!])
+    fi
+  fi
+fi
+
 save_LDFLAGS="${LDFLAGS}"
 save_CFLAGS="${CFLAGS}"
 dnl CFLAGS="${CFLAGS} -Wall -Werror `${CXX} -print-sysroot`/usr/include"
 CFLAGS="${save_CFLAGS} -Wall -Werror"
 
-dnl libxml2
+# dnl libxml2's headers are sometimes in a libxml2 directory, but not always
+CPPFLAGS="-I`${CXX} -print-sysroot`/usr/include/libxml2"
 AC_MSG_CHECKING([For libxml2 development files])
 AC_TRY_COMPILE([#include <libxml/xmlstring.h>], [
   xmlChar foo = 'x';
@@ -146,7 +168,7 @@ if test x"${has_libxml}" = x"true"; then
   AC_DEFINE([HAVE_LIBXML], [1], [Has libxml2 development files])
   LIBS="${LIBS} -lxml2"
 fi
-AM_CONDITIONAL(BUILD_LIBXML, [ test x${has_libxml} = xyes ])
+AM_CONDITIONAL(BUILD_LIBXML, [ test x${has_libxml} = xtrue ])
 dnl GNU_PKG_FIND(libxml2, [libxml/xmlstring.h], [libxml2], xmlNewReference)
 
 dnl libpq. FIXME: add libpqcxx
@@ -161,14 +183,22 @@ AC_TRY_COMPILE([#include <libpq-fe.h>], [
 AC_MSG_RESULT([${has_libpq}])
 if test x"${has_libpq}" = x"true"; then
   AC_DEFINE([HAVE_LIBPQ], [1], [Has postgresql development files])
+  LIBS="${LIBS} -lpq"
 fi
 AM_CONDITIONAL(BUILD_POSTGRESQL, [ test x${has_libpq} = xtrue ])
 
 dnl Net-SNMP
+dnl net-snmp's headers require these two config options or you get
+dnl an error. FIXME: this need to be real tests!
+AC_DEFINE([HAVE_STRCASESTR], [1], [ Has strcasestr defined ])
+AC_DEFINE([HAVE_IN_ADDR_T], [1], [ Has typedef in_addr_t])
+
+CFLAGS="${save_CFLAGS} -Wall"
 LDFLAGS="${save_LDFLAGS} -lnetsnmp"
 AC_MSG_CHECKING([For Net SNMP development files])
-AC_TRY_COMPILE([#include <net-snmp/net-snmp-config.h>], [
-  config_add_mib(0);
+AC_TRY_COMPILE([#include <net-snmp/net-snmp-config.h>
+#include <net-snmp/types.h>], [
+  netsnmp_pid_t foo;
   ],
   has_snmp=true,
   has_snmp=false
@@ -176,8 +206,9 @@ AC_TRY_COMPILE([#include <net-snmp/net-snmp-config.h>], [
 AC_MSG_RESULT([${has_snmp}])
 if test x"${has_snmp}" = x"true"; then
   AC_DEFINE([HAVE_SNMP], [1], [Has Net SNMP development files])
+  LIBS="${LIBS} -lnetsnmp"
 fi
-AM_CONDITIONAL(BUILD_SNMP, [ test x${has_snmp} = xyes ])
+AM_CONDITIONAL(BUILD_SNMP, [ test x${has_snmp} = xtrue ])
 
 dnl mariadb development files
 dnl FIXME
@@ -200,7 +231,7 @@ AC_SUBST(PACKAGE_LIBS)
 
 dnl AM_PATH_POSTGRESQL
 dnl AC_PATH_MYSQL
-AM_CONDITIONAL(BUILD_MARIADB, [ test x${has_mariadb} = xyes ])
+AM_CONDITIONAL(BUILD_MARIADB, [ test x${has_mariadb} = xtrue ])
 
 AC_ARG_ENABLE(sim, [  --enable-sim           enable support for Sim (default=no)],
 [case "${enableval}" in
@@ -226,25 +257,6 @@ AC_ARG_WITH(tty,
   AC_SUBST(TTYS)
 )
 
-AC_ARG_WITH(sysroot,
-  AC_HELP_STRING([--with-sysroot], [system root directory for cross compiling]),
-  with_top_level=${withval};
-  cross_compiling=yes)
-
-with_top_level=""
-if test x"${cross_compiling}" = xyes; then
-  dnl Check if /usr isn't part of the specified path
-  if test -d ${with_top_level}/usr; then
-    with_top_level=${withval}/usr
-  else 
-    dnl Check if the specified path supplies /usr
-    if test -d ${with_top_level}/include; then
-      with_top_level=${withval}
-    else
-      AC_MSG_ERROR([Specified sysroot \"${with_top_level}/include\" doesn't exist!])
-    fi
-  fi
-fi
 
 dnl link to the images so we can browse the HTML output before
 dnl installing it.
@@ -268,43 +280,43 @@ dnl we arent building this for now
 dnl src/Makefile
 echo ""
 echo "Configurable options are:"
-dnl SNMP
-if test x$snmp = xtrue; then
-  echo "        Using SNMP"
-else
-  echo "        Not using SNMP"
-fi
 
-if test x$sim = xtrue; then
-  echo "        Using the simulator"
-else
-  echo "        Not using the simulator"
-fi
-
-dnl Dmalloc
-if test x$dmalloc = xyes; then
-  echo "        Using DMALLOC"
-else
-  echo "        Not using DMalloc"
-fi
+dnl if test x$sim = xtrue; then
+dnl   echo "        Using the simulator"
+dnl else
+dnl   echo "        Not using the simulator"
+dnl fi
 
 dnl Docbook
-if test x$docbook = xyes; then
-  echo "        Docbook styles in $DOCBOOK_STYLES"
-fi
-if test x"$pthreads" = x"yes"; then
-  echo "        Using POSIX Threads"
+dnl if test x$docbook = xyes; then
+dnl   echo "        Docbook styles in $DOCBOOK_STYLES"
+dnl fi
+
+dnl
+dnl Often warning messages get lost in the output from configure, so
+dnl redisplay the few critical ones so they don't get ignored.
+dnl
+if test x"${has_libxml}" != x"true"; then
+  echo "        To use XML, install the libxml2 development package for your system"
 else
-  echo "        Not using POSIX Threads"
+  echo "        Found libxml2, will configure XML support"
 fi
-if test x"$disablexml" = x"yes"; then
-  echo "        Not using XML"
+
+if test x"${has_snmp}" != x"true"; then
+  echo "        To use SNMP. install the net-snmp development package for your system"
 else
-  echo "        Using XML"
+  echo "        Found net-snmp. will configure SNMP support"
 fi
-if test x"$dom" != x"yes"; then
-  echo "        Using DOM parser"
+
+if test x"${db}" = x"none"; then
+  echo "        To use a database. install the mariadb or postgresql development package for your system"
+else
+  echo "        Found a database. will configure database support for ${db}"
 fi
-if test x"$reader" != x"yes"; then
-  echo "        Using XmlReader (SAX) parser"
-fi
+
+dnl if test x"$dom" != x"yes"; then
+dnl   echo "        Using DOM parser"
+dnl fi
+dnl if test x"$reader" != x"yes"; then
+dnl   echo "        Using XmlReader (SAX) parser"
+dnl fi
