@@ -42,6 +42,8 @@ using namespace std;
 #ifdef HAVE_MYSQL
 #include <mysql/errmsg.h>
 #include <mysql/mysql.h>
+#else
+#warning "You need to install MySQL for data base support"
 #endif
 
 const int LINELEN = 80;
@@ -115,10 +117,10 @@ Database::openDB (void)
         dbglogfile << "MySQL error when connecting: \n" << mysql_error(&_mysql) << endl;
         return false;
     }
-
+    
     dbglogfile << "Connected to MySQL database " << _dbname.c_str()
                <<  " on host " <<_dbhost.c_str() << endl;
-
+    
 #if 0
     if(mysql_select_db(&_mysql, "mydb")){ 
         DBG_MSG(DBG_EROR, "%s: MySQL error when selecting database: %s\n",
@@ -134,7 +136,6 @@ bool
 Database::closeDB (void)
 {
     mysql_close(&_mysql);
-
     // FIXME: do something intelligent here
     return true;
 }
@@ -183,7 +184,7 @@ Database::queryInsert(const char *query)
         }
     
         dbglogfile << "Lost connection to the database server, shutting down..." << endl;
-    
+        
         return false;
     }
   
@@ -243,7 +244,7 @@ Database::queryResults(const char *query)
         }
 
     mysql_free_result(result);
-
+    
     // FIXME: return something intelligent here
     return (void *)0;
 }
