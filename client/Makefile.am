@@ -22,7 +22,7 @@ AUTOMAKE_OPTIONS =
 PGURU = ../lib/libpguru.la
 bin_PROGRAMS = pguru 
 
-INCLUDES = -I$(top_srcdir)/lib $(XML_CPPFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/lib $(XML_CPPFLAGS)
 
 pguru_SOURCES = cmd.cc
 pguru_LDADD = $(PGURU) $(XML_LIBS) $(MYSQL_LIBS) -lpthread $(SNMP_LIBS)

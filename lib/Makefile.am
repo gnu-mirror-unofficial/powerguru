@@ -22,7 +22,6 @@ AUTOMAKE_OPTIONS =
 #LIBLTDL = @LIBLTDL@
 # __USLC__ makes MySQL++ use the std namespace
 AM_CXXFLAGS = -g -D__USLC__
-AM_CPPFLAGS = -Wall
 
 lib_LTLIBRARIES = libpguru.la
 
@@ -32,7 +31,7 @@ TTYS=@TTYS@
 # These headers get installed
 # include_HEADERS = log.h err.h proc.h serial.h xantrex.h outback.h
 
-INCLUDES = \
+AM_CPPFLAGS = -Wall \
 	-I$(srcdir) \
 	-I$(top_srcdir)/snmp \
 	-I.. $(XML_CPPFLAGS) \
@@ -41,6 +40,16 @@ INCLUDES = \
 if BUILD_SNMP
 SNMP_FILES = snmp.cc snmp.h
 libpguru_la_LIBDADD =  $(SNMP_LIBS) ../snmp/libpgsnmp.la
+endif
+
+if BUILD_MARIADB
+MARIADB_FILES = mariadb.cc
+libpguru_la_LIBDADD =  $(MARIADB_LIBS)
+endif
+
+if BUILD_POSTGRESQL
+LIBPQ_FILES = postgresql.cc
+libpguru_la_LIBDADD =  $(LIBPQ_LIBS)
 endif
 
 # Bulding sharedlib requires adding all the libtool libraries
@@ -57,8 +66,10 @@ libpguru_la_SOURCES = \
 	xanbus.cc xanbus.h \
 	outbackpower.cc outbackpower.h \
 	menuitem.cc menuitem.h \
-	mysql.cc database.h\
+	database.h\
 	$(SNMP_FILES) \
+	$(LIBPQ_FILES) \
+	$(MARIADB_FILES) \
 	tcputil.cc tcputil.h \
 	tcpip.cc tcpip.h \
 	msgs.cc msgs.h \

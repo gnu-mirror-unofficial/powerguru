@@ -20,8 +20,6 @@
 
 AUTOMAKE_OPTIONS = # dejagnu
 
-AM_CPPFLAGS = -Wall
-
 if BUILD_SNMP
   SNMP_LA = ../snmp/libpgsnmp.la
   SNMP_FILES = $(SNMP_LA) $(SNMP_LIBS)
@@ -34,14 +32,14 @@ else
   SNMP_DIR = 
 endif
 
-INCLUDES = -I$(top_srcdir)/lib $(MYSQL_CFLAGS) $(SNMP_INCLUDES) $(XML_CPPFLAGS)
+AM_CPPFLAGS = -Wall -I$(top_srcdir)/lib $(MARIADB_CFLAGS) ${POSTGRESQL_CFLAGS} $(SNMP_INCLUDES) $(XML_CPPFLAGS)
 
 bin_PROGRAMS = pgd
 
 pgd_SOURCES = main.cc
 pgd_LDFLAGS = -export-dynamic -static -L../lib $(SNMP_DIR)
-pgd_LDADD =  -lpguru $(MYSQL_LIBS) $(XML_LIBS) $(SNMP_FILES) #-lpgsnmp
-pgd_DEPENDENCIES = ../lib/libpguru.la $(SNMP_LA) # $(LIBXML_LA)
+pgd_LDADD =  -lpguru $(MARIADB_LIBS) ${POSTGRESQL_LIBS} $(XML_LIBS) $(SNMP_FILES) #-lpgsnmp
+pgd_DEPENDENCIES = ../lib/libpguru.la $(SNMP_LA) ../lib/libpguru.la # $(LIBXML_LA)
 
 MUDFLAP_OPT = -fmudflap
 MUDFLAP_LIB =  /usr/local/lib/libmudflap.so

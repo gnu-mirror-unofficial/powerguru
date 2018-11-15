@@ -21,7 +21,7 @@ AUTOMAKE_OPTIONS =
 PGURU = ../lib/libpguru.la
 noinst_PROGRAMS = osim # xsim
 
-INCLUDES = -I$(top_srcdir)/lib  $(XML_CPPFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/lib  $(XML_CPPFLAGS)
 
 osim_SOURCES = fakeuart.cc fakeuart.h osim.cc
 osim_LDADD =  $(PGURU) $(MYSQL_LIBS) $(XML_LIBS)  $(SNMP_LIBS) -lpthread
