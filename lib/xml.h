@@ -26,9 +26,11 @@
 
 #include <string>
 #include <vector>
-#include <libxml/xmlmemory.h>
-#include <libxml/parser.h>
-#include <libxml/xmlreader.h>
+#ifdef HAVE_LIBXML
+# include <libxml/xmlmemory.h>
+# include <libxml/parser.h>
+# include <libxml/xmlreader.h>
+#endif
 
 #include "log.h"
 #include "err.h"

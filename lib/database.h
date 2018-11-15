@@ -36,7 +36,7 @@
 #include <mysql/errmsg.h>
 #include <mysql/mysql.h>
 #else
-#error "You need to install MySQL!"
+#warning "You need to install MySQL for data base support"
 #endif
 
 // This shuts up warnings about these constants not being used.
@@ -107,8 +107,13 @@ private:
     std::string     _dbhost;
     std::string     _dbname;
     std::string     _tblname;
+#ifdef HAVE_MYSQL
     MYSQL           *_connection;
     MYSQL           _mysql;
+#endif
+#ifdef LIBPQ
+    bool           *_connection;
+#endif
 };
 
 // __DATABASE_H__

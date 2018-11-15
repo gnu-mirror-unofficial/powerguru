@@ -8,18 +8,6 @@ using namespace std;
 // Target Manager internal logging sub-system
 #include "log.h"
 
-// Target Manager error sub-system
-#include "err.h"
-
-// This is so we don't get warning from strncpy()
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
-
 // Required for SYSTEMTIME definitions
 #ifdef _WIN32
 #include <windows.h>
@@ -264,7 +252,7 @@ LogFile::operator << (const char *c) {
 }
 
 LogFile& 
-LogFile::operator << (const xmlChar *c) {
+LogFile::operator << (const unsigned char *c) {
     logentry = timestamp();
     logentry += ": ";
 
