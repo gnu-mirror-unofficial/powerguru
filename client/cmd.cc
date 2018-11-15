@@ -33,11 +33,11 @@
 #include <sys/types.h>
 #include <cstdio>
 #include <iostream>
-#include <libxml/encoding.h>
-#include <libxml/xmlwriter.h>
-#include <libxml/debugXML.h>
-
-#include "dejagnu.h"
+#ifdef HAVE_LIBXML
+# include <libxml/encoding.h>
+# include <libxml/xmlwriter.h>
+# include <libxml/debugXML.h>
+#endif
 #include "tcpip.h"
 #include "console.h"
 #include "msgs.h"
