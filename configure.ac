@@ -20,50 +20,15 @@ dnl  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59c)
-AC_INIT(snmp/POWERGURU-MIB.txt)
+AC_INIT([snmp/POWERGURU-MIB.txt], [0.4dev])
 dnl AC_CANONICAL_SYSTEM
 AC_CANONICAL_TARGET
-AM_INIT_AUTOMAKE(powerguru, 0.3dev)
+AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([macros])
 
 dnl Use the DMalloc library, if specified.
-AC_ARG_ENABLE(dmalloc, [  --enable-dmalloc        enable support for DMalloc],
-[case "${enableval}" in
-  yes) dmalloc=yes ;;
-  no)  dmalloc=no ;;
-  *)   AC_MSG_ERROR([bad value ${enableval} for enable-malloc option]) ;;
-esac])
-
-if test x$dmalloc = xyes; then
-    AC_DEFINE([USE_DMALLOC], [], [Use DMalloc])
-    DMALLOC_LIB="-ldmallocxx"
-else
-    DMALLOC_LIB=""
-fi
-AC_SUBST(DMALLOC_LIB)
-dnl Use the POSIX Threads library, if specified.
-AC_ARG_ENABLE(pthreads, [  --enable-pthreads       Enable support for pthreads],[case "${enableval}" in
-  yes) pthreads=yes ;;
-  no)  pthreads=no ;;
-  *)   AC_MSG_ERROR([bad value ${enableval} for enable-pthreads option]) ;;
-esac])
- 
-if test x$pthreads = xyes; then
-    AC_DEFINE([HAVE_PTHREADS], [], [Use POSIX Threads])
-fi
-                                                                                
-dnl Add XML support, if specified.
-AC_ARG_ENABLE(libxml, [  --disable-xml           Disable support for xml tcpip],
-[case "${enableval}" in
-  yes) disablexml=yes ;;
-  no)  disablexml=no ;;
-  *)   AC_MSG_ERROR([bad value ${enableval} for disable-xml option]) ;;
-esac])
-if test x$disable_xml != xno; then
-    AC_DEFINE([HAVE_LIBXML], [], [Use XML])
-fi
-    AM_PATH_XML2
+AM_WITH_DMALLOC
 
 dnl Use the Dom parser from libxml2, not the xmlReader one
 dnl The default is to use the Dom parser
@@ -109,6 +74,15 @@ else
    AC_DOCBOOK_STYLES
 fi
 
+AC_ARG_WITH(db, [  --with-db          database to use, mariadb or the default of postgresql],
+[case "${withval}" in
+  p*) db=postgresql ;;
+  m*) db=mariadb ;;
+  *)   AC_MSG_ERROR([bad value ${withval} for with-db option]) ;;
+esac])
+AM_CONDITIONAL(BUILD_MARIADB, [ test x${db} = xmariadb ])
+AM_CONDITIONAL(BUILD_POSTGRESQL, [ test x${db} = xpostgressql ])
+
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 
@@ -118,6 +92,95 @@ AM_PROG_CC_STDC
 AC_HEADER_STDC
 dnl AC_PROG_AR
 AC_CHECK_TOOL(AR, ar)
+AC_PATH_PROG(DEJAGNU, runtest)
+
+dnl When cross compiling, limit the search directories cause otherwise
+dnl we may get the host headers or libraries by accident. These values
+dnl are exported, so all the other configure tests in macros/*.m4 use
+dnl these same settings rather than duplicating them like we used to.
+dnl To override thise, use the --with-*-incl= and --with-*-libs=
+dnl options to configure.
+if test x$cross_compiling = xyes; then
+  AC_MSG_NOTICE([Configuring PowerGuru for cross compilation])
+  export pkgroot="`$CXX -print-search-dirs | grep "install:" | sed -e 's/install: //' -e 's:/lib/gcc/.*::'`"
+  dnl pkgroot only works correctly with builds of cross tools not in
+  dnl /usr, ie... installed from the distribution packages, or just
+  dnl plain installed in the system tools. This contaminates configure
+  dnl when building for variations of the same basic architecture,
+  dnl like i686-linux -> i586-mingw32.
+  if test x"${pkgroot}" = x"/usr"; then
+    export pkgroot=""
+  fi
+  export incllist="`eval echo ${with_top_level}/include ${pkgroot}/${host_alias}/include ${pkgroot}/include`"
+  export libslist="`eval echo ${with_top_level}/lib ${pkgroot}/${host_alias}/lib ${pkgroot}/lib64 ${pkgroot}/lib32 ${pkgroot}/lib`"
+  export pathlist="`eval echo ${pkgroot}/${host_alias}/bin:${pkgroot}/bin`"
+  npapi=no
+else
+  AC_MSG_NOTICE([Configuring PowerGuru for native compilation])
+  export incllist="`eval cat ${srcdir}/macros/incllist`"
+  libslist="`cat ${srcdir}/macros/libslist`"
+  if test -f /usr/bin/dpkg-architecture; then
+    export DEB_HOST_MULTIARCH="`eval dpkg-architecture -qDEB_HOST_MULTIARCH`"
+    export libslist="${libslist} /lib/${DEB_HOST_MULTIARCH} /usr/lib/${DEB_HOST_MULTIARCH}"
+  fi
+  export pathlist=$PATH
+fi
+AM_CONDITIONAL(CROSS_COMPILING, [ test x$cross_compiling = xyes ])
+
+save_LDFLAGS="${LDFLAGS}"
+save_CFLAGS="${CFLAGS}"
+dnl CFLAGS="${CFLAGS} -Wall -Werror `${CXX} -print-sysroot`/usr/include"
+CFLAGS="${save_CFLAGS} -Wall -Werror"
+
+dnl libxml2
+AC_MSG_CHECKING([For libxml2 development files])
+AC_TRY_COMPILE([#include <libxml/xmlstring.h>], [
+  xmlChar foo = 'x';
+  foo += 'y';
+  ],
+  has_libxml=true,
+  has_libxml=false
+)
+AC_MSG_RESULT([${has_libxml}])
+if test x"${has_libxml}" = x"true"; then
+  AC_DEFINE([HAVE_LIBXML], [1], [Has libxml2 development files])
+  LIBS="${LIBS} -lxml2"
+fi
+AM_CONDITIONAL(BUILD_LIBXML, [ test x${has_libxml} = xyes ])
+dnl GNU_PKG_FIND(libxml2, [libxml/xmlstring.h], [libxml2], xmlNewReference)
+
+dnl libpq. FIXME: add libpqcxx
+LDFLAGS="${save_LDFLAGS} -lpq"
+AC_MSG_CHECKING([For postgresql development files])
+AC_TRY_COMPILE([#include <libpq-fe.h>], [
+  PQpass(0);
+  ],
+  has_libpq=true,
+  has_libpq=false
+)
+AC_MSG_RESULT([${has_libpq}])
+if test x"${has_libpq}" = x"true"; then
+  AC_DEFINE([HAVE_LIBPQ], [1], [Has postgresql development files])
+fi
+AM_CONDITIONAL(BUILD_POSTGRESQL, [ test x${has_libpq} = xtrue ])
+
+dnl Net-SNMP
+LDFLAGS="${save_LDFLAGS} -lnetsnmp"
+AC_MSG_CHECKING([For Net SNMP development files])
+AC_TRY_COMPILE([#include <net-snmp/net-snmp-config.h>], [
+  config_add_mib(0);
+  ],
+  has_snmp=true,
+  has_snmp=false
+)
+AC_MSG_RESULT([${has_snmp}])
+if test x"${has_snmp}" = x"true"; then
+  AC_DEFINE([HAVE_SNMP], [1], [Has Net SNMP development files])
+fi
+AM_CONDITIONAL(BUILD_SNMP, [ test x${has_snmp} = xyes ])
+
+dnl mariadb development files
+dnl FIXME
 
 dnl These are for MinGW or Cygwin support.
 AC_EXEEXT
@@ -135,9 +198,9 @@ dnl shared libraries from our application code.
 AC_SUBST(PACKAGE_CFLAGS)
 AC_SUBST(PACKAGE_LIBS)
 
-AM_PATH_MYSQL
-AM_PATH_SNMP
-AM_CONDITIONAL(BUILD_SNMP, test x$snmp = xtrue)
+dnl AM_PATH_POSTGRESQL
+dnl AC_PATH_MYSQL
+AM_CONDITIONAL(BUILD_MARIADB, [ test x${has_mariadb} = xyes ])
 
 AC_ARG_ENABLE(sim, [  --enable-sim           enable support for Sim (default=no)],
 [case "${enableval}" in
@@ -162,6 +225,26 @@ AC_ARG_WITH(tty,
   TTYS=${with_tty}
   AC_SUBST(TTYS)
 )
+
+AC_ARG_WITH(sysroot,
+  AC_HELP_STRING([--with-sysroot], [system root directory for cross compiling]),
+  with_top_level=${withval};
+  cross_compiling=yes)
+
+with_top_level=""
+if test x"${cross_compiling}" = xyes; then
+  dnl Check if /usr isn't part of the specified path
+  if test -d ${with_top_level}/usr; then
+    with_top_level=${withval}/usr
+  else 
+    dnl Check if the specified path supplies /usr
+    if test -d ${with_top_level}/include; then
+      with_top_level=${withval}
+    else
+      AC_MSG_ERROR([Specified sysroot \"${with_top_level}/include\" doesn't exist!])
+    fi
+  fi
+fi
 
 dnl link to the images so we can browse the HTML output before
 dnl installing it.
