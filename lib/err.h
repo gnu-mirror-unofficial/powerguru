@@ -116,7 +116,7 @@ static inline void SETERR(struct errcond *x, const char *y, int z) {
 };
 
 #ifdef __cplusplus
-#include <string>
+#include <cstring>
 #include <iostream>
 
 #define WARNMSG (sys_nerr+1)

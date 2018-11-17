@@ -18,7 +18,7 @@
 
 #include <sys/stat.h>
 #include <unistd.h>
-#include <string>
+#include <cstring>
 #include <ltdl.h>
 #include <dlfcn.h>
 

@@ -76,7 +76,7 @@
 // 
 
 
-#include <string>
+#include <cstring>
 #include <map>
 #include "sem.h"
 #include <iostream>

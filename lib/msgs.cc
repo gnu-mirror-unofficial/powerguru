@@ -23,7 +23,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <string>
+#include <cstring>
 #include <iterator>
 #include <map>
 #ifdef __STDC_HOSTED__
@@ -44,8 +44,8 @@
 
 using namespace std;
 Msgs::net_mode_e  Msgs::_net_mode;
-std::map<const xmlChar *, Msgs::methodPtr_t> Msgs::_methods;
-std::map<const xmlChar *, std::string> Msgs::_cache;
+std::map<const unsigned char *, Msgs::methodPtr_t> Msgs::_methods;
+std::map<const unsigned char *, std::string> Msgs::_cache;
 
 #define MY_ENCODING "ISO-8859-1"
 
@@ -277,14 +277,14 @@ Msgs::init(void)
 }
 
 std::string
-Msgs::cacheGet(const xmlChar * name) {
+Msgs::cacheGet(const unsigned char * name) {
     // DEBUGLOG_REPORT_FUNCTION;
 #if 1
-    const xmlChar         *tag;
+    const unsigned char         *tag;
     string                str;
   
     _body.str("");
-    std::map<const xmlChar *, string>::const_iterator it;
+    std::map<const unsigned char *, string>::const_iterator it;
     for (it = _cache.begin(); it != _cache.end(); it++) {
         //entry = it->second;
         tag = it->first;
@@ -309,7 +309,7 @@ Msgs::cacheGet(const xmlChar * name) {
 }
 
 retcode_t
-Msgs::cacheAdd(const xmlChar * name, string str)
+Msgs::cacheAdd(const unsigned char * name, string str)
 {
     // DEBUGLOG_REPORT_FUNCTION;
     _cache[name] = str;
@@ -321,7 +321,7 @@ Msgs::cacheAdd(const xmlChar * name, string str)
 
 // Add a function for handling an XML tag to the list.
 void
-Msgs::methodSet(const xmlChar * name, methodPtr_t func)
+Msgs::methodSet(const unsigned char * name, methodPtr_t func)
 {
     // DEBUGLOG_REPORT_FUNCTION;
     _methods[name] = func;
@@ -329,14 +329,14 @@ Msgs::methodSet(const xmlChar * name, methodPtr_t func)
 
 // Get the function for an XML tag from the list.
 Msgs::methodPtr_t
-Msgs::methodGet(const xmlChar * name)
+Msgs::methodGet(const unsigned char * name)
 {
     //DEBUGLOG_REPORT_FUNCTION;
 #if 1
-    const xmlChar         *str;
+    const unsigned char         *str;
     Msgs::methodPtr_t     ptr;
   
-    std::map<const xmlChar *, Msgs::methodPtr_t>::const_iterator it;
+    std::map<const unsigned char *, Msgs::methodPtr_t>::const_iterator it;
     for (it = _methods.begin(); it != _methods.end(); it++) {
         //entry = it->second;
         str = it->first;
@@ -362,7 +362,7 @@ Msgs::methodGet(const xmlChar * name)
 
 // Call the function to process an XML node
 retcode_t
-Msgs::methodProcess(const xmlChar *name, XMLNode *node)
+Msgs::methodProcess(const unsigned char *name, XMLNode *node)
 {
     // DEBUGLOG_REPORT_FUNCTION;
     //(this->*_methods.find(name)(node); 
@@ -374,12 +374,12 @@ void
 Msgs::methodsDump(void)
 {
     DEBUGLOG_REPORT_FUNCTION;
-    const xmlChar         *name;
+    const unsigned char         *name;
     Msgs::methodPtr_t     ptr;
   
     dbglogfile << "We have " << (int)_methods.size() << " in function table" << endl;
   
-    std::map<const xmlChar *, Msgs::methodPtr_t>::const_iterator it;
+    std::map<const unsigned char *, Msgs::methodPtr_t>::const_iterator it;
     for (it = _methods.begin(); it != _methods.end(); it++) {
         name = it->first;
         ptr  = it->second;
@@ -399,12 +399,12 @@ void
 Msgs::cacheDump(void)
 {
     DEBUGLOG_REPORT_FUNCTION;
-    const xmlChar         *name;
+    const unsigned char         *name;
     string                data;
   
     dbglogfile << "We have " << (int)_cache.size() << " items in the cache" << endl;
   
-    std::map<const xmlChar *, string>::const_iterator it;
+    std::map<const unsigned char *, string>::const_iterator it;
     for (it = _cache.begin(); it != _cache.end(); it++) {
         name = it->first;
         data  = it->second;
@@ -453,7 +453,7 @@ Msgs::process(XMLNode *xml)
 {
     DEBUGLOG_REPORT_FUNCTION;
     methodPtr_t   fptr;
-    const xmlChar *str;
+    const unsigned char *str;
     retcode_t     ret;
     int           i;
 
@@ -538,7 +538,7 @@ Msgs::statusCreate(meter_data_t *md)
     int rc;
     xmlTextWriterPtr writer;
     xmlBufferPtr buf;
-    xmlChar *tmp;
+    unsigned char *tmp;
   
     if ((buf = xmlBufferCreate()) == NULL) {
         printf("testXmlwriterMemory: Error creating the xml buffer\n");
@@ -688,7 +688,7 @@ Msgs::metersRequestCreate(xml_meters_e val) {
 }
 
 std::string
-Msgs::metersResponseCreate(const xmlChar * type, int val) {
+Msgs::metersResponseCreate(const unsigned char * type, int val) {
     DEBUGLOG_REPORT_FUNCTION;
     _body.str("");                // erase the current string
     _body << "<powerguru version=\"";
@@ -703,7 +703,7 @@ Msgs::metersResponseCreate(const xmlChar * type, int val) {
 }
 
 std::string
-Msgs::metersResponseCreate(const xmlChar *type, float val) {
+Msgs::metersResponseCreate(const unsigned char *type, float val) {
     DEBUGLOG_REPORT_FUNCTION;
     _body.str("");                // erase the current string
     _body << "<powerguru version=\"";
@@ -718,7 +718,7 @@ Msgs::metersResponseCreate(const xmlChar *type, float val) {
 }
 
 std::string
-Msgs::metersResponseCreate(const xmlChar *type, string val) {
+Msgs::metersResponseCreate(const unsigned char *type, string val) {
     DEBUGLOG_REPORT_FUNCTION;
     _body.str("");                // erase the current string
     _body << "<powerguru version=\"";
@@ -894,7 +894,7 @@ Msgs::requestCreate(xml_command_e tag)
 
 
 std::string
-Msgs::responseCreate(xml_msg_e type, const xmlChar *tag, string val)
+Msgs::responseCreate(xml_msg_e type, const unsigned char *tag, string val)
 {
     DEBUGLOG_REPORT_FUNCTION;
     string str;
@@ -959,7 +959,7 @@ Msgs::print_msg(std::string msg)
         "\r\n\t\t\t\t\t",
     };
   
-    xmlDebugDumpString(stderr, (const xmlChar *)msg.c_str());
+    xmlDebugDumpString(stderr, (const unsigned char *)msg.c_str());
     //  cerr << "++++++++++++++++++++++" << endl;
   
     // Strip off the DTD header, as we're not bothering to validate
@@ -1090,7 +1090,7 @@ Msgs::metersProcess(XMLNode *node)
 
     if(_net_mode == DAEMON) {
         //cacheDump();
-        //    const xmlChar *xxx = node->nameGet();
+        //    const unsigned char *xxx = node->nameGet();
         string value = cacheGet(node->valueGet());
         dbglogfile << "value for \"" << node->valueGet() << "\" is " << value.c_str() << endl;
         if (value.size() == 0) {
@@ -1127,14 +1127,14 @@ Msgs::serverProcess(XMLNode *node)
         if ((attr = node->attribGet(0))) {
             dbglogfile << "\tAttribute is \"" << attr->nameGet()
                        << "\" with a value of " << attr->valueGet() << endl;
-            if (xmlStrcmp(attr->valueGet(), (const xmlChar *)_thisip.c_str()) != 0) {
+            if (xmlStrcmp(attr->valueGet(), (const unsigned char *)_thisip.c_str()) != 0) {
                 dbglogfile << "WARNING: IP's don't match!!!!" << endl;
                 return ERROR;
             }
         }
     }
 
-    if (xmlStrcmp(node->valueGet(), (const xmlChar *)_thishost.c_str()) != 0) {
+    if (xmlStrcmp(node->valueGet(), (const unsigned char *)_thishost.c_str()) != 0) {
         dbglogfile << "WARNING: Host's don't match!!!!" << endl;
         return ERROR;
     }
@@ -1157,7 +1157,7 @@ Msgs::clientProcess(XMLNode *node)
             if ((attr = node->attribGet(0))) {
                 dbglogfile << "\tAttribute is \"" << attr->nameGet()
                            << "\" with a value of " << attr->valueGet() << endl;
-                if (xmlStrcmp(attr->valueGet(), (const xmlChar *)_remoteip.c_str()) != 0) {
+                if (xmlStrcmp(attr->valueGet(), (const unsigned char *)_remoteip.c_str()) != 0) {
                     dbglogfile << "WARNING: IP's don't match!!!!" << endl;
                     return ERROR;
                 }
@@ -1166,7 +1166,7 @@ Msgs::clientProcess(XMLNode *node)
     }
 
     if (_remotehost.size() != 0) {
-        if (xmlStrcmp(node->valueGet(), (const xmlChar *)_remotehost.c_str()) != 0) {
+        if (xmlStrcmp(node->valueGet(), (const unsigned char *)_remotehost.c_str()) != 0) {
             dbglogfile << "WARNING: Host's don't match!!!!" << endl;
             return ERROR;
         }
@@ -1192,7 +1192,7 @@ Msgs::powerguruProcess(XMLNode *node)
         if ((attr = node->attribGet(0))) {
 //       dbglogfile << "\tAttribute is \"" << attr->nameGet().c_str()
 //                  << "\" with a value of " << attr->valueGet().c_str() << endl;
-            if (xmlStrcmp((const xmlChar *)_body.str().c_str(), attr->valueGet()) != 0) {
+            if (xmlStrcmp((const unsigned char *)_body.str().c_str(), attr->valueGet()) != 0) {
                 dbglogfile << "Versions in header don't match!" << endl;
             } else {
                 dbglogfile << "Versions in header match" << endl;        

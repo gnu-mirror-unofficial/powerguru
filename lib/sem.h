@@ -103,7 +103,7 @@ extern "C" {
 #include <semaphore.h>
 }
 
-#include <string>
+#include <cstring>
 #include <map>
 
 #define MEMBERS 1

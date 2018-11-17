@@ -17,7 +17,7 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <cstdlib>
-#include <string>
+#include <cstring>
 #include <map>
 #include <vector>
 #include <sstream>

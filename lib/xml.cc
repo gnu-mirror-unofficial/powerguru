@@ -25,7 +25,7 @@
 #include <sys/stat.h>
 
 #include <unistd.h>
-#include <string>
+#include <cstring>
 #include <vector>
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>

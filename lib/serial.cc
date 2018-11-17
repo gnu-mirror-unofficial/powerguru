@@ -31,7 +31,7 @@
 #include <errno.h>
 #include <termios.h>
 
-#include <string>
+#include <cstring>
 #include <fstream>
 #include <ostream>
 #include <iostream>

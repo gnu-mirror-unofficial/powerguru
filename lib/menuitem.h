@@ -21,7 +21,7 @@
 
 #include <map>
 #include <vector>
-#include <string>
+#include <cstring>
 #include <sstream>
 
 #include "err.h"

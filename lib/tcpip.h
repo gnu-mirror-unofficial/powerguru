@@ -29,7 +29,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 //#include <netdb.h>
-#include <string>
+#include <cstring>
 #include <vector>
 // #ifdef HAVE_LIBXML
 // # include <libxml/encoding.h>

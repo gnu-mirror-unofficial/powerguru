@@ -21,7 +21,7 @@
 #include <cstdio>
 #include <unistd.h>
 #include <fcntl.h>
-#include <string>
+#include <cstring>
 #include <cstring>
 #include <cstdlib>
 #include <signal.h>

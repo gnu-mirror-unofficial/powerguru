@@ -19,7 +19,7 @@
 // This sets up a console for user interaction, and defaults to using
 // standard in.
 
-#include <string>
+#include <cstring>
 #include <cstdio>
 
 #include "err.h"

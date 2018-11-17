@@ -31,31 +31,31 @@ TTYS=@TTYS@
 # These headers get installed
 # include_HEADERS = log.h err.h proc.h serial.h xantrex.h outback.h
 
-AM_CPPFLAGS = -Wall \
-	-I$(srcdir) \
-	-I$(top_srcdir)/snmp \
-	-I.. $(XML_CPPFLAGS)
-#	$(MARIADB_CFLAGS) \
-#	${POSTGRESQL_CFLAGS)
+libpguru_la_CPPFLAGS =	-I$(top_srcdir)
+libpguru_la_LIBDADD =
 
 if BUILD_LIBXML
-SNMP_FILES = xml.cc xml.h
-libpguru_la_LIBDADD =  $(SNMP_LIBS) -lxml2
+XML_FILES = xml.cc xml.h
+libpguru_la_CPPFLAGS += $(LIBXML_CPPFLAGS)
+libpguru_la_LIBDADD += $(LIBXML_LIBS)
 endif
+# libpguru_la_CPPFLAGS = $(LIBXML_CPPFLAGS)
 
 if BUILD_SNMP
 SNMP_FILES = snmp.cc snmp.h
-libpguru_la_LIBDADD =  $(SNMP_LIBS) ../snmp/libpgsnmp.la
+libpguru_la_CPPFLAGS += -I$(top_srcdir)/snmp
+libpguru_la_LIBDADD += $(SNMP_LIBS) ../snmp/libpgsnmp.la
 endif
 
 if BUILD_MARIADB
 MARIADB_FILES = mariadb.cc
-libpguru_la_LIBDADD =  $(MARIADB_LIBS)
+libpguru_la_LIBDADD += $(MARIADB_LIBS)
 endif
 
 if BUILD_POSTGRESQL
 LIBPQ_FILES = postgresql.cc
-libpguru_la_LIBDADD =  $(LIBPQ_LIBS)
+libpguru_la_CPPFLAGS += ${LIBPQ_CPPFLAGS}
+libpguru_la_LIBDADD +=  $(LIBPQ_LIBS)
 endif
 
 libpguru_la_SOURCES = \
@@ -66,24 +66,19 @@ libpguru_la_SOURCES = \
 	rc.cc rc.h \
 	serial.cc serial.h \
 	console.cc console.h \
-	xantrex-trace.cc xantrex-trace.h \
-	xanbus.cc xanbus.h \
-	outbackpower.cc outbackpower.h \
 	menuitem.cc menuitem.h \
-	database.h\
+	database.h \
 	$(SNMP_FILES) \
 	$(LIBPQ_FILES) \
 	$(MARIADB_FILES) \
+	$(XML_FILES) \
 	tcputil.cc tcputil.h \
 	tcpip.cc tcpip.h \
-	msgs.cc msgs.h \
-	$(XML_FILES)
+	msgs.cc msgs.h
 
 include_HEADERS = \
 	proc.h \
 	serial.h \
-	xantrex-trace.h \
-	outbackpower.h \
 	menuitem.h \
 	database.h \
 	console.h \

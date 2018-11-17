@@ -74,7 +74,7 @@
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/agent/scalar.h>
 
-#include <string>
+#include <cstring>
 #include "err.h"
 
 class SnmpClient

@@ -25,7 +25,7 @@
 #endif
 
 #include <iostream> 
-#include <string>
+#include <cstring>
 #include <list>
 #include <iomanip> 
 #include <vector>

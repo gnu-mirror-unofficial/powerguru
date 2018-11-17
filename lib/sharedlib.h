@@ -19,7 +19,7 @@
 #ifndef __SHAREDLIB__
 #define __SHAREDLIB__
 
-#include <string>
+#include <cstring>
 #include <ltdl.h>
 
 #include "log.h"

@@ -24,7 +24,7 @@
 # include "config.h"
 #endif
 
-#include <string>
+#include <cstring>
 #include <vector>
 #ifdef HAVE_LIBXML
 # include <libxml/xmlmemory.h>

@@ -42,7 +42,7 @@
 
 #include <iostream>
 #include <iomanip>
-#include <string>
+#include <cstring>
 #include <fstream>
 
 // the default name for the debug log

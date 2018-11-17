@@ -24,7 +24,7 @@
 # include "config.h"
 #endif
 
-#include <string>
+#include <cstring>
 #include "err.h"
 
 namespace rcinit {

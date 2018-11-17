@@ -31,7 +31,7 @@
 #include <errno.h>
 #include <cstdlib>
 #include <cstdio>
-#include <string>
+#include <cstring>
 #include <vector>
 #include <iostream>
 #include <sys/param.h>

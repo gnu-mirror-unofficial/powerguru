@@ -22,7 +22,7 @@
 // This sets up a console for user interaction, and defaults to using
 // standard in.
 
-#include <string>
+#include <cstring>
 #include <vector>
 #include <cstdio>
 #include <termios.h>

@@ -25,7 +25,7 @@
 #endif
 
 // System include files
-#include <string>
+#include <cstring>
 #include <vector>
 #include <fstream>
 #include <ostream>
