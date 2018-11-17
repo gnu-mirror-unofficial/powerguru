@@ -33,15 +33,15 @@
 #include <sys/types.h>
 #include <cstdio>
 #include <iostream>
-#ifdef HAVE_LIBXML
-# include <libxml/encoding.h>
-# include <libxml/xmlwriter.h>
-# include <libxml/debugXML.h>
-#endif
+// #ifdef HAVE_LIBXML
+// # include <libxml/encoding.h>
+// # include <libxml/xmlwriter.h>
+// # include <libxml/debugXML.h>
+// #endif
+//#include "xml.h"
 #include "tcpip.h"
 #include "console.h"
 #include "msgs.h"
-#include "xml.h"
 
 using namespace std;
 extern LogFile dbglogfile;

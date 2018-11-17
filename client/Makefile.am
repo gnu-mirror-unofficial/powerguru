@@ -19,17 +19,21 @@
 ## Process this file with automake to generate Makefile.in
 AUTOMAKE_OPTIONS = 
 
-PGURU = ../lib/libpguru.la
 bin_PROGRAMS = pguru 
 
-AM_CPPFLAGS = -I$(top_srcdir)/lib $(XML_CPPFLAGS)
+pguru_CPPFLAGS = -I$(top_srcdir)/lib
 
 pguru_SOURCES = cmd.cc
-pguru_LDADD = $(PGURU) $(XML_LIBS) $(MYSQL_LIBS) -lpthread $(SNMP_LIBS)
-if BUILD_SNMP
-pguru_LDADD += ../snmp/libpgsnmp.la
+pguru_LDADD = ../lib/libpguru.la -ldl
+
+if BUILD_LIBXML
+pguru_CPPFLAGS += ${LIBXML_CPPFLAGS}
+pguru_LDADD += ${LIBXML_LIBS}
 endif
 
-pguru_DEPENDENCIES = $(PGURU)
+if BUILD_SNMP
+pguru_LDADD += ../snmp/libpgsnmp.la $(SNMP_LIBS)
+endif
 
+# pguru_DEPENDENCIES = ../lib/libpguru.la
 
