@@ -30,7 +30,7 @@ SUBDIRS += snmp $(STD_DIRS) #src
 endif
 
 # These are built now, as they depend on the the libraries
-SUBDIRS += daemon client # testsuite
+SUBDIRS += devices client daemon # testsuite
 
 # this is an optional build directory
 if BUILD_SIM
@@ -40,8 +40,6 @@ endif
 EXTRA_DIST = \
 	autogen.sh \
 	powerguru.sql \
-	powerguru.glade2 \
-	powerguru.glade2p \
 	doc/C/topic.dat \
 	doc/C/xantrex.xml \
 	doc/C/outback.xml \
@@ -50,6 +48,8 @@ EXTRA_DIST = \
 	po/Makefile.in.in \
 	po/POTFILES.in \
 	web
+#	powerguru.glade2
+#	powerguru.glade2p
 
 #install-data-local:
 # 	@$(NORMAL_INSTALL)
@@ -94,3 +94,18 @@ deb debian: dist-bzip2 $(srcdir)/debian/rules
 mudflap:
 	@echo "Rebuilding with GCC Mudflap support"
 	$(MAKE) CXXFLAGS="$(CXXFLAGS) -fmudflap" LDFLAGS="$(LDFLAGS) -lmudflap"
+
+dump:
+	@echo "Dumping configure options"
+if BUILD_SNMP
+	@echo "	Building with net-snmp"
+endif
+if BUILD_LIBXML
+	@echo "	Building with libxml2"
+endif
+if BUILD_MARIADB
+	@echo "	Building with mariadb"
+endif
+if BUILD_POSTGRESQL
+	@echo "	Building with Postgresql"
+endif
