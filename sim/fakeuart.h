@@ -18,7 +18,7 @@
 #ifndef __FAKEUART_H__
 #define __FAKEUART_H__
 
-#include <string>
+#include <cstring>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

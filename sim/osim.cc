@@ -21,12 +21,12 @@
 # include "config.h"
 #endif
 
-#include <string>
+#include <cstring>
 #include <vector>
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <string>
+#include <cstring>
 #include <iostream>
 #include <fstream>
 
