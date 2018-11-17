@@ -95,6 +95,32 @@ dnl AC_PROG_AR
 AC_CHECK_TOOL(AR, ar)
 AC_PATH_PROG(DEJAGNU, runtest)
 
+AC_ARG_WITH(sysroot,
+  AC_HELP_STRING([--with-sysroot], [system root directory for cross compiling]),
+  sysroot=${withval};
+  cross_compiling=yes)
+
+with_top_level=""
+sysroot="${sysroot:-`${CXX} -print-sysroot`}"
+if test x"${cross_compiling}" = xyes; then
+  AC_MSG_CHECKING([For a usable sysroot])
+  dnl Check if /usr isn't part of the specified path
+  if test ! -d ${sysroot}/usr; then
+    sysroot=${withval}/usr
+  else 
+    dnl Check if the specified path supplies /usr
+    if test -d ${sysroot}/usr/include; then
+      sysroot=${withval}
+    else
+      AC_MSG_ERROR([Specified sysroot \"${sysroot}\" doesn't exist!])
+    fi
+    CXXFLAGS="--sysroot=${sysroot}"
+    CFLAGS="--sysroot=${sysroot}"
+    LDFLAGS="--sysroot=${sysroot}"
+  fi
+  AC_MSG_RESULT([${sysroot}])
+fi
+
 dnl When cross compiling, limit the search directories cause otherwise
 dnl we may get the host headers or libraries by accident. These values
 dnl are exported, so all the other configure tests in macros/*.m4 use
@@ -112,8 +138,8 @@ if test x$cross_compiling = xyes; then
   if test x"${pkgroot}" = x"/usr"; then
     export pkgroot=""
   fi
-  export incllist="`eval echo ${with_top_level}/include ${pkgroot}/${host_alias}/include ${pkgroot}/include`"
-  export libslist="`eval echo ${with_top_level}/lib ${pkgroot}/${host_alias}/lib ${pkgroot}/lib64 ${pkgroot}/lib32 ${pkgroot}/lib`"
+  export incllist="`eval echo ${sysroot}/include ${pkgroot}/${host_alias}/include ${pkgroot}/include`"
+  export libslist="`eval echo ${sysroot}/lib ${pkgroot}/${host_alias}/lib ${pkgroot}/lib64 ${pkgroot}/lib32 ${pkgroot}/lib`"
   export pathlist="`eval echo ${pkgroot}/${host_alias}/bin:${pkgroot}/bin`"
   npapi=no
 else
@@ -128,33 +154,15 @@ else
 fi
 AM_CONDITIONAL(CROSS_COMPILING, [ test x$cross_compiling = xyes ])
 
-AC_ARG_WITH(sysroot,
-  AC_HELP_STRING([--with-sysroot], [system root directory for cross compiling]),
-  with_top_level=${withval};
-  cross_compiling=yes)
-
-with_top_level=""
-if test x"${cross_compiling}" = xyes; then
-  dnl Check if /usr isn't part of the specified path
-  if test -d ${with_top_level}/usr; then
-    with_top_level=${withval}/usr
-  else 
-    dnl Check if the specified path supplies /usr
-    if test -d ${with_top_level}/include; then
-      with_top_level=${withval}
-    else
-      AC_MSG_ERROR([Specified sysroot \"${with_top_level}/include\" doesn't exist!])
-    fi
-  fi
-fi
-
 save_LDFLAGS="${LDFLAGS}"
+save_CXXFLAGS="${CXXFLAGS}"
+save_CPPFLAGS="${CPPFLAGS}"
 save_CFLAGS="${CFLAGS}"
-dnl CFLAGS="${CFLAGS} -Wall -Werror `${CXX} -print-sysroot`/usr/include"
+
 CFLAGS="${save_CFLAGS} -Wall -Werror"
 
 # dnl libxml2's headers are sometimes in a libxml2 directory, but not always
-CPPFLAGS="-I`${CXX} -print-sysroot`/usr/include/libxml2"
+CPPFLAGS="-I${sysroot}/usr/include/libxml2"
 AC_MSG_CHECKING([For libxml2 development files])
 AC_TRY_COMPILE([#include <libxml/xmlstring.h>], [
   xmlChar foo = 'x';
@@ -166,13 +174,18 @@ AC_TRY_COMPILE([#include <libxml/xmlstring.h>], [
 AC_MSG_RESULT([${has_libxml}])
 if test x"${has_libxml}" = x"true"; then
   AC_DEFINE([HAVE_LIBXML], [1], [Has libxml2 development files])
-  LIBS="${LIBS} -lxml2"
+  LIBXML_LIBS="-lxml2"
+  LIBXML_CPPFLAGS="-I${sysroot}/usr/include/libxml2"
+  AC_SUBST(LIBXML_CPPFLAGS)
+  AC_SUBST(LIBXML_LIBS)
 fi
 AM_CONDITIONAL(BUILD_LIBXML, [ test x${has_libxml} = xtrue ])
 dnl GNU_PKG_FIND(libxml2, [libxml/xmlstring.h], [libxml2], xmlNewReference)
 
 dnl libpq. FIXME: add libpqcxx
+db=mariadb
 LDFLAGS="${save_LDFLAGS} -lpq"
+CPPFLAGS="-I${sysroot}/usr/include/postgresql/9.6/server/libpq"
 AC_MSG_CHECKING([For postgresql development files])
 AC_TRY_COMPILE([#include <libpq-fe.h>], [
   PQpass(0);
@@ -183,7 +196,11 @@ AC_TRY_COMPILE([#include <libpq-fe.h>], [
 AC_MSG_RESULT([${has_libpq}])
 if test x"${has_libpq}" = x"true"; then
   AC_DEFINE([HAVE_LIBPQ], [1], [Has postgresql development files])
-  LIBS="${LIBS} -lpq"
+  LIBPQ_LIBS="-lpq"
+  LIBPQ_CPPFLAGS="-I${sysroot}/usr/include/postgresql/9.6/server/libpq"
+  db=postgresql
+  AC_SUBST(LIBPQ_CPPFLAGS)
+  AC_SUBST(LIBPQ_LIBS)
 fi
 AM_CONDITIONAL(BUILD_POSTGRESQL, [ test x${has_libpq} = xtrue ])
 
@@ -194,7 +211,7 @@ AC_DEFINE([HAVE_STRCASESTR], [1], [ Has strcasestr defined ])
 AC_DEFINE([HAVE_IN_ADDR_T], [1], [ Has typedef in_addr_t])
 
 CFLAGS="${save_CFLAGS} -Wall"
-LDFLAGS="${save_LDFLAGS} -lnetsnmp"
+LDFLAGS="${save_LDFLAGS} -lnetsnmp -lnetsnmpagent"
 AC_MSG_CHECKING([For Net SNMP development files])
 AC_TRY_COMPILE([#include <net-snmp/net-snmp-config.h>
 #include <net-snmp/types.h>], [
@@ -206,12 +223,18 @@ AC_TRY_COMPILE([#include <net-snmp/net-snmp-config.h>
 AC_MSG_RESULT([${has_snmp}])
 if test x"${has_snmp}" = x"true"; then
   AC_DEFINE([HAVE_SNMP], [1], [Has Net SNMP development files])
-  LIBS="${LIBS} -lnetsnmp"
+  SNMP_LIBS="-lnetsnmp -lnetsnmpagent"
+  AC_SUBST(SNMP_LIBS)
 fi
 AM_CONDITIONAL(BUILD_SNMP, [ test x${has_snmp} = xtrue ])
 
 dnl mariadb development files
 dnl FIXME
+
+LDFLAGS="${save_LDFLAGS}"
+CXXFLAGS="${save_CXXFLAGS}"
+CPPFLAGS="${save_CPPFLAGS}"
+CFLAGS="${save_CFLAGS}"
 
 dnl These are for MinGW or Cygwin support.
 AC_EXEEXT
@@ -267,6 +290,7 @@ Makefile
 lib/Makefile
 daemon/Makefile
 sim/Makefile
+devices/Makefile
 snmp/Makefile
 client/Makefile
 po/Makefile.in
