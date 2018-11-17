@@ -95,22 +95,22 @@ dnl AC_PROG_AR
 AC_CHECK_TOOL(AR, ar)
 AC_PATH_PROG(DEJAGNU, runtest)
 
+sysroot="${sysroot:-`${CXX} -print-sysroot`}"
 AC_ARG_WITH(sysroot,
   AC_HELP_STRING([--with-sysroot], [system root directory for cross compiling]),
   sysroot=${withval};
   cross_compiling=yes)
 
 with_top_level=""
-sysroot="${sysroot:-`${CXX} -print-sysroot`}"
 if test x"${cross_compiling}" = xyes; then
   AC_MSG_CHECKING([For a usable sysroot])
   dnl Check if /usr isn't part of the specified path
-  if test ! -d ${sysroot}/usr; then
+  if test -d ${sysroot}/usr; then
     sysroot=${withval}/usr
   else 
     dnl Check if the specified path supplies /usr
     if test -d ${sysroot}/usr/include; then
-      sysroot=${withval}
+      sysroot=${sysroot}
     else
       AC_MSG_ERROR([Specified sysroot \"${sysroot}\" doesn't exist!])
     fi
@@ -119,6 +119,7 @@ if test x"${cross_compiling}" = xyes; then
     LDFLAGS="--sysroot=${sysroot}"
   fi
   AC_MSG_RESULT([${sysroot}])
+  AC_SUBST(sysroot)
 fi
 
 dnl When cross compiling, limit the search directories cause otherwise
@@ -293,7 +294,7 @@ sim/Makefile
 devices/Makefile
 snmp/Makefile
 client/Makefile
-po/Makefile.in
+po/Makefile
 doc/Makefile
 doc/C/Makefile
 testsuite/Makefile
