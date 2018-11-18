@@ -35,8 +35,8 @@
 #ifdef HAVE_MYSQL
 #include <mysql/errmsg.h>
 #include <mysql/mysql.h>
-#else
-#warning "You need to install MySQL for data base support"
+//#else
+//#warning "You need to install MySQL for data base support"
 #endif
 
 // This shuts up warnings about these constants not being used.
