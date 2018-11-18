@@ -87,7 +87,9 @@ main(int argc, char *argv[])
     bool client;
     retcode_t   ret;
 
+#if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
     Database pdb;
+#endif
     //    XantrexUI ui;
     //    Console con;
 
@@ -128,6 +130,7 @@ main(int argc, char *argv[])
     // the command line arguments.
     RCinitFile config;
     config.load_files();
+#if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
     if (config.dbhostGet().size() > 0) {
         pdb.dbHostSet(config.dbhostGet());
     }
@@ -140,6 +143,7 @@ main(int argc, char *argv[])
     if (config.dbpasswdGet().size() > 0) {    
         pdb.dbPasswdSet(config.dbpasswdGet());
     }
+#endif
 
     if (config.deviceGet().size() > 0) {    
         filespec = (char *)config.deviceGet().c_str();
@@ -209,6 +213,7 @@ main(int argc, char *argv[])
               break;
 
               // Specify database host machine.
+#if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
           case 'm':
               pdb.dbHostSet(optarg);
               break;
@@ -226,7 +231,7 @@ main(int argc, char *argv[])
           case 'w':
               pdb.dbPasswdSet(optarg);
               break;
-
+#endif
           case 'c':
               client = true;
               daemon = false;
@@ -245,13 +250,14 @@ main(int argc, char *argv[])
     }
 
     // Open the network connection to the database.
+#if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
     if (use_db) {
         if (!pdb.openDB()) {
             dbglogfile << "ERROR: Couldn't open database!" << endl;
             exit(1);
         }
     }
-
+#endif
     // Start the SNMP daemon support.
 #ifdef USE_SNMP
     if (snmp) {
@@ -271,11 +277,12 @@ main(int argc, char *argv[])
         outback outdev(filespec);
         if (poll) {
             // outdev.poll();
+#if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
         } else {
             if (outdev.main(con, pdb) == ERROR) {
                 dbglogfile << "ERROR: Main Loop exited with an error!" << endl;
             }
-        
+#endif
         }
         con.Reset();
         con.Close();
@@ -318,10 +325,11 @@ main(int argc, char *argv[])
                       break;
                 };
 #endif
-          
+
                 vector<meter_data_t *> data = ui.PollMeters(1);
 //           ui.MenuHeadingPlus();
 //           ui.MenuHeadingMinus();          
+#if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
                 pdb.queryInsert(data);
 #if 0
                 for (i=0; i<data->size(); i++) {
@@ -338,6 +346,7 @@ main(int argc, char *argv[])
                     //delete data[i];
                 }
 #endif
+#endif
                 //sleep(1);
                 cout << endl;
             }
@@ -347,12 +356,14 @@ main(int argc, char *argv[])
         exit(0);
     }
 
+#if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
     if (use_db) {
         if (!pdb.closeDB()) {
             dbglogfile << "ERROR: Couldn't open database!" << endl;
             exit(1);
         }
     }
+#endif
     
     // Network daemon/client mode. Normally we're a network daemon that
     // responses to requests by a remote client. Many house networks
