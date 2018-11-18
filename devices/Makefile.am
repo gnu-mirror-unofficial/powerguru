@@ -23,7 +23,7 @@ AUTOMAKE_OPTIONS =
 # __USLC__ makes MySQL++ use the std namespace
 AM_CXXFLAGS = -g -D__USLC__
 
-lib_LTLIBRARIES = libpdev.la
+noinst_LTLIBRARIES = libpdev.la
 
 # The list of tty's to use by default
 TTYS=@TTYS@

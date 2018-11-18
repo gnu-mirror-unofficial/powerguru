@@ -20,32 +20,28 @@
 
 AUTOMAKE_OPTIONS = # dejagnu
 
-if BUILD_SNMP
-  SNMP_LA = ../snmp/libpgsnmp.la
-  SNMP_FILES = $(SNMP_LA) $(SNMP_LIBS)
-  SNMP_INCLUDES =  -I$(SNMP_CFLAGS)
-  SNMP_DIR = -L../snmp
-else
-  SNMP_LA = 
-  SNMP_FILES = 
-  SNMP_INCLUDES = 
-  SNMP_DIR = 
+pgd_CPPFLAGS = -Wall -I$(top_srcdir)/lib -I$(top_srcdir)/devices
+pgd_LDADD = ../devices/libpdev.la ../lib/libpguru.la 
+
+if BUILD_LIBXML
+pgd_CPPFLAGS += $(LIBXML_CPPFLAGS)
+pgd_LDADD += $(LIBXML_LIBS)
 endif
 
-AM_CPPFLAGS = -Wall -I$(top_srcdir)/lib $(MARIADB_CFLAGS) ${POSTGRESQL_CFLAGS} $(SNMP_INCLUDES) $(XML_CPPFLAGS) $(CPPFLAGS)
+if BUILD_SNMP
+pgd_LDADD += ../snmp/libpgsnmp.la $(SNMP_LIBS)
+endif
 
 bin_PROGRAMS = pgd
 
 pgd_SOURCES = main.cc
-pgd_LDFLAGS = -export-dynamic -static -L../lib $(SNMP_DIR)
-pgd_LDADD =  -lpguru $(MARIADB_LIBS) ${POSTGRESQL_LIBS} $(XML_LIBS) $(SNMP_FILES) #-lpgsnmp
-pgd_DEPENDENCIES = ../lib/libpguru.la $(SNMP_LA) ../lib/libpguru.la # $(LIBXML_LA)
+pgd_LDFLAGS = -export-dynamic -ldl
 
-MUDFLAP_OPT = -fmudflap
-MUDFLAP_LIB =  /usr/local/lib/libmudflap.so
+# MUDFLAP_OPT = -fmudflap
+# MUDFLAP_LIB =  /usr/local/lib/libmudflap.so
 
 # Rebuild with GCC 4.x Mudflap support
-mudflap:
-	@echo "Rebuilding with GCC Mudflap support"
-	$(MAKE) CXXFLAGS="$(CXXFLAGS) $(MUDFLAP_OPT)" LIBS="$(LIBS) $(MUDFLAP_LIB)"
+# mudflap:
+#	@echo "Rebuilding with GCC Mudflap support"
+#	$(MAKE) CXXFLAGS="$(CXXFLAGS) $(MUDFLAP_OPT)" LIBS="$(LIBS) $(MUDFLAP_LIB)"
 

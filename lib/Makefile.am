@@ -23,7 +23,7 @@ AUTOMAKE_OPTIONS =
 # __USLC__ makes MySQL++ use the std namespace
 AM_CXXFLAGS = -g -D__USLC__
 
-lib_LTLIBRARIES = libpguru.la
+noinst_LTLIBRARIES = libpguru.la
 
 # The list of tty's to use by default
 TTYS=@TTYS@
@@ -35,11 +35,10 @@ libpguru_la_CPPFLAGS =	-I$(top_srcdir)
 libpguru_la_LIBDADD =
 
 if BUILD_LIBXML
-XML_FILES = xml.cc xml.h
+XML_FILES = xml.cc xml.h msgs.cc msgs.h
 libpguru_la_CPPFLAGS += $(LIBXML_CPPFLAGS)
 libpguru_la_LIBDADD += $(LIBXML_LIBS)
 endif
-# libpguru_la_CPPFLAGS = $(LIBXML_CPPFLAGS)
 
 if BUILD_SNMP
 SNMP_FILES = snmp.cc snmp.h
@@ -62,7 +61,6 @@ libpguru_la_SOURCES = \
 	proc.cc proc.h \
 	err.cc err.h \
 	log.cc log.h \
-	sem.cc sem.h \
 	rc.cc rc.h \
 	serial.cc serial.h \
 	console.cc console.h \
@@ -73,8 +71,8 @@ libpguru_la_SOURCES = \
 	$(MARIADB_FILES) \
 	$(XML_FILES) \
 	tcputil.cc tcputil.h \
-	tcpip.cc tcpip.h \
-	msgs.cc msgs.h
+	tcpip.cc tcpip.h
+#	sem.cc sem.h
 
 include_HEADERS = \
 	proc.h \
@@ -86,6 +84,7 @@ include_HEADERS = \
 	log.h \
 	tcputil.h \
 	tcpip.h \
+	msgs.h \
 	xml.h
 
 #libpguru_la_LDFLAGS = -module -avoid-version -no-undefined

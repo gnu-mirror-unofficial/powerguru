@@ -17,7 +17,7 @@
 
 AUTOMAKE_OPTIONS = 
 
-lib_LTLIBRARIES = libpgsnmp.la
+noinst_LTLIBRARIES = libpgsnmp.la
 
 libpgsnmp_la_SOURCES = \
 	powerguru.h powerguru.c
