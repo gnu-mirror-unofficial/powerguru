@@ -36,15 +36,15 @@
 #include <iostream>
 #include <sys/param.h>
 #include <fcntl.h>
-// #ifdef HAVE_LIBXML
+#ifdef HAVE_LIBXML
 // # include <libxml/encoding.h>
 // # include <libxml/xmlwriter.h>
 // # include <libxml/debugXML.h>
-// #endif
+# include "xml.h"
+#endif
 
 #include "tcpip.h"
 #include "tcputil.h"
-#include "xml.h"
 #include "log.h"
 #include "err.h"
 
@@ -652,7 +652,7 @@ Tcpip::toggleDebug(bool val)
 
 // Return true if there is data in the socket, otherwise return false.
 retcode_t
-Tcpip::anydata(vector<const xmlChar *> &msgs)
+Tcpip::anydata(vector<const unsigned char *> &msgs)
 {
     DEBUGLOG_REPORT_FUNCTION;
     //printf("%s: \n", __FUNCTION__);
@@ -662,7 +662,7 @@ Tcpip::anydata(vector<const xmlChar *> &msgs)
 // This waits for data on the socket, and on stdin. This way we can sit
 // here in a kernel sleep instead of polling all devices.
 retcode_t
-Tcpip::anydata(int fd, vector<const xmlChar *> &msgs)
+Tcpip::anydata(int fd, vector<const unsigned char *> &msgs)
 {
     DEBUGLOG_REPORT_FUNCTION;
     fd_set                fdset;
@@ -747,7 +747,7 @@ Tcpip::anydata(int fd, vector<const xmlChar *> &msgs)
         ptr = buf;
         // If we get a single XML message, do less work
         if (ret == cr + 1) {
-            adjusted_size = memadjust(ret + 1);
+            // adjusted_size = memadjust(ret + 1); FIXME:
             packet = new char[adjusted_size];
             //printf("Packet size is %d at %p\n", ret + 1, packet);
             memset(packet, 0, adjusted_size);
@@ -756,8 +756,8 @@ Tcpip::anydata(int fd, vector<const xmlChar *> &msgs)
             if (eom) {
                 *eom = 0;
             }
-            //    msgs[index] = (const xmlChar *)packet;
-            msgs.push_back((const xmlChar *)packet);
+            //    msgs[index] = (const unsigned char *)packet;
+            msgs.push_back((const unsigned char *)packet);
             //      msgs[index+1] = 0;
             //printf("%d: Pushing Packet of size %d at %p\n", __LINE__, strlen(packet), packet);
             //processing(false);
@@ -772,7 +772,7 @@ Tcpip::anydata(int fd, vector<const xmlChar *> &msgs)
                 //processing(false);
                 printf("%s: The remainder is: \"%s\"\n", __FUNCTION__, leftover);
                 printf("%s: The rest of the message is: \"%s\"\n", __FUNCTION__, ptr);
-                adjusted_size = memadjust(cr + strlen(leftover) + 1);
+                // adjusted_size = memadjust(cr + strlen(leftover) + 1); FIXME:
                 packet = new char[adjusted_size];
                 memset(packet, 0, adjusted_size);
                 strcpy(packet, leftover);
@@ -786,7 +786,7 @@ Tcpip::anydata(int fd, vector<const xmlChar *> &msgs)
                 delete leftover;
                 leftover = 0;
             } else {
-                adjusted_size = memadjust(cr + 1);
+                // adjusted_size = memadjust(cr + 1); FIXME:
                 packet = new char[adjusted_size];
                 memset(packet, 0, adjusted_size);
                 strcpy(packet, ptr);
@@ -800,8 +800,8 @@ Tcpip::anydata(int fd, vector<const xmlChar *> &msgs)
                 }
                 //printf("Allocating new packet at %p\n", packet);
                 //data.push_back(packet);
-                //        msgs[index++] = (const xmlChar *)packet;
-                msgs.push_back((const xmlChar *)packet);
+                //        msgs[index++] = (const unsigned char *)packet;
+                msgs.push_back((const unsigned char *)packet);
             } else {
                 if (*packet == *ptr) {
                     // dbglogfile << "Read all XML messages in packet " << packet << endl;

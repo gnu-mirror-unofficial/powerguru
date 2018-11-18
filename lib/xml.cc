@@ -30,6 +30,7 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <libxml/xmlreader.h>
+#include <libxml/xmlstring.h>
 
 #include "xml.h"
 #include "log.h"
@@ -45,11 +46,11 @@ XMLAttr::XMLAttr() : _name(0), _value(0)
     // DEBUGLOG_REPORT_FUNCTION;
 }
 
-const xmlChar *
+const char *
 XMLAttr::nameGet(void)
 {
     // DEBUGLOG_REPORT_FUNCTION;
-    return _name;
+    return (const char *)_name;
 }
 
 void
@@ -59,11 +60,11 @@ XMLAttr::nameSet(const xmlChar *name)
     _name = name;
 }
 
-const xmlChar *
+const char *
 XMLAttr::valueGet(void)
 {
     // DEBUGLOG_REPORT_FUNCTION;
-    return _value;
+    return (const char *)_value;
 }
 
 void
@@ -155,11 +156,11 @@ XMLNode::operator = (XMLNode *node)
     return this;
 }
 
-const xmlChar *
+const char *
 XMLNode::nameGet(void)
 {
     // DEBUGLOG_REPORT_FUNCTION;
-    return _name;
+    return (const char *)_name;
 }
 
 void
@@ -169,11 +170,11 @@ XMLNode::nameSet(const xmlChar *name)
     _name = name;
 }
 
-const xmlChar *
+const char *
 XMLNode::valueGet(void)
 {
     // DEBUGLOG_REPORT_FUNCTION;
-    return _value;
+    return (const char *)_value;
 }
 
 void
@@ -645,10 +646,10 @@ XML::hasChildren(void)
     return (_nodes.childrenSize() > 0)? true : false;
 }
 
-const xmlChar *
+const char *
 XML::nodeNameGet(void)
 {
-    return _nodes.nameGet();
+    return (const char *)_nodes.nameGet();
 }
 
 int

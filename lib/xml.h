@@ -26,12 +26,11 @@
 
 #include <cstring>
 #include <vector>
-#ifdef HAVE_LIBXML
-# include <libxml/xmlmemory.h>
-# include <libxml/parser.h>
-# include <libxml/xmlreader.h>
-#endif
-
+#include <libxml/xmlmemory.h>
+#include <libxml/parser.h>
+#include <libxml/xmlreader.h>
+#include <libxml/xmlstring.h>
+#include "xml.h"
 #include "log.h"
 #include "err.h"
 
@@ -40,9 +39,9 @@ class XMLAttr {
 public:
   XMLAttr();
   ~XMLAttr();
-  const xmlChar *nameGet(void);
+  const char *nameGet(void);
   void nameSet(const xmlChar *name);
-  const xmlChar *valueGet(void);
+  const char *valueGet(void);
   void valueSet(const xmlChar *val);
  private:
   const xmlChar *_name;
@@ -61,10 +60,10 @@ public:
   XMLNode *operator = (XMLNode &node);
   XMLNode *operator = (XMLNode *node);
 
-  const xmlChar *nameGet(void);
+  const char *nameGet(void);
   //  void nameSet(std::string name);
   void nameSet(const xmlChar *name);
-  const xmlChar *valueGet(void);
+  const char *valueGet(void);
   //  void valueSet(std::string val);
   void valueSet(const xmlChar *val);
   
@@ -101,7 +100,7 @@ class XML {
   bool hasChildren(void);
   XMLNode *extractNode(xmlNodePtr node, bool mem);
   XMLNode *processNode(xmlTextReaderPtr reader, XMLNode *node);
-  const xmlChar *nodeNameGet(void);
+  const char *nodeNameGet(void);
   int size(void);  
   XMLNode *operator [] (int x);
   XML *operator = (XMLNode *node);

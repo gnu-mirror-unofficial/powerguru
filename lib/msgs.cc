@@ -27,25 +27,27 @@
 #include <iterator>
 #include <map>
 #ifdef __STDC_HOSTED__
-#include <sstream>
+# include <sstream>
 #else
-#include <strstream>
+# include <strstream>
 #endif
-#include <libxml/encoding.h>
-#include <libxml/xmlwriter.h>
-#include <libxml/debugXML.h>
+#ifdef HAVE_LIBXML
+# include <libxml/encoding.h>
+# include <libxml/xmlwriter.h>
+# include <libxml/debugXML.h>
+# include "xml.h"
+#endif
 #include "database.h"
 #include "log.h"
 #include "err.h"
-#include "xml.h"
 #include "msgs.h"
 #include "tcputil.h"
 #include "tcpip.h"
 
 using namespace std;
 Msgs::net_mode_e  Msgs::_net_mode;
-std::map<const unsigned char *, Msgs::methodPtr_t> Msgs::_methods;
-std::map<const unsigned char *, std::string> Msgs::_cache;
+std::map<const char *, Msgs::methodPtr_t> Msgs::_methods;
+std::map<const char *, std::string> Msgs::_cache;
 
 #define MY_ENCODING "ISO-8859-1"
 
@@ -201,96 +203,96 @@ Msgs::init(void)
     DEBUGLOG_REPORT_FUNCTION;
 
     // Top level node of the message
-    _methods[BAD_CAST "powerguru"] =      &Msgs::powerguruProcess;
+    _methods[ "powerguru"] =      &Msgs::powerguruProcess;
   
     // initialization message
-    _methods[BAD_CAST "helo"] =           &Msgs::heloProcess;
-    _methods[BAD_CAST "client"] =         &Msgs::clientProcess;
-    _methods[BAD_CAST "server"] =         &Msgs::serverProcess;
+    _methods[ "helo"] =           &Msgs::heloProcess;
+    _methods[ "client"] =         &Msgs::clientProcess;
+    _methods[ "server"] =         &Msgs::serverProcess;
   
     // Meter readings
-    _methods[BAD_CAST "meters"] =         &Msgs::metersProcess;
-    _methods[BAD_CAST "charge-mps"] =     &Msgs::chargeAmpsProcess;
-    _methods[BAD_CAST "load-amps"] =      &Msgs::loadAmpsProcess;
-    _methods[BAD_CAST "pv-amps"] =        &Msgs::pvAmpsProcess;
-    _methods[BAD_CAST "pv-volts"] =       &Msgs::pvVoltsProcess;
-    _methods[BAD_CAST "daily-kwh"] =      &Msgs::dailyKwhProcess;
-    _methods[BAD_CAST "hertz"] =          &Msgs::hertzProcess;
-    _methods[BAD_CAST "battery-volts"] =  &Msgs::batteryVoltsProcess;
-    _methods[BAD_CAST "buy-amps"] =       &Msgs::buyAmpsProcess;
-    _methods[BAD_CAST "sell-amps"] =      &Msgs::sellAmpsProcess;
-    _methods[BAD_CAST "ac-volts-out"] =   &Msgs::acVoltsOutProcess;
-    _methods[BAD_CAST "ac1-volts-in"] =   &Msgs::ac1InProcess;
-    _methods[BAD_CAST "ac2-volts-in"] =   &Msgs::ac2InProcess;
+    _methods[ "meters"] =         &Msgs::metersProcess;
+    _methods[ "charge-mps"] =     &Msgs::chargeAmpsProcess;
+    _methods[ "load-amps"] =      &Msgs::loadAmpsProcess;
+    _methods[ "pv-amps"] =        &Msgs::pvAmpsProcess;
+    _methods[ "pv-volts"] =       &Msgs::pvVoltsProcess;
+    _methods[ "daily-kwh"] =      &Msgs::dailyKwhProcess;
+    _methods[ "hertz"] =          &Msgs::hertzProcess;
+    _methods[ "battery-volts"] =  &Msgs::batteryVoltsProcess;
+    _methods[ "buy-amps"] =       &Msgs::buyAmpsProcess;
+    _methods[ "sell-amps"] =      &Msgs::sellAmpsProcess;
+    _methods[ "ac-volts-out"] =   &Msgs::acVoltsOutProcess;
+    _methods[ "ac1-volts-in"] =   &Msgs::ac1InProcess;
+    _methods[ "ac2-volts-in"] =   &Msgs::ac2InProcess;
   
     // Status messages on the system
-    _methods[BAD_CAST "status"] = &Msgs::statusProcess;
-    _methods[BAD_CAST "version"] = &Msgs::statusProcess;
-    _methods[BAD_CAST "revision"] = &Msgs::statusProcess;
-    _methods[BAD_CAST "opmode"] = &Msgs::statusProcess;
-    _methods[BAD_CAST "errormode"] = &Msgs::statusProcess;
-    _methods[BAD_CAST "warningmode"] = &Msgs::statusProcess;
+    _methods[ "status"] = &Msgs::statusProcess;
+    _methods[ "version"] = &Msgs::statusProcess;
+    _methods[ "revision"] = &Msgs::statusProcess;
+    _methods[ "opmode"] = &Msgs::statusProcess;
+    _methods[ "errormode"] = &Msgs::statusProcess;
+    _methods[ "warningmode"] = &Msgs::statusProcess;
 
     // Configuration settings
-    _methods[BAD_CAST "config"] = &Msgs::configProcess;
-    _methods[BAD_CAST "generator"] = &Msgs::configProcess;
-    _methods[BAD_CAST "grid"] = &Msgs::configProcess;
-    _methods[BAD_CAST "buy"] = &Msgs::configProcess;
-    _methods[BAD_CAST "sell"] = &Msgs::configProcess;
-    _methods[BAD_CAST "start"] = &Msgs::configProcess;
-    _methods[BAD_CAST "end"] = &Msgs::configProcess;
+    _methods[ "config"] = &Msgs::configProcess;
+    _methods[ "generator"] = &Msgs::configProcess;
+    _methods[ "grid"] = &Msgs::configProcess;
+    _methods[ "buy"] = &Msgs::configProcess;
+    _methods[ "sell"] = &Msgs::configProcess;
+    _methods[ "start"] = &Msgs::configProcess;
+    _methods[ "end"] = &Msgs::configProcess;
 
     // Command messages
-    _methods[BAD_CAST "command"] = &Msgs::commandProcess;
-//   _methods[BAD_CAST "auxilary"] = &Msgs::commandAuxilaryProcess;
-//   _methods[BAD_CAST "relay"] = &Msgs::commandRelayProcess;
-//   _methods[BAD_CAST "poll"] = &Msgs::commandPollProcess;;
-//   _methods[BAD_CAST "inverter"] = &Msgs::commandInverterProcess;;
-//   _methods[BAD_CAST "charger"] = &Msgs::commandChargerProcess;;
-    // _methods[BAD_CAST "restart"] = &Msgs::commandRestartProcess;;
-    _methods[BAD_CAST "auxilary"] = &Msgs::commandProcess;
-    _methods[BAD_CAST "relay"] = &Msgs::commandProcess;
-    _methods[BAD_CAST "poll"] = &Msgs::commandProcess;
-    _methods[BAD_CAST "inverter"] = &Msgs::commandProcess;
-    _methods[BAD_CAST "charger"] = &Msgs::commandProcess;
+    _methods[ "command"] = &Msgs::commandProcess;
+//   _methods[ "auxilary"] = &Msgs::commandAuxilaryProcess;
+//   _methods[ "relay"] = &Msgs::commandRelayProcess;
+//   _methods[ "poll"] = &Msgs::commandPollProcess;;
+//   _methods[ "inverter"] = &Msgs::commandInverterProcess;;
+//   _methods[ "charger"] = &Msgs::commandChargerProcess;;
+    // _methods[ "restart"] = &Msgs::commandRestartProcess;;
+    _methods[ "auxilary"] = &Msgs::commandProcess;
+    _methods[ "relay"] = &Msgs::commandProcess;
+    _methods[ "poll"] = &Msgs::commandProcess;
+    _methods[ "inverter"] = &Msgs::commandProcess;
+    _methods[ "charger"] = &Msgs::commandProcess;
   
     //  _methods[""] = &Msgs::unimplementedProcess;
 
     // preload a few values
     if (_net_mode == DAEMON) {
-        _cache[BAD_CAST "version"] = VERSION;
-        _cache[BAD_CAST "revision"] = VERSION;
-//     _cache[BAD_CAST "opmode"] = "unknown";
-//     _cache[BAD_CAST "errormode"] = "unknown";
-//     _cache[BAD_CAST "warningmode"] = "unknown";
+        _cache[ "version"] = VERSION;
+        _cache[ "revision"] = VERSION;
+//     _cache[ "opmode"] = "unknown";
+//     _cache[ "errormode"] = "unknown";
+//     _cache[ "warningmode"] = "unknown";
 
         // FIXME: fake meter values!
         // Meters
-        _cache[BAD_CAST "battery-volts"] = "88888888";
-        _cache[BAD_CAST "charge-amps"] = "777777777";
-        _cache[BAD_CAST "load-amps"] = "66666666";
-        _cache[BAD_CAST "pv-amps"] = "55555555";
-        _cache[BAD_CAST "sell-amps"] = "444444444444";
+        _cache[ "battery-volts"] = "88888888";
+        _cache[ "charge-amps"] = "777777777";
+        _cache[ "load-amps"] = "66666666";
+        _cache[ "pv-amps"] = "55555555";
+        _cache[ "sell-amps"] = "444444444444";
     }
   
     return SUCCESS;
 }
 
 std::string
-Msgs::cacheGet(const unsigned char * name) {
+Msgs::cacheGet(const char * name) {
     // DEBUGLOG_REPORT_FUNCTION;
 #if 1
-    const unsigned char         *tag;
+    const char         *tag;
     string                str;
   
     _body.str("");
-    std::map<const unsigned char *, string>::const_iterator it;
+    std::map<const char *, string>::const_iterator it;
     for (it = _cache.begin(); it != _cache.end(); it++) {
         //entry = it->second;
         tag = it->first;
         str  = it->second;
         _body.str("");
-        if (xmlStrcmp(tag, name) == 0) {
+        if (strcmp(tag, name) == 0) {
             if (str.size() != 0) {
                 _body << " Has data: " << str;
             } else {
@@ -309,7 +311,7 @@ Msgs::cacheGet(const unsigned char * name) {
 }
 
 retcode_t
-Msgs::cacheAdd(const unsigned char * name, string str)
+Msgs::cacheAdd(const char * name, string str)
 {
     // DEBUGLOG_REPORT_FUNCTION;
     _cache[name] = str;
@@ -321,7 +323,7 @@ Msgs::cacheAdd(const unsigned char * name, string str)
 
 // Add a function for handling an XML tag to the list.
 void
-Msgs::methodSet(const unsigned char * name, methodPtr_t func)
+Msgs::methodSet(const char * name, methodPtr_t func)
 {
     // DEBUGLOG_REPORT_FUNCTION;
     _methods[name] = func;
@@ -329,14 +331,14 @@ Msgs::methodSet(const unsigned char * name, methodPtr_t func)
 
 // Get the function for an XML tag from the list.
 Msgs::methodPtr_t
-Msgs::methodGet(const unsigned char * name)
+Msgs::methodGet(const char * name)
 {
     //DEBUGLOG_REPORT_FUNCTION;
 #if 1
-    const unsigned char         *str;
+    const char         *str;
     Msgs::methodPtr_t     ptr;
   
-    std::map<const unsigned char *, Msgs::methodPtr_t>::const_iterator it;
+    std::map<const char *, Msgs::methodPtr_t>::const_iterator it;
     for (it = _methods.begin(); it != _methods.end(); it++) {
         //entry = it->second;
         str = it->first;
@@ -349,7 +351,7 @@ Msgs::methodGet(const unsigned char * name)
         }
         //     dbglogfile << "Looking for method for XML Tag \"" << name.c_str()
         //                << "\" has " << _body.str().c_str() << endl;
-        if (xmlStrcmp(str, name) == 0) {
+        if (strcmp(str, name) == 0) {
             return ptr;
         }
     }
@@ -362,7 +364,7 @@ Msgs::methodGet(const unsigned char * name)
 
 // Call the function to process an XML node
 retcode_t
-Msgs::methodProcess(const unsigned char *name, XMLNode *node)
+Msgs::methodProcess(const char *name, XMLNode *node)
 {
     // DEBUGLOG_REPORT_FUNCTION;
     //(this->*_methods.find(name)(node); 
@@ -374,12 +376,12 @@ void
 Msgs::methodsDump(void)
 {
     DEBUGLOG_REPORT_FUNCTION;
-    const unsigned char         *name;
+    const char         *name;
     Msgs::methodPtr_t     ptr;
   
     dbglogfile << "We have " << (int)_methods.size() << " in function table" << endl;
   
-    std::map<const unsigned char *, Msgs::methodPtr_t>::const_iterator it;
+    std::map<const char *, Msgs::methodPtr_t>::const_iterator it;
     for (it = _methods.begin(); it != _methods.end(); it++) {
         name = it->first;
         ptr  = it->second;
@@ -399,12 +401,12 @@ void
 Msgs::cacheDump(void)
 {
     DEBUGLOG_REPORT_FUNCTION;
-    const unsigned char         *name;
+    const char         *name;
     string                data;
   
     dbglogfile << "We have " << (int)_cache.size() << " items in the cache" << endl;
   
-    std::map<const unsigned char *, string>::const_iterator it;
+    std::map<const char *, string>::const_iterator it;
     for (it = _cache.begin(); it != _cache.end(); it++) {
         name = it->first;
         data  = it->second;
@@ -435,8 +437,8 @@ Msgs::unimplementedProcess(XMLNode *xml)
     _body.str("");                // erase the current string
     _body << "<powerguru version=\"" << _version << "\">";
     _body << "<status><warningmode><";
-    _body << BAD_CAST xml->nameGet();
-    _body << ">unimplemented</" << BAD_CAST xml->nameGet();
+    _body <<  xml->nameGet();
+    _body << ">unimplemented</" <<  xml->nameGet();
     _body <<  "></warningmode>" << "</status>"; 
     _body << "</powerguru>";
     _body << ends;
@@ -453,7 +455,7 @@ Msgs::process(XMLNode *xml)
 {
     DEBUGLOG_REPORT_FUNCTION;
     methodPtr_t   fptr;
-    const unsigned char *str;
+    const char *str;
     retcode_t     ret;
     int           i;
 
@@ -538,7 +540,7 @@ Msgs::statusCreate(meter_data_t *md)
     int rc;
     xmlTextWriterPtr writer;
     xmlBufferPtr buf;
-    unsigned char *tmp;
+    char *tmp;
   
     if ((buf = xmlBufferCreate()) == NULL) {
         printf("testXmlwriterMemory: Error creating the xml buffer\n");
@@ -558,21 +560,21 @@ Msgs::statusCreate(meter_data_t *md)
         return "";
     }
   
-    if ((rc = xmlTextWriterStartElement(writer, BAD_CAST "powerguru")) < 0) {
+    if ((rc = xmlTextWriterStartElement(writer,  "powerguru")) < 0) {
         printf
             ("testXmlwriterMemory: Error at xmlTextWriterStartElement\n");
         return "";
     }
   
-    if ((rc = xmlTextWriterStartElement(writer, BAD_CAST "status")) < 0) {
+    if ((rc = xmlTextWriterStartElement(writer,  "status")) < 0) {
         printf
             ("testXmlwriterMemory: Error at xmlTextWriterStartElement\n");
         return "";
     }
     
     /* Add an attribute with name "version" and value "1.0" to status. */
-    if ((rc = xmlTextWriterWriteAttribute(writer, BAD_CAST "version",
-                                          BAD_CAST "1.0")) < 0) {
+    if ((rc = xmlTextWriterWriteAttribute(writer,  "version",
+                                           "1.0")) < 0) {
         printf
             ("testXmlwriterMemory: Error at xmlTextWriterWriteAttribute\n");
         return "";
@@ -688,7 +690,7 @@ Msgs::metersRequestCreate(xml_meters_e val) {
 }
 
 std::string
-Msgs::metersResponseCreate(const unsigned char * type, int val) {
+Msgs::metersResponseCreate(const char * type, int val) {
     DEBUGLOG_REPORT_FUNCTION;
     _body.str("");                // erase the current string
     _body << "<powerguru version=\"";
@@ -703,7 +705,7 @@ Msgs::metersResponseCreate(const unsigned char * type, int val) {
 }
 
 std::string
-Msgs::metersResponseCreate(const unsigned char *type, float val) {
+Msgs::metersResponseCreate(const char *type, float val) {
     DEBUGLOG_REPORT_FUNCTION;
     _body.str("");                // erase the current string
     _body << "<powerguru version=\"";
@@ -718,7 +720,7 @@ Msgs::metersResponseCreate(const unsigned char *type, float val) {
 }
 
 std::string
-Msgs::metersResponseCreate(const unsigned char *type, string val) {
+Msgs::metersResponseCreate(const char *type, string val) {
     DEBUGLOG_REPORT_FUNCTION;
     _body.str("");                // erase the current string
     _body << "<powerguru version=\"";
@@ -894,7 +896,7 @@ Msgs::requestCreate(xml_command_e tag)
 
 
 std::string
-Msgs::responseCreate(xml_msg_e type, const unsigned char *tag, string val)
+Msgs::responseCreate(xml_msg_e type, const char *tag, string val)
 {
     DEBUGLOG_REPORT_FUNCTION;
     string str;
@@ -959,7 +961,7 @@ Msgs::print_msg(std::string msg)
         "\r\n\t\t\t\t\t",
     };
   
-    xmlDebugDumpString(stderr, (const unsigned char *)msg.c_str());
+    xmlDebugDumpString(stderr, (const xmlChar *)msg.c_str());
     //  cerr << "++++++++++++++++++++++" << endl;
   
     // Strip off the DTD header, as we're not bothering to validate
@@ -1007,23 +1009,23 @@ Msgs::statusProcess(XMLNode *node)
 {
     DEBUGLOG_REPORT_FUNCTION;
     //  XMLNode *child;
-    //  unsigned int i;
+    //  xmlChar i;
     string str;
     _body.str("");
     _body << _version;
 
-    // dbglogfile << BAD_CAST node->valueGet() << endl;
+    // dbglogfile <<  node->valueGet() << endl;
   
     if (_net_mode == DAEMON) {
-        if (xmlStrcmp(node->valueGet(), BAD_CAST "sysversion") == 0) {
+        if (strcmp(node->valueGet(),  "sysversion") == 0) {
             str = responseCreate(STATUS, node->valueGet(), _body.str().c_str());
-        } else if (xmlStrcmp(node->valueGet(), BAD_CAST "revision") == 0) {
+        } else if (strcmp(node->valueGet(),  "revision") == 0) {
             str = responseCreate(STATUS, node->valueGet(), "0.0");
-        } else if (xmlStrcmp(node->valueGet(), BAD_CAST "opmode") == 0) {
+        } else if (strcmp(node->valueGet(),  "opmode") == 0) {
             str = responseCreate(STATUS, node->valueGet(), "none");
-        } else if (xmlStrcmp(node->valueGet(), BAD_CAST "warningmode") == 0) {
+        } else if (strcmp(node->valueGet(),  "warningmode") == 0) {
             str = responseCreate(STATUS, node->valueGet(), "none");    
-        } else if (xmlStrcmp(node->valueGet(), BAD_CAST "errormode") == 0) {
+        } else if (strcmp(node->valueGet(),  "errormode") == 0) {
             str = responseCreate(STATUS, node->valueGet(), "none");
         }
     
@@ -1035,20 +1037,20 @@ Msgs::statusProcess(XMLNode *node)
     }
 
     if (_net_mode == CLIENT) {
-        if (xmlStrcmp(node->nameGet(), BAD_CAST "status") == 0) {
+        if (strcmp(node->nameGet(),  "status") == 0) {
             return SUCCESS;
         }
 
 #if 0
-        if        (xmlStrcmp(node->nameGet(), BAD_CAST "revision") == 0) {
+        if        (strcmp(node->nameGet(),  "revision") == 0) {
             //cerr << "VER" << endl;
-        } else if (xmlStrcmp(node->nameGet(), BAD_CAST "sysversion") == 0) {
+        } else if (strcmp(node->nameGet(),  "sysversion") == 0) {
             //cerr << "REV" << endl;
-        } else if (xmlStrcmp(node->nameGet(), BAD_CAST "opmode") == 0) {
+        } else if (strcmp(node->nameGet(),  "opmode") == 0) {
             //cerr << "OP" << endl;
-        } else if (xmlStrcmp(node->nameGet(), BAD_CAST "warningmode") == 0) {
+        } else if (strcmp(node->nameGet(),  "warningmode") == 0) {
             //cerr << "WARN" << endl;
-        } else if (xmlStrcmp(node->nameGet(), BAD_CAST "errormode") == 0) {
+        } else if (strcmp(node->nameGet(),  "errormode") == 0) {
             //cerr << "ERROR" << endl;
         }
 #endif
@@ -1127,14 +1129,14 @@ Msgs::serverProcess(XMLNode *node)
         if ((attr = node->attribGet(0))) {
             dbglogfile << "\tAttribute is \"" << attr->nameGet()
                        << "\" with a value of " << attr->valueGet() << endl;
-            if (xmlStrcmp(attr->valueGet(), (const unsigned char *)_thisip.c_str()) != 0) {
+            if (strcmp(attr->valueGet(), (const char *)_thisip.c_str()) != 0) {
                 dbglogfile << "WARNING: IP's don't match!!!!" << endl;
                 return ERROR;
             }
         }
     }
 
-    if (xmlStrcmp(node->valueGet(), (const unsigned char *)_thishost.c_str()) != 0) {
+    if (strcmp(node->valueGet(), (const char *)_thishost.c_str()) != 0) {
         dbglogfile << "WARNING: Host's don't match!!!!" << endl;
         return ERROR;
     }
@@ -1157,7 +1159,7 @@ Msgs::clientProcess(XMLNode *node)
             if ((attr = node->attribGet(0))) {
                 dbglogfile << "\tAttribute is \"" << attr->nameGet()
                            << "\" with a value of " << attr->valueGet() << endl;
-                if (xmlStrcmp(attr->valueGet(), (const unsigned char *)_remoteip.c_str()) != 0) {
+                if (strcmp(attr->valueGet(), (const char *)_remoteip.c_str()) != 0) {
                     dbglogfile << "WARNING: IP's don't match!!!!" << endl;
                     return ERROR;
                 }
@@ -1166,7 +1168,7 @@ Msgs::clientProcess(XMLNode *node)
     }
 
     if (_remotehost.size() != 0) {
-        if (xmlStrcmp(node->valueGet(), (const unsigned char *)_remotehost.c_str()) != 0) {
+        if (strcmp(node->valueGet(), (const char *)_remotehost.c_str()) != 0) {
             dbglogfile << "WARNING: Host's don't match!!!!" << endl;
             return ERROR;
         }
@@ -1192,7 +1194,7 @@ Msgs::powerguruProcess(XMLNode *node)
         if ((attr = node->attribGet(0))) {
 //       dbglogfile << "\tAttribute is \"" << attr->nameGet().c_str()
 //                  << "\" with a value of " << attr->valueGet().c_str() << endl;
-            if (xmlStrcmp((const unsigned char *)_body.str().c_str(), attr->valueGet()) != 0) {
+            if (strcmp((const char *)_body.str().c_str(), (const char*)attr->valueGet()) != 0) {
                 dbglogfile << "Versions in header don't match!" << endl;
             } else {
                 dbglogfile << "Versions in header match" << endl;        
@@ -1235,13 +1237,15 @@ Msgs::loadAmpsProcess(XMLNode *node) {
     
         return SUCCESS;
     }
-  
+
+#if 0
     if (_net_mode == DAEMON) {
         string str = metersResponseCreate(node->valueGet(), _cache[node->nameGet()]);
     
         return SUCCESS;
     }
-
+#endif
+    
     return SUCCESS;
 }
 
@@ -1322,13 +1326,15 @@ Msgs::batteryVoltsProcess(XMLNode *node) {
     
         return SUCCESS;
     }
-  
+
+#if 0
     if (_net_mode == DAEMON) {
         string str = metersResponseCreate(node->valueGet(), _cache[node->nameGet()]);
     
         return SUCCESS;
     }
-  
+#endif
+    
     return ERROR;
 }
 
@@ -1440,19 +1446,19 @@ Msgs::commandProcess(XMLNode *node)
     _body.str("");
     _body << _version;
 
-    // dbglogfile << BAD_CAST node->valueGet() << endl;
-  
+    // dbglogfile <<  node->valueGet() << endl;
+
+#if 0
     if (_net_mode == DAEMON) {
-        if (xmlStrcmp(node->valueGet(), BAD_CAST "auxilary") == 0) {
+        if (strcmp(node->value Get(), "auxilary") == 0) {
             str = responseCreate(COMMAND, node->valueGet(), "0.0");
-        } else if (xmlStrcmp(node->valueGet(), BAD_CAST "relay") == 0) {
+        } else if (strcmp(node->valueGet(), "relay") == 0) {
             str = responseCreate(COMMAND, node->valueGet(), "none");
-        } else if (xmlStrcmp(node->valueGet(), BAD_CAST "poll") == 0) {
+        } else if (strcmp(node->valueGet(), "poll") == 0) {
             str = responseCreate(COMMAND, node->valueGet(), "inverter");    
-        } else if (xmlStrcmp(node->valueGet(), BAD_CAST "") == 0) {
+        } else if (strcmp(node->valueGet(), "") == 0) {
             str = responseCreate(COMMAND, node->valueGet(), "charger");
         }
-    
         if (writeNet(str)) {
             return ERROR;
         } else {
@@ -1461,16 +1467,16 @@ Msgs::commandProcess(XMLNode *node)
     }
 
     if (_net_mode == CLIENT) {
-        if (xmlStrcmp(node->nameGet(), BAD_CAST "command") == 0) {
+        if (strcmp(node->nameGet(), "command") == 0) {
             return SUCCESS;
         }
-
-
         cacheAdd(node->nameGet(), (const char*)node->valueGet());
         dbglogfile << "tag \"" << node->nameGet() << "\" has a value of: " << node->valueGet() << endl;
     
         return SUCCESS;
     }
+#endif
+
     return ERROR;  
 }
 

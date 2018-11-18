@@ -37,7 +37,9 @@
 #include "database.h"
 #include "log.h"
 #include "err.h"
-#include "xml.h"
+#ifdef HAVE_LIBXML
+# include "xml.h"
+#endif
 #include "tcpip.h"
 
 class Msgs : public Tcpip {
@@ -163,11 +165,11 @@ public:
     std::string metersRequestCreate(xml_meters_e type);
 
     // This formats a response from the daemon to the client
-    std::string metersResponseCreate(const unsigned char *tag, int val);
-    std::string metersResponseCreate(const unsigned char *tag, float val);
-    std::string metersResponseCreate(const unsigned char *tag, std::string);
+    std::string metersResponseCreate(const char *tag, int val);
+    std::string metersResponseCreate(const char *tag, float val);
+    std::string metersResponseCreate(const char *tag, std::string);
 
-    std::string responseCreate(xml_msg_e type, const unsigned char *tag, std::string);
+    std::string responseCreate(xml_msg_e type, const char *tag, std::string);
   
     std::string requestCreate(xml_meters_e tag);
     std::string requestCreate(xml_status_e tag);
@@ -177,13 +179,13 @@ public:
     std::string packet(void) { return _body.str(); }
     void print_msg(std::string msg);
 
-    void methodSet(const unsigned char *name, methodPtr_t func);
-    methodPtr_t methodGet(const unsigned char *name);
-    retcode_t methodProcess(const unsigned char *name, XMLNode *node);
+    void methodSet(const char *name, methodPtr_t func);
+    methodPtr_t methodGet(const char *name);
+    retcode_t methodProcess(const char *name, XMLNode *node);
     void methodsDump(void);
 
-    std::string cacheGet(const unsigned char *name);
-    retcode_t cacheAdd(const unsigned char *name, std::string);
+    std::string cacheGet(const char *name);
+    retcode_t cacheAdd(const char *name, std::string);
     void cacheDump(void);
 
     std::string thisIPGet(void) { return _thisip; };
@@ -195,8 +197,8 @@ public:
   
 private:
     float               _version;
-    static std::map<const unsigned char *, methodPtr_t> _methods;
-    static std::map<const unsigned char *, std::string> _cache;
+    static std::map<const char *, methodPtr_t> _methods;
+    static std::map<const char *, std::string> _cache;
     static net_mode_e   _net_mode;
 #ifdef __STDC_HOSTED__
     std::ostringstream  _body;
