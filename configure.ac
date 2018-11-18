@@ -105,15 +105,9 @@ with_top_level=""
 if test x"${cross_compiling}" = xyes; then
   AC_MSG_CHECKING([For a usable sysroot])
   dnl Check if /usr isn't part of the specified path
-  if test -d ${sysroot}/usr; then
-    sysroot=${withval}/usr
-  else 
-    dnl Check if the specified path supplies /usr
-    if test -d ${sysroot}/usr/include; then
-      sysroot=${sysroot}
-    else
+  if test ! -d ${sysroot}/usr && ! -d ${sysroot}/usr/include; then
       AC_MSG_ERROR([Specified sysroot \"${sysroot}\" doesn't exist!])
-    fi
+  else
     CXXFLAGS="--sysroot=${sysroot}"
     CFLAGS="--sysroot=${sysroot}"
     LDFLAGS="--sysroot=${sysroot}"
@@ -152,6 +146,8 @@ else
     export libslist="${libslist} /lib/${DEB_HOST_MULTIARCH} /usr/lib/${DEB_HOST_MULTIARCH}"
   fi
   export pathlist=$PATH
+  RASPI_FLAGS="-march=armv6z -mtune=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard"
+  AC_SUBST(RASPI_FLAGS)
 fi
 AM_CONDITIONAL(CROSS_COMPILING, [ test x$cross_compiling = xyes ])
 
@@ -163,7 +159,14 @@ save_CFLAGS="${CFLAGS}"
 CFLAGS="${save_CFLAGS} -Wall -Werror"
 
 # dnl libxml2's headers are sometimes in a libxml2 directory, but not always
-CPPFLAGS="-I${sysroot}/usr/include/libxml2"
+if test -d ${sysroot}/usr/local/include/libxml2; then
+   CPPFLAGS="-I${sysroot}/usr/local/include/libxml2"
+else
+   if test -d "${sysroot}/usr/include/libxml2"; then
+     CPPFLAGS="-I${sysroot}/usr/include/libxml2"
+   fi
+fi
+
 AC_MSG_CHECKING([For libxml2 development files])
 AC_TRY_COMPILE([#include <libxml/xmlstring.h>], [
   xmlChar foo = 'x';
@@ -176,7 +179,7 @@ AC_MSG_RESULT([${has_libxml}])
 if test x"${has_libxml}" = x"true"; then
   AC_DEFINE([HAVE_LIBXML], [1], [Has libxml2 development files])
   LIBXML_LIBS="-lxml2"
-  LIBXML_CPPFLAGS="-I${sysroot}/usr/include/libxml2"
+  LIBXML_CPPFLAGS="${CPPFLAGS}"
   AC_SUBST(LIBXML_CPPFLAGS)
   AC_SUBST(LIBXML_LIBS)
 fi
@@ -294,7 +297,7 @@ sim/Makefile
 devices/Makefile
 snmp/Makefile
 client/Makefile
-po/Makefile
+po/Makefile.in
 doc/Makefile
 doc/C/Makefile
 testsuite/Makefile
