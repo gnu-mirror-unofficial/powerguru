@@ -11,3 +11,16 @@
 
 SUBDIRS = C
 
+XTRA_DIST = Doxyfile.in
+
+if ENABLE_DOXYGEN
+
+.PHONY: apidoc
+
+apidoc: 
+	$(DOXYGEN) $<
+
+clean-generic:
+	rm -Rf apidoc
+
+endif
