@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl  Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+dnl  Copyright (C) 2005, 2006-2018
 dnl	Free Software Foundation, Inc.
 dnl
 dnl  This program is free software; you can redistribute it and/or modify
@@ -94,6 +94,8 @@ AC_HEADER_STDC
 dnl AC_PROG_AR
 AC_CHECK_TOOL(AR, ar)
 AC_PATH_PROG(DEJAGNU, runtest)
+AC_PATH_PROG(DOXYGEN, doxygen)
+AM_CONDITIONAL(ENABLE_DOXYGEN, [ test x"$DOXYGEN" != x ])
 
 sysroot="${sysroot:-`${CXX} -print-sysroot`}"
 AC_ARG_WITH(sysroot,
@@ -232,6 +234,23 @@ if test x"${has_snmp}" = x"true"; then
 fi
 AM_CONDITIONAL(BUILD_SNMP, [ test x${has_snmp} = xtrue ])
 
+dnl dnl OWFS
+LDFLAGS="${save_LDFLAGS} -l"
+AC_MSG_CHECKING([For libownet development files])
+AC_TRY_COMPILE([#include <ownetapi.h>], [
+  OWNET_HANDLE foo;
+  ],
+  has_ownet=true,
+  has_ownet=false
+)
+AC_MSG_RESULT([${has_ownet}])
+if test x"${has_ownet}" = x"true"; then
+  AC_DEFINE([HAVE_OWNET], [1], [Has ownet development files])
+  OWNET_LIBS="-lownet"
+  AC_SUBST(OWNET_LIBS)
+fi
+AM_CONDITIONAL(BUILD_OWNET, [ test x${has_ownet} = xtrue ])
+
 dnl mariadb development files
 dnl FIXME
 
@@ -299,6 +318,7 @@ snmp/Makefile
 client/Makefile
 po/Makefile.in
 doc/Makefile
+doc/Doxyfile
 doc/C/Makefile
 testsuite/Makefile
 testsuite/libtests/Makefile
@@ -334,6 +354,12 @@ if test x"${has_snmp}" != x"true"; then
   echo "        To use SNMP. install the net-snmp development package for your system"
 else
   echo "        Found net-snmp. will configure SNMP support"
+fi
+
+if test x"${has_ownet}" != x"true"; then
+  echo "        To use a 1-Wire device. install the ownet development package for your system"
+else
+  echo "        Found ownet. will configure ownet support"
 fi
 
 if test x"${db}" = x"none"; then
