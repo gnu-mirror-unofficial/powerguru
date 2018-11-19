@@ -95,10 +95,16 @@ mudflap:
 	@echo "Rebuilding with GCC Mudflap support"
 	$(MAKE) CXXFLAGS="$(CXXFLAGS) -fmudflap" LDFLAGS="$(LDFLAGS) -lmudflap"
 
+apidoc:
+	$(MAKE) -C doc $@
+
 dump:
 	@echo "Dumping configure options"
 if BUILD_SNMP
 	@echo "	Building with net-snmp"
+endif
+if BUILD_OWNET
+	@echo "	Building with 1-Wire support"
 endif
 if BUILD_LIBXML
 	@echo "	Building with libxml2"
