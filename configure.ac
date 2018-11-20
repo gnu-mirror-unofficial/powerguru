@@ -74,6 +74,26 @@ else
    AC_DOCBOOK_STYLES
 fi
 
+devices=""
+build_ownet="yes"
+build_outback="no"
+build_xantrex="no"
+AC_ARG_WITH(devices, [  --with-device          the device(s) to build (ownet, outback, xantrex)],
+[devices="`echo ${withval} | tr ',' ' '`"
+for i in ${devices}; do
+    echo "FIXME: $i"
+     case ${i} in
+      	 ownet)  build_ownet="yes" ;;
+      	 outback) build_outback="yes" ;;
+      	 xantrex) build_xantrex="yes" ;;
+     	 *) AC_MSG_ERROR([bad value ${i} for with-device option]) ;;
+     esac
+done
+])
+AM_CONDITIONAL(BUILD_OWNET, [ test x${build_ownet} = xyes ])
+AM_CONDITIONAL(BUILD_OUTBACK, [ test x${build_outback} = xyes ])
+AM_CONDITIONAL(BUILD_XANTREX, [ test x${build_xantrex} = xyes ])
+
 db="none"
 AC_ARG_WITH(db, [  --with-db          database to use, mariadb or the default of postgresql],
 [case "${withval}" in
@@ -246,13 +266,18 @@ AC_TRY_COMPILE([#include <ownetapi.h>], [
 AC_MSG_RESULT([${has_ownet}])
 if test x"${has_ownet}" = x"true"; then
   AC_DEFINE([HAVE_OWNET], [1], [Has ownet development files])
-  OWNET_LIBS="-lownet"
+  OWNET_LIBS="-lownet -lowcapi"
   AC_SUBST(OWNET_LIBS)
 fi
 AM_CONDITIONAL(BUILD_OWNET, [ test x${has_ownet} = xtrue ])
 
 dnl mariadb development files
 dnl FIXME
+
+dnl FIXME: Force this definition as there is a type conflict between the net-snmp
+dnl defintion and tje sys/types,h one.
+AC_DEFINE([HAVE_SSIZE_T], [1], [Has ssize_t defined])
+AC_DEFINE([HAVE_STRTOULL], [1], [Has strtoull defined])
 
 LDFLAGS="${save_LDFLAGS}"
 CXXFLAGS="${save_CXXFLAGS}"
@@ -356,10 +381,21 @@ else
   echo "        Found net-snmp. will configure SNMP support"
 fi
 
-if test x"${has_ownet}" != x"true"; then
-  echo "        To use a 1-Wire device. install the ownet development package for your system"
-else
-  echo "        Found ownet. will configure ownet support"
+if test x"${build_outback}" = x"yes"; then
+   echo "        Including Outback protocol"
+fi
+
+if test x"${build_xantrex}" = x"yes"; then
+   echo "        Including Xantrex protocol"
+fi
+
+if test x"${build_ownet}" = x"yes"; then
+   echo "        Including 1-wire protocol"
+   if test x"${has_ownet}" != x"true"; then
+      echo "        To use a 1-Wire device. install the ownet development package for your system"
+   else
+      echo "        Found ownet. will configure ownet support"
+   fi
 fi
 
 if test x"${db}" = x"none"; then
