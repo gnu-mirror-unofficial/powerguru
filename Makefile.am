@@ -103,9 +103,6 @@ dump:
 if BUILD_SNMP
 	@echo "	Building with net-snmp"
 endif
-if BUILD_OWNET
-	@echo "	Building with 1-Wire support"
-endif
 if BUILD_LIBXML
 	@echo "	Building with libxml2"
 endif
@@ -114,4 +111,14 @@ if BUILD_MARIADB
 endif
 if BUILD_POSTGRESQL
 	@echo "	Building with Postgresql"
+endif
+if BUILD_OUTBACK
+	@echo "	Building with Outback protocol"
+endif
+
+if BUILD_XANTREX
+	@echo "	Building with Xantrex protocol"
+endif
+if BUILD_OWNET
+	@echo "	Building with 1-Wire support"
 endif
