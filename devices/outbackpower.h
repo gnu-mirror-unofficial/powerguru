@@ -1,5 +1,5 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+// Copyright (C) 2005, 2006-2018.
 //      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
@@ -34,7 +34,7 @@
 // series. Each packet is 49 bytes, and is transmitted as ASCII
 // numerals for portability, with an ASCII comma character
 // seperating each field.
-namespace outbackpower
+namespace pdev
 {
 
 // Outback FX Inverter protocol
@@ -352,7 +352,7 @@ private:
     int _checksum;
 };
 
-// end of namespace outback
+// end of namespace pdev
 }
 
 // __OUTBACK_POWER_H__

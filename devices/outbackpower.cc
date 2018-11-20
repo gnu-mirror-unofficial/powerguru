@@ -31,7 +31,7 @@
 #include "database.h"
 
 using namespace std;
-using namespace outbackpower;
+using namespace pdev;
 
 const int PACKET_SIZE = 49;
 
