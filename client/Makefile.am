@@ -21,7 +21,7 @@ AUTOMAKE_OPTIONS =
 
 bin_PROGRAMS = pguru 
 
-pguru_CPPFLAGS = -I$(top_srcdir)/lib
+pguru_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_srcdir)/devices
 
 pguru_SOURCES = cmd.cc
 pguru_LDADD = ../lib/libpguru.la -ldl
@@ -33,6 +33,10 @@ endif
 
 if BUILD_SNMP
 pguru_LDADD += ../snmp/libpgsnmp.la $(SNMP_LIBS)
+endif
+
+if BUILD_OWNET
+pguru_LDADD += $(OWNET_LIBS)
 endif
 
 # pguru_DEPENDENCIES = ../lib/libpguru.la
