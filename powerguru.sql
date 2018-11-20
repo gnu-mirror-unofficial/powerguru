@@ -1,5 +1,6 @@
 -- 
---   Copyright (C) 2005 Free Software Foundation, Inc.
+--   Copyright (C) 2005, 2006-2018
+--   Free Software Foundation, Inc.
 --
 --   This program is free software; you can redistribute it and/or modify
 --   it under the terms of the GNU General Public License as published by
@@ -33,26 +34,34 @@
 --
 -- Table structure for table `meters`
 --
+DROP TABLE IF EXISTS meters;
+CREATE TABLE meters (
+  unit integer NOT NULL default '0',
+  --device_type enum('NONE','MX','FX','SW') NOT NULL default 'NONE',
+  charge_amps integer NOT NULL default '0',
+  ac_load_amps integer NOT NULL default '0',
+  battery_volts float NOT NULL default '0',
+  ac_volts_out float NOT NULL default '0',
+  ac1_volts_in float NOT NULL default '0',
+  ac2_volts_in float NOT NULL default '0',
+  pv_amps_in integer NOT NULL default '0',
+  pv_volts_in float NOT NULL default '0',
+  buy_amps integer NOT NULL default '0',
+  sell_amps integer NOT NULL default '0',
+  daily_kwh float NOT NULL default '0',
+  hertz integer NOT NULL default '0',
+  battery_tempcomp float NOT NULL default '0'
+);
 
-DROP TABLE IF EXISTS `meters`;
-CREATE TABLE `meters` (
-  `unit` int(11) NOT NULL default '0',
-  `device_type` enum('NONE','MX','FX','SW') NOT NULL default 'NONE',
-  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
-  `charge_amps` int(11) NOT NULL default '0',
-  `ac_load_amps` int(11) NOT NULL default '0',
-  `battery_volts` float NOT NULL default '0',
-  `ac_volts_out` float NOT NULL default '0',
-  `ac1_volts_in` float NOT NULL default '0',
-  `ac2_volts_in` float NOT NULL default '0',
-  `pv_amps_in` int(11) NOT NULL default '0',
-  `pv_volts_in` float NOT NULL default '0',
-  `buy_amps` int(11) NOT NULL default '0',
-  `sell_amps` int(11) NOT NULL default '0',
-  `daily_kwh` float NOT NULL default '0',
-  `hertz` int(11) NOT NULL default '0',
-  `battery_tempcomp` float NOT NULL default '0'
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COMMENT='Stores data from data logging output';
+DROP TABLE IF EXISTS onewire;
+CREATE TABLE onewire (
+  family integer NOT NULL default '0',
+  id integer NOT NULL default '0',
+  type char(12) NOT NULL default '0',
+  temphigh float NOT NULL default '0',
+  templow float NOT NULL default '0',
+  temperature float NOT NULL default '0'
+);
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
