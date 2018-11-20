@@ -22,17 +22,19 @@
 
 #include "err.h"
 #include "log.h"
-#include <ownetapi.h>
-using namespace std;
-using namespace pdev;
+#include "ownet.h"
+#include <string>
+#include <boost/algorithm/string.hpp>
 
-char * buf;
-size_t s ;
-OWNET_init("localhost:4304");
-OWNET_dirlist("/",&buf,&s) ;
-printf("Directory %s",buf);
-free(buf);
-OWNET_finish() ;
+extern LogFile dbglogfile;
+
+namespace pdev {
+
+Ownet::~Ownet(void) {
+    OW_finish();
+};
+
+} // end of namespace
 
 // local Variables:
 // mode: C++
