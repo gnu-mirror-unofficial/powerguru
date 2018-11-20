@@ -52,7 +52,7 @@ extern char *optarg;
 
 using namespace std;
 using namespace rcinit;
-using namespace outbackpower;
+using namespace pdev;
 
 static void usage (const char *);
 extern LogFile dbglogfile;
