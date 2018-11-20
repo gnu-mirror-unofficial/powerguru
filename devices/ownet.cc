@@ -30,9 +30,24 @@ extern LogFile dbglogfile;
 
 namespace pdev {
 
-Ownet::~Ownet(void) {
-    OW_finish();
-};
+#if 0
+//Ownet::~Ownet(void) {
+//    OW_finish();
+//};
+
+void
+Ownet::dump(void) {
+    DEBUGLOG_REPORT_FUNCTION;
+    std::map<std::string, ownet_t>::iterator it;
+
+    for (it = _sensors.begin(); it != _sensors.end(); it++) {
+        dbglogfile << "Data for device: " << it->first << std::endl;
+        dbglogfile << "\tfamily: " << it->second.family << std::endl;
+        dbglogfile << "\ttype: " << it->second.type << std::endl;
+        dbglogfile << "\tid: " << it->second.id << std::endl;
+    }
+}
+#endif
 
 } // end of namespace
 

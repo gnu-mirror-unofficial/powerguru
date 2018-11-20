@@ -45,10 +45,20 @@ struct ownet {
 class Ownet {
 public:
     enum family_t {CONTROL = 05, THERMOMETER = 10, THERMOMETER2 = 28};
-    //typedef std::pair<std::string, ownet_t > sensors_t;
     std::map<std::string, ownet_t > _sensors;
-    //typedef std::map<std::string, ownet_t > sensors_t;
-    //std::map<std::string, ownet_t > _sensors;
+    bool _owserver = false;
+
+    bool isConnected(void) {
+        return _owserver;
+    }
+
+    bool hasSensors(void) {
+        if (_sensors.size() >0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     std::string getValue(const char *device, std::string file) {
         // DEBUGLOG_REPORT_FUNCTION;
@@ -65,18 +75,21 @@ public:
 
         return std::string(buf);
     }
-
+#if 1
     void dump(void) {
         DEBUGLOG_REPORT_FUNCTION;
+
         std::map<std::string, ownet_t>::iterator it;
         for (it = _sensors.begin(); it != _sensors.end(); it++) {
-            dbglogfile << "Data for device: " << it->first << std::endl;
-            dbglogfile << "\tfamily: " << it->second.family << std::endl;
-            dbglogfile << "\ttype: " << it->second.type << std::endl;
-            dbglogfile << "\tid: " << it->second.id << std::endl;
+            std::cout << "Data for device: " << it->first << std::endl;
+            std::cout << "\tfamily: " << it->second.family << std::endl;
+            std::cout << "\ttype: " << it->second.type << std::endl;
+            std::cout << "\tid: " << it->second.id << std::endl;
         }
     }
-
+#else
+    void dump(void);
+#endif
     Ownet(void) {
         DEBUGLOG_REPORT_FUNCTION;
         dbglogfile << "Trying to connect to the owserver" << std::endl;
@@ -84,8 +97,17 @@ public:
         size_t s  = 0;
 
         //OW_init("/dev/ttyS0");
-        OW_init("localhost:4304");
-
+        int count = 5;
+        while (count-- > 0) {
+            if (OW_init("localhost:4304") < 0) {
+                dbglogfile << "WARNING: Couldn't connect to owserver!" << std::endl;
+                //return;
+            } else {
+                dbglogfile << "Connected to owserver." << std::endl;
+                _owserver = true;
+                break;
+            }
+        }
         // 0=mixed  output,  1=syslog, 2=console.
         OW_set_error_print("1");
         // (0=default, 1=err_connect, 2=err_call, 3=err_data, 4=err_detail,
@@ -101,11 +123,13 @@ public:
         //}
 
         std::vector<std::string> results;
-        boost::split(results, buf, boost::is_any_of(","));
-        free(buf);
-        s = 0;
-        if( results.size() <= 0) {
-            return;
+        if (buf != 0) {
+            boost::split(results, buf, boost::is_any_of(","));
+            free(buf);
+            s = 0;
+            if( results.size() <= 0) {
+                return;
+            }
         }
 
         int i = 0;
@@ -126,16 +150,16 @@ public:
             }
             _sensors[*it] = data;
         }
+
     }
 
-    ~Ownet(void);
+//    ~Ownet(void);
 
-//    ~Ownet(void) {
-//        OW_finish();
-//    };
+    ~Ownet(void) {
+        OW_finish();
+    };
 
 };
-
 
 // end of namespace pdev
 }
