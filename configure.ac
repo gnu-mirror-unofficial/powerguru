@@ -75,24 +75,28 @@ else
 fi
 
 devices=""
-build_ownet="yes"
-build_outback="no"
-build_xantrex="no"
+BUILD_OWNET="yes"
+BUILD_OUTBACK="no"
+BUILD_XANTREX="no"
 AC_ARG_WITH(devices, [  --with-device          the device(s) to build (ownet, outback, xantrex)],
 [devices="`echo ${withval} | tr ',' ' '`"
 for i in ${devices}; do
     echo "FIXME: $i"
      case ${i} in
-      	 ownet)  build_ownet="yes" ;;
-      	 outback) build_outback="yes" ;;
-      	 xantrex) build_xantrex="yes" ;;
+      	 ownet)  BUILD_OWNET="yes" ;;
+      	 outback) BUILD_OUTBACK="yes" ;;
+      	 xantrex) BUILD_XANTREX="yes" ;;
      	 *) AC_MSG_ERROR([bad value ${i} for with-device option]) ;;
      esac
 done
 ])
-AM_CONDITIONAL(BUILD_OWNET, [ test x${build_ownet} = xyes ])
-AM_CONDITIONAL(BUILD_OUTBACK, [ test x${build_outback} = xyes ])
-AM_CONDITIONAL(BUILD_XANTREX, [ test x${build_xantrex} = xyes ])
+AC_SUBST(BUILD_OWNET)
+AC_SUBST(BUILD_OUTBACK)
+AC_SUBST(BUILD_XANTREX)
+
+AM_CONDITIONAL(BUILD_OWNET, [ test x${BUILD_OWNET} = xyes ])
+AM_CONDITIONAL(BUILD_OUTBACK, [ test x${BUILD_OUTBACK} = xyes ])
+AM_CONDITIONAL(BUILD_XANTREX, [ test x${BUILD_XANTREX} = xyes ])
 
 db="none"
 AC_ARG_WITH(db, [  --with-db          database to use, mariadb or the default of postgresql],
