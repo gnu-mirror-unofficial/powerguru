@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-AUTOMAKE_OPTIONS = 
+AUTOMAKE_OPTIONS = subdir-objects
 
 #DL_LIB = @DL_LIB@
 #LIBLTDL = @LIBLTDL@
@@ -33,21 +33,32 @@ TTYS=@TTYS@
 
 libpdev_la_CPPFLAGS = -I$(top_srcdir)/lib -I..
 
+libpdev_la_LIBDADD =
+
+libpdev_la_SOURCES =
+if BUILD_XANTREX
+libpdev_la_SOURCES += xantrex-trace.cc xantrex-trace.h xanbus.cc xanbus.h
+endif
+if BUILD_OUTBACK
+libpdev_la_SOURCES += outbackpower.cc outbackpower.h
+endif
+
 if BUILD_SNMP
 SNMP_FILES = snmp.cc snmp.h
 libpdev_la_CPPFLAGS += -I$(top_srcdir)/snmp
-libpdev_la_LIBDADD =  $(SNMP_LIBS) ../snmp/libpgsnmp.la
+libpdev_la_LIBDADD +=  $(SNMP_LIBS) ../snmp/libpgsnmp.la
 endif
 
-libpdev_la_SOURCES = \
-	xantrex-trace.cc xantrex-trace.h \
-	xanbus.cc xanbus.h \
-	outbackpower.cc outbackpower.h
+if BUILD_OWNET
+libpdev_la_SOURCES += ownet.cc ownet.h
+libpdev_la_LIBDADD += $(OWNET_LIBS)
+endif
 
 include_HEADERS = \
 	xantrex-trace.h \
 	outbackpower.h \
-	xanbus.h
+	xanbus.h \
+	ownet.h
 
 #libpdev_la_LDFLAGS = -module -avoid-version -no-undefined
 
