@@ -42,12 +42,20 @@
 #include "tcpip.h"
 #include "console.h"
 #include "msgs.h"
+#include "log.h"
+#include "ownet.h"
 
 using namespace std;
+//using namespace pdev;
+
 extern LogFile dbglogfile;
 static void usage (const char *);
 
 const int INBUFSIZE = 1024;
+namespace pdev {
+class Ownet;
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -60,7 +68,7 @@ main(int argc, char *argv[])
     string      passwd;
     char        *ptr;
     retcode_t   ret;
-    client = true;
+    client = false;
     daemon = false;
     hostname = "localhost";
 
@@ -137,73 +145,93 @@ main(int argc, char *argv[])
     con.Open();
 
     char *buffer;
-      
     buffer = (char *)new char[INBUFSIZE];
     memset(buffer, 0, INBUFSIZE);
-
-#if 0
-    cerr << "\rWelcome " << tcpip.remoteName()
-         << " at IP address: " << tcpip.remoteIP() << endl;
-    cerr << msg.status((meter_data_t *)0) << endl;
-#endif    
-
     Msgs msg;
-    msg.toggleDebug(true);
+
+    pdev::Ownet ownet;
+    if (ownet.isConnected()) {
+        if (ownet.hasSensors()) {
+            dbglogfile << "and has sensors attached" << std::endl;
+            ownet.dump();
+        } else {
+            dbglogfile << "and has no sensors attached" << std::endl;
+        }
+    }
+
+    if (client == true || daemon == true) {
+#if 0
+        cerr << "\rWelcome " << tcpip.remoteName()
+             << " at IP address: " << tcpip.remoteIP() << endl;
+        cerr << msg.status((meter_data_t *)0) << endl;
+#endif
+        msg.toggleDebug(true);
+        std::cout << "Client or daemon not specified. exiting..." << std::endl;
+        exit(0);
+    }
+    //con.Puts("FIXME1\n");
 
     // Make a client connection
     if (client == true) {
-        msg.init(hostname);
+        ret = msg.init(hostname);
+        if (ret == ERROR) {
+            dbglogfile << "BARF" << std::endl;
+        }
         msg.checkConsole();
     }
 
     // Start as a daemon
     if (daemon == true) {
-        msg.init(true);
+        ret = msg.init(true);
+        if (ret == ERROR) {
+            dbglogfile << "BARF" << std::endl;
+        }
     }
     //msg.methodsDump();          // FIXME: debugging crap
     
     //msg.print_msg(msg.status((meter_data_t *)0));
 
-    if (client) {
-        msg.writeNet(msg.metersRequestCreate(Msgs::BATTERY_VOLTS));
-    }
+//    if (client) {
+//        msg.writeNet(msg.metersRequestCreate(Msgs::BATTERY_VOLTS));
+//    }
 
     // msg.cacheDump();
     
     while ((ch = con.Getc()) != 'q') {
-        if (ch > 0){                // If we have something, process it
+        if (ch > 0) {                // If we have something, process it
             //con.Putc (ch);          // echo inputted character to screen
         
             switch (ch) {
                 // Toggle the DTR state, which is as close as we get to
                 // flow control.
-              case 's':
-                  if (client) {
-#if 0
-                      //sleep(1);
-                      msg.writeNet(msg.metersRequestCreate(Msgs::AC1_VOLTS_IN));
-                      //sleep(1);
-                      msg.writeNet(msg.metersRequestCreate(Msgs::CHARGE_AMPS));
-                      //sleep(1);
-                      msg.writeNet(msg.metersRequestCreate(Msgs::AC_LOAD_AMPS));
-                      //sleep(1);
-                      msg.writeNet(msg.metersRequestCreate(Msgs::PV_AMPS_IN));
-                      //sleep(1);
-                      msg.writeNet(msg.metersRequestCreate(Msgs::SELL_AMPS));
-                      //            msg.writeNet(msg.requestCreate(""));
-#else            
-                      msg.writeNet(msg.requestCreate(Msgs::REVISION));
-                      msg.writeNet(msg.requestCreate(Msgs::SYSVERSION));
-                      msg.writeNet(msg.requestCreate(Msgs::OPMODE));
-                      msg.writeNet(msg.requestCreate(Msgs::WARNINGMODE));
-                      msg.writeNet(msg.requestCreate(Msgs::ERRORMODE));
-#endif
-                  }
-                  break;
+//               case 's':
+//                   if (client) {
+// #if 0
+//                       //sleep(1);
+//                       msg.writeNet(msg.metersRequestCreate(Msgs::AC1_VOLTS_IN));
+//                       //sleep(1);
+//                       msg.writeNet(msg.metersRequestCreate(Msgs::CHARGE_AMPS));
+//                       //sleep(1);
+//                       msg.writeNet(msg.metersRequestCreate(Msgs::AC_LOAD_AMPS));
+//                       //sleep(1);
+//                       msg.writeNet(msg.metersRequestCreate(Msgs::PV_AMPS_IN));
+//                       //sleep(1);
+//                       msg.writeNet(msg.metersRequestCreate(Msgs::SELL_AMPS));
+//                       //            msg.writeNet(msg.requestCreate(""));
+// #else            
+//                       msg.writeNet(msg.requestCreate(Msgs::REVISION));
+//                       msg.writeNet(msg.requestCreate(Msgs::SYSVERSION));
+//                       msg.writeNet(msg.requestCreate(Msgs::OPMODE));
+//                       msg.writeNet(msg.requestCreate(Msgs::WARNINGMODE));
+//                       msg.writeNet(msg.requestCreate(Msgs::ERRORMODE));
+// #endif
+//                   }
+//                   break;
               case 'Q':
               case 'q':
                   con.Puts("Qutting PowerGuru due to user input!\n");
                   msg.writeNet("quit");
+                  con.Reset();
                   exit(0);
                   break;
               case '?':
@@ -221,38 +249,39 @@ main(int argc, char *argv[])
         unsigned int i;
         memset(buffer, 0, INBUFSIZE);
 #if 1
-        vector<const xmlChar *> messages;
-        //const xmlChar *messages[200];
-        ret = msg.anydata(messages);
-
-        if (ret == ERROR) {
-            dbglogfile << "ERROR: Got error from socket " << endl;
-            // Start as a daemon
-            if (daemon == true) {
-                msg.closeNet();
-                // wait for the next connection
-                if (msg.newNetConnection(true)) {
-                    dbglogfile << "New connection started for remote client." << endl;
-                }
-            } else {
-                if (errno != EAGAIN) {
-                    dbglogfile << "ERROR: " << errno << ":\t"<< strerror(errno) << endl;
+        if (client == true || daemon == true) {
+            vector<const xmlChar *> messages;
+            //const xmlChar *messages[200];
+            ret = msg.anydata(messages);
+            
+            if (ret == ERROR) {
+                dbglogfile << "ERROR: Got error from socket " << endl;
+                // Start as a daemon
+                if (daemon == true) {
                     msg.closeNet();
-                    exit (-1);
+                    // wait for the next connection
+                    if (msg.newNetConnection(true)) {
+                        dbglogfile << "New connection started for remote client." << endl;
+                    }
+                } else {
+                    if (errno != EAGAIN) {
+                        dbglogfile << "ERROR: " << errno << ":\t"<< strerror(errno) << endl;
+                        msg.closeNet();
+                        exit (-1);
+                    }
                 }
             }
-        }
-        for (i=0; i < messages.size(); i++) {
-            cerr << "Got message " << messages[i] << endl;
-            string str = (const char *)messages[i];
-            delete messages[i];
-            if (xml.parseXML(str) == ERROR) {
-                continue;
+            for (i=0; i < messages.size(); i++) {
+                cerr << "Got message " << messages[i] << endl;
+                string str = (const char *)messages[i];
+                delete messages[i];
+                if (xml.parseXML(str) == ERROR) {
+                    continue;
+                }
             }
+            messages.clear();
+            msg.cacheDump();
         }
-        messages.clear();
-        msg.cacheDump();
-
 #else
         ptr = buffer;
         int bytes = msg.readNet(buffer, INBUFSIZE, 0);      
