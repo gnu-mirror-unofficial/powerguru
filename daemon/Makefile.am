@@ -21,7 +21,7 @@
 AUTOMAKE_OPTIONS = # dejagnu
 
 pgd_CPPFLAGS = -Wall -I$(top_srcdir)/lib -I$(top_srcdir)/devices
-pgd_LDADD = ../devices/libpdev.la ../lib/libpguru.la 
+pgd_LDADD = ../devices/libpdev.la ../lib/libpguru.la -lpthread
 
 if BUILD_LIBXML
 pgd_CPPFLAGS += $(LIBXML_CPPFLAGS)
@@ -32,9 +32,13 @@ if BUILD_SNMP
 pgd_LDADD += ../snmp/libpgsnmp.la $(SNMP_LIBS)
 endif
 
+if BUILD_OWNET
+pgd_LDADD += $(OWNET_LIBS)
+endif
+
 bin_PROGRAMS = pgd
 
-pgd_SOURCES = main.cc
+pgd_SOURCES = main.cc threads.cc
 pgd_LDFLAGS = -export-dynamic -ldl
 
 # MUDFLAP_OPT = -fmudflap
