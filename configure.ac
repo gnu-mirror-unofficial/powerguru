@@ -95,8 +95,17 @@ AC_SUBST(BUILD_OUTBACK)
 AC_SUBST(BUILD_XANTREX)
 
 AM_CONDITIONAL(BUILD_OWNET, [ test x${BUILD_OWNET} = xyes ])
+if test x${BUILD_OWNET} = xyes; then
+   AC_DEFINE([BUILD_OWNET], [1], [Buikd support for owfs])
+fi
 AM_CONDITIONAL(BUILD_OUTBACK, [ test x${BUILD_OUTBACK} = xyes ])
+if test x${BUILD_OUTBACK} = xyes; then
+   AC_DEFINE([BUILD_OUTBACK], [1], [Build support for the Outback protocol])
+fi
 AM_CONDITIONAL(BUILD_XANTREX, [ test x${BUILD_XANTREX} = xyes ])
+if test x${BUILD_XANTREX} = xyes; then
+   AC_DEFINE([BUILD_XANTREX], [1], [Build support for the Xantrex protocol])
+fi
 
 db="none"
 AC_ARG_WITH(db, [  --with-db          database to use, mariadb or the default of postgresql],
