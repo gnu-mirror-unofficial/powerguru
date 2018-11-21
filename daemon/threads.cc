@@ -48,6 +48,7 @@ extern LogFile dbglogfile;
 
 using namespace std::chrono_literals;
 
+#ifdef BUILD_OWNET
 void
 ownet_handler(pdev::Ownet &ownet)
 {
@@ -71,7 +72,9 @@ ownet_handler(pdev::Ownet &ownet)
         std::this_thread::sleep_for(std::chrono::seconds(2));
     }
 }
+#endif
 
+#ifdef BUILD_OUTBACK
 void
 outback_handler(pdev::Ownet &ownet)
 {
@@ -79,7 +82,9 @@ outback_handler(pdev::Ownet &ownet)
 
     dbglogfile << "FIXME: unimplementd"<< std::endl;
 }
+#endif
 
+#ifdef BUILD_XANTREX
 void
 xantrex_handler(pdev::Ownet &ownet)
 {
@@ -87,6 +92,7 @@ xantrex_handler(pdev::Ownet &ownet)
 
     dbglogfile << "FIXME: unimplemented"<< std::endl;
 }
+#endif
 
 // local Variables:
 // mode: C++
