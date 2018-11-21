@@ -28,6 +28,9 @@
 #include <sstream>
 #include <signal.h>
 #include <errno.h>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
@@ -39,8 +42,15 @@ extern char *optarg;
 // local header files
 #include "log.h"
 #include "err.h"
+//#ifdef BUILD_XANTREX
 #include "xantrex-trace.h"
+//#endif
+#ifdef BUILD_OUTBACK
 #include "outbackpower.h"
+#endif
+//#ifdef BUILD_OWNET
+#include "ownet.h"
+//#endif
 #include "console.h"
 #include "menuitem.h"
 #include "database.h"
@@ -52,7 +62,6 @@ extern char *optarg;
 
 using namespace std;
 using namespace rcinit;
-using namespace pdev;
 
 static void usage (const char *);
 extern LogFile dbglogfile;
@@ -63,6 +72,10 @@ alarm_handler2 (int sig);
 
 int curses = 0;
 
+extern void ownet_handler(pdev::Ownet &);
+extern void outback_handler(pdev::Ownet &);
+extern void xantrex_handler(pdev::Ownet &);
+
 int
 main(int argc, char *argv[])
 {
@@ -72,21 +85,23 @@ main(int argc, char *argv[])
     const char *filespec;
     MenuItem ti;
     string hostname;
-    bool console;
-    bool setitem;
-    bool getitem;
-    bool echo;
-    bool monitor;
     bool poll;
-    bool outbackmode;
-    bool xantrexmode;
+    bool console;
     bool use_db;
     bool snmp;
-    bool background;
     bool daemon;
     bool client;
+    bool echo;
+#if 0
+    bool setitem;
+    bool getitem;
+    bool monitor;
+    bool outbackmode;
+    bool xantrexmode;
+    bool background;
+#endif
     retcode_t   ret;
-
+    std::condition_variable alldone;
 #if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
     Database pdb;
 #endif
@@ -112,20 +127,21 @@ main(int argc, char *argv[])
     // Set the option flags to default values. We do it this way to
     // shut up GCC complaining they're not used.
     console = false;
-    setitem = false;
-    getitem = false;
-    echo = false;
-    monitor = false;
     poll = false;
-    outbackmode = false;
-    xantrexmode = false;
-    use_db = true;
-    snmp = false;
-    background = false;
     daemon = true;
     client = false;
+    echo = false;
+    use_db = true;
+    snmp = false;
+#if 0
+    setitem = false;
+    getitem = false;
+    monitor = false;
+    outbackmode = false;
+    xantrexmode = false;
+    background = false;
     hostname = "localhost";
-    
+#endif
     // Load the database config variable so they can be overridden by
     // the command line arguments.
     RCinitFile config;
@@ -155,7 +171,7 @@ main(int argc, char *argv[])
         switch (c) {
           case 'p':
               poll = true;
-              xantrexmode = true;     // FIXME: force xantrex mode for now
+              //xantrexmode = true;     // FIXME: force xantrex mode for now
               break;
 
 #if 0
@@ -185,15 +201,15 @@ main(int argc, char *argv[])
 
           case 'x':
               //console = true;
-              xantrexmode = true;
+              //xantrexmode = true;
               break;
 
           case 'o':
-              outbackmode = true;
+              //outbackmode = true;
               break;
 
           case 'r':
-              background = true;
+              //background = true;
               break;
 
 #ifdef USE_SNMP
@@ -266,96 +282,47 @@ main(int argc, char *argv[])
     }
 #endif
 
-    // Talk to an Outback Power Systems device
-    if (outbackmode) {
-        Console con;
-        // Open a console for user input
-        con.Open();
+    Console con;
+    // Open a console for user input
+    con.Open();
+
+    dbglogfile << "PowerGuru - 1 Wire Mode" << std::endl;
+    pdev::Ownet ownet;
+//#ifdef BUILD_OWNET
+    std::thread first (ownet_handler, std::ref(ownet));     // spawn new thread that calls foo()
+//#endif
+#ifdef BUILD_OUTBACK
+    std::thread second (outback_handler, std::ref(ownet));  // spawn new thread that calls bar(0)
+#endif
+#ifdef BUILD_XANTREX
+    std::thread third (xantrex_handler, std::ref(ownet));  // spawn new thread that calls bar(0)
+#endif
     
-        con.Puts("PowerGuru - Outback Mode\r\n");
-        //outback outdev("/dev/pts/7");
-        outback outdev(filespec);
-        if (poll) {
-            // outdev.poll();
-#if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
-        } else {
-            if (outdev.main(con, pdb) == ERROR) {
-                dbglogfile << "ERROR: Main Loop exited with an error!" << endl;
-            }
-#endif
-        }
-        con.Reset();
-        con.Close();
-        exit(0);
-    }
-
-    if (xantrexmode) {
-        XantrexUI ui;
-        Console con;
-        // Open a console for user input
-        con.Open();
-        if (poll) {
-            // Open the serial port
-            try {
-                ui.Open(filespec);
-            }
-            catch (ErrCond catch_err) {
-                cerr << catch_err << endl;
-                exit(1);
-            }
-            //
-            for (i=0; i<1000; i++) {        
-                //display = ui.MenuHeadingPlus();
 #if 0
-                ch = con.Getc();
-                switch (ch) {
-                    // Toggle the DTR state, which is as close as we get to
-                    // flow control.
-                  case 'Q':
-                  case 'q':
-                      return SUCCESS;
-                      break;
-                  case '?':
-                      con.Puts("PowerGuru - Outback Mode\r\n");
-                      con.Puts("\t? - help\r\n");
-                      con.Puts("\tq - Quit\r\n");
-                      con.Puts("\tQ - Quit\r\n");
-                      sleep(2);
-                  default:
-                      break;
-                };
-#endif
-
-                vector<meter_data_t *> data = ui.PollMeters(1);
-//           ui.MenuHeadingPlus();
-//           ui.MenuHeadingMinus();          
-#if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
-                pdb.queryInsert(data);
-#if 0
-                for (i=0; i<data->size(); i++) {
-                    //cout << "Inverter/Charger amps: " << data[i]->inverter_amps << endl;
-                    cout << "Input amps AC: " << data[i]->input_amps << endl;
-                    cout << "Load  amps AC: " << data[i]->load_amps << endl;
-                    cout << "Battery actual volts DC: " << data[i]->actual_volts << endl;
-                    cout << "Battery TempComp volts DC: " << data[i]->tempcomp_volts << endl;
-                    cout << "Inverter volts AC: " << data[i]->inverter_volts << endl;
-                    cout << "Grid (AC1) volts AC: " << data[i]->ac1 << endl;
-                    cout << "Generator (AC2) volts AC: " << data[i]->ac2 << endl;
-                    cout << "Read Frequency Hertz: " << data[i]->hertz << endl;
-                    //pdb.queryInsert(data[i]);
-                    //delete data[i];
-                }
-#endif
-#endif
-                //sleep(1);
-                cout << endl;
+    //if (poll) {
+    int ch;
+    while ((ch = con.Getc()) != 'q') {
+        if (ch > 0) {                // If we have something, process it
+            con.Putc (ch);          // echo inputted character to screen
+            switch (ch) {
+              case '?':
+                  con.Puts("Powerguru daemon\r\n");
+                  con.Puts("\t? - help\r\n");
+                  con.Puts("\r\n");
+                  break;
+              case 'q':
+                  exit(0);
+              case 'r':
+                  std::cout << "XXXXXX: " << ownet.getValue("/10.67C6697351FF", "/temperature") << std::endl;
+                  break;
+              case 'd':
+                  ownet.dump();
+                  break;
             }
         }
-        con.Reset();
-        con.Close();
-        exit(0);
     }
 
+#endif
 #if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
     if (use_db) {
         if (!pdb.closeDB()) {
@@ -364,7 +331,6 @@ main(int argc, char *argv[])
         }
     }
 #endif
-    
     // Network daemon/client mode. Normally we're a network daemon that
     // responses to requests by a remote client. Many house networks
     // are behind a firewall, so the daemon can also connect to a
@@ -432,6 +398,19 @@ main(int argc, char *argv[])
             messages.clear();
         }
     }
+    con.Reset();
+    con.Close();
+
+    // synchronize threads:
+    first.join();                // pauses until first finishes
+#ifdef BUILD_OUTBACK
+    second.join();               // pauses until second finishes
+#endif
+#ifdef BUILD_XANTREX
+    third.join();               // pauses until third finishes
+#end
+
+    exit(0);
 }
 
 
