@@ -24,6 +24,7 @@
 # include "config.h"
 #endif
 
+#include <mutex>
 #include <string>
 #include <vector>
 #include <map>
@@ -42,12 +43,22 @@ struct ownet {
     std::string device;
 } typedef ownet_t;
 
-class Ownet {
-public:
-    enum family_t {CONTROL = 05, THERMOMETER = 10, THERMOMETER2 = 28};
-    std::map<std::string, ownet_t > _sensors;
-    bool _owserver = false;
+struct temperature {
+    //ownet_t ownet;
+    float temp;
+    float lowtemp;
+    float hightemp;
+} typedef temperature_t;
 
+class Ownet {
+private:
+    enum family_t {CONTROL = 05, THERMOMETER = 10, THERMOMETER2 = 28};
+    std::map<std::string, ownet_t> _sensors;
+    bool _owserver = false;
+    std::map<std::string, temperature_t *> _temperatures;
+    std::mutex _mutex;
+
+public:
     bool isConnected(void) {
         return _owserver;
     }
@@ -60,31 +71,66 @@ public:
         }
     }
 
-    std::string getValue(const char *device, std::string file) {
-        // DEBUGLOG_REPORT_FUNCTION;
+    std::string getValue(const std::string &device, std::string file) {
+//        DEBUGLOG_REPORT_FUNCTION;
         char * buf;
         size_t s  = 0;
 
         std::string data = device + file;
-        //dbglogfile << "Looking for: " << data;
+        //std::cout << "Looking for: " << data;
         int ret = OW_get(data.c_str(), &buf, &s);
-        //dbglogfile << ", Got: " <<  buf << std::endl;
         if (ret <= 0) {
             return std::string();
+            //} else {
+            //std::cout << ", Got(" << s << "): " <<  buf << std::endl;
         }
 
-        return std::string(buf);
+        std::string bar(buf);
+        free(buf);
+
+        return bar;
     }
+
+    std::map<std::string, ownet_t> &getSensors(void) {
+        return _sensors;
+    }
+
+    temperature_t *getTemperature(const std::string &device) {
+        DEBUGLOG_REPORT_FUNCTION;
+
+        std::string family = getValue(device, "family");
+
+        temperature_t *temp = 0;
+        if (family == "10") {
+            dbglogfile << device << " is a thermometer" << std::endl;
+            temp = new temperature_t[1];
+            temp->temp = std::stof(getValue(device, "temperature"));
+            temp->lowtemp =std::stof(getValue(device, "templow"));
+            temp->hightemp = std::stof(getValue(device, "temphigh"));
+            std::lock_guard<std::mutex> guard(_mutex);
+            _temperatures[device] = temp;
+        } else {
+            dbglogfile << device << " is not a thermometer" << std::endl;
+        }
+        return temp;
+    }
+
 #if 1
     void dump(void) {
         DEBUGLOG_REPORT_FUNCTION;
 
-        std::map<std::string, ownet_t>::iterator it;
-        for (it = _sensors.begin(); it != _sensors.end(); it++) {
-            std::cout << "Data for device: " << it->first << std::endl;
-            std::cout << "\tfamily: " << it->second.family << std::endl;
-            std::cout << "\ttype: " << it->second.type << std::endl;
-            std::cout << "\tid: " << it->second.id << std::endl;
+        std::map<std::string, ownet_t>::iterator sit;
+        for (sit = _sensors.begin(); sit != _sensors.end(); sit++) {
+            std::cout << "Data for device: " << sit->first << std::endl;
+            std::cout << "\tfamily: " << sit->second.family << std::endl;
+            std::cout << "\ttype: " << sit->second.type << std::endl;
+            std::cout << "\tid: " << sit->second.id << std::endl;
+        }
+        std::map<std::string, temperature_t *>::iterator tit;
+        for (tit = _temperatures.begin(); tit != _temperatures.end(); tit++) {
+            std::cout << "Current temperature: " << tit->second->temp << std::endl;
+            std::cout << "Low temperture: " << tit->second->lowtemp << std::endl;
+            std::cout << "High Temperature: " << tit->second->hightemp << std::endl;
         }
     }
 #else
@@ -92,6 +138,7 @@ public:
 #endif
     Ownet(void) {
         DEBUGLOG_REPORT_FUNCTION;
+
         dbglogfile << "Trying to connect to the owserver" << std::endl;
         char *buf = 0;
         size_t s  = 0;
@@ -145,6 +192,12 @@ public:
             std::string dev = *it + "temperature";
             if (OW_present(dev.c_str()) == 0) {
                 dbglogfile << "Temperature sensor found: " << *it << std::endl;
+                temperature_t *temp= new temperature_t[1];
+
+                temp->temp = std::stof(getValue(*it, "temperature"));
+                temp->lowtemp = std::stof(getValue(*it, "templow"));
+                temp->hightemp = std::stof(getValue(*it, "temphigh"));
+                _temperatures[*it] = temp;
             } else {
                 dbglogfile << "Temperature sensor not found!" << std::endl;
             }
