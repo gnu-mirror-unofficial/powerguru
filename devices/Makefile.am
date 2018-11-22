@@ -54,6 +54,11 @@ libpdev_la_SOURCES += ownet.cc ownet.h
 libpdev_la_LIBDADD += $(OWNET_LIBS)
 endif
 
+if BUILD_POSTGRESQL
+libpdev_la_CPPFLAGS += $(PQ_CPPFLAGS)
+libpdev_la_LIBDADD +=  $(PQ_LIBS)
+endif
+
 include_HEADERS = \
 	xantrex-trace.h \
 	outbackpower.h \
