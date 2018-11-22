@@ -131,6 +131,11 @@ AC_PATH_PROG(DOXYGEN, doxygen)
 AM_CONDITIONAL(ENABLE_DOXYGEN, [ test x"$DOXYGEN" != x ])
 
 sysroot="${sysroot:-`${CXX} -print-sysroot`}"
+dnl We don't need a sysroot for native builds
+if test x"${sysroot}" = x"/"; then
+   sysroot=""
+fi
+
 AC_ARG_WITH(sysroot,
   AC_HELP_STRING([--with-sysroot], [system root directory for cross compiling]),
   sysroot=${withval};
@@ -222,9 +227,14 @@ AM_CONDITIONAL(BUILD_LIBXML, [ test x${has_libxml} = xtrue ])
 dnl GNU_PKG_FIND(libxml2, [libxml/xmlstring.h], [libxml2], xmlNewReference)
 
 dnl libpq. FIXME: add libpqcxx
-db=mariadb
+db=none
 LDFLAGS="${save_LDFLAGS} -lpq"
-CPPFLAGS="-I${sysroot}/usr/include/postgresql/9.6/server/libpq"
+if test ${sysroot}/usr/include/postgresql/9.6/server/libpq; then
+   CPPFLAGS="-I${sysroot}/usr/include/postgresql/9.6/server/libpq"
+fi
+if test ${sysroot}/usr/include/postgresql; then
+   CPPFLAGS="-I${sysroot}/usr/include/postgresql"
+fi
 AC_MSG_CHECKING([For postgresql development files])
 AC_TRY_COMPILE([#include <libpq-fe.h>], [
   PQpass(0);
@@ -235,11 +245,11 @@ AC_TRY_COMPILE([#include <libpq-fe.h>], [
 AC_MSG_RESULT([${has_libpq}])
 if test x"${has_libpq}" = x"true"; then
   AC_DEFINE([HAVE_LIBPQ], [1], [Has postgresql development files])
-  LIBPQ_LIBS="-lpq"
-  LIBPQ_CPPFLAGS="-I${sysroot}/usr/include/postgresql/9.6/server/libpq"
+  PQ_LIBS="-lpq"
+  PQ_CPPFLAGS="${CPPFLAGS}"
   db=postgresql
-  AC_SUBST(LIBPQ_CPPFLAGS)
-  AC_SUBST(LIBPQ_LIBS)
+  AC_SUBST(PQ_CPPFLAGS)
+  AC_SUBST(PQ_LIBS)
 fi
 AM_CONDITIONAL(BUILD_POSTGRESQL, [ test x${has_libpq} = xtrue ])
 
