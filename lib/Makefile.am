@@ -31,31 +31,8 @@ TTYS=@TTYS@
 # These headers get installed
 # include_HEADERS = log.h err.h proc.h serial.h xantrex.h outback.h
 
-libpguru_la_CPPFLAGS =	-I$(top_srcdir)
+libpguru_la_CPPFLAGS =	-I$(top_srcdir)/devices
 libpguru_la_LIBDADD =
-
-if BUILD_LIBXML
-XML_FILES = xml.cc xml.h msgs.cc msgs.h
-libpguru_la_CPPFLAGS += $(LIBXML_CPPFLAGS)
-libpguru_la_LIBDADD += $(LIBXML_LIBS)
-endif
-
-if BUILD_SNMP
-SNMP_FILES = snmp.cc snmp.h
-libpguru_la_CPPFLAGS += -I$(top_srcdir)/snmp
-libpguru_la_LIBDADD += $(SNMP_LIBS) ../snmp/libpgsnmp.la
-endif
-
-if BUILD_MARIADB
-MARIADB_FILES = mariadb.cc
-libpguru_la_LIBDADD += $(MARIADB_LIBS)
-endif
-
-if BUILD_POSTGRESQL
-LIBPQ_FILES = postgresql.cc
-libpguru_la_CPPFLAGS += ${LIBPQ_CPPFLAGS}
-libpguru_la_LIBDADD +=  $(LIBPQ_LIBS)
-endif
 
 libpguru_la_SOURCES = \
 	proc.cc proc.h \
@@ -66,13 +43,31 @@ libpguru_la_SOURCES = \
 	console.cc console.h \
 	menuitem.cc menuitem.h \
 	database.h \
-	$(SNMP_FILES) \
-	$(LIBPQ_FILES) \
-	$(MARIADB_FILES) \
-	$(XML_FILES) \
 	tcputil.cc tcputil.h \
 	tcpip.cc tcpip.h
-#	sem.cc sem.h
+
+if BUILD_LIBXML
+libpguru_la_SOURCES += xml.cc xml.h msgs.cc msgs.h
+libpguru_la_CPPFLAGS += $(LIBXML_CPPFLAGS)
+libpguru_la_LIBDADD += $(LIBXML_LIBS)
+endif
+
+if BUILD_SNMP
+libpguru_la_SOURCES += snmp.cc snmp.h
+libpguru_la_CPPFLAGS += -I$(top_srcdir)/snmp
+libpguru_la_LIBDADD += $(SNMP_LIBS) ../snmp/libpgsnmp.la
+endif
+
+if BUILD_MARIADB
+libpguru_la_SOURCES += mariadb.cc
+libpguru_la_LIBDADD += $(MARIADB_LIBS)
+endif
+
+if BUILD_POSTGRESQL
+libpguru_la_SOURCES += postgresql.cc
+libpguru_la_CPPFLAGS += $(PQ_CPPFLAGS)
+libpguru_la_LIBDADD +=  $(PQ_LIBS)
+endif
 
 include_HEADERS = \
 	proc.h \
