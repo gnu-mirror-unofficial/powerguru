@@ -27,8 +27,8 @@ pguru_SOURCES = cmd.cc
 pguru_LDADD = ../lib/libpguru.la -ldl
 
 if BUILD_LIBXML
-pguru_CPPFLAGS += ${LIBXML_CPPFLAGS}
-pguru_LDADD += ${LIBXML_LIBS}
+pguru_CPPFLAGS += $(LIBXML_CPPFLAGS)
+pguru_LDADD += $(LIBXML_LIBS)
 endif
 
 if BUILD_SNMP
@@ -38,6 +38,12 @@ endif
 if BUILD_OWNET
 pguru_LDADD += $(OWNET_LIBS)
 endif
+
+if BUILD_POSTGRESQL
+pguru_CPPFLAGS += $(PQ_CPPFLAGS)
+pguru_LDADD +=  $(PQ_LIBS)
+endif
+
 
 # pguru_DEPENDENCIES = ../lib/libpguru.la
 
