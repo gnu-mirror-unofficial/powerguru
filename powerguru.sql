@@ -56,8 +56,9 @@ CREATE TABLE meters (
 DROP TABLE IF EXISTS onewire;
 CREATE TABLE onewire (
   family integer NOT NULL default '0',
-  id integer NOT NULL default '0',
+  id char(16) NOT NULL default '0',
   type char(12) NOT NULL default '0',
+  "timestamp" timestamp without time zone,
   temphigh float NOT NULL default '0',
   templow float NOT NULL default '0',
   temperature float NOT NULL default '0'
