@@ -21,12 +21,26 @@ AUTOMAKE_OPTIONS =
 PGURU = ../lib/libpguru.la
 noinst_PROGRAMS = osim # xsim
 
-AM_CPPFLAGS = -I$(top_srcdir)/lib  $(LIBXML_CPPFLAGS)
-
+osim_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_srcdir)/devices
 osim_SOURCES = fakeuart.cc fakeuart.h osim.cc
 osim_LDADD =  $(PGURU)  $(SNMP_LIBS) -lpthread
+
+if BUILD_LIBXML
+osim_CPPFLAGS += $(LIBXML_CPPFLAGS)
+osim_LDADD += $(LIBXML_LIBS)
+endif
+
 if BUILD_SNMP
-osim_LDADD += ../snmp/libpgsnmp.la
+osim_LDADD += ../snmp/libpgsnmp.la $(SNMP_LIBS)
+endif
+
+if BUILD_OWNET
+osim_LDADD += $(OWNET_LIBS)
+endif
+
+if BUILD_POSTGRESQL
+osim_CPPFLAGS += $(PQ_CPPFLAGS)
+osim_LDADD += $(PQ_LIBS)
 endif
 
 osim_DEPENDENCIES = $(PGURU)
