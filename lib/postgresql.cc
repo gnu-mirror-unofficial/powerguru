@@ -25,7 +25,6 @@
 #include <iostream>
 #include <iomanip> 
 #include <vector>
-#include <sys/time.h>
 #include <cstdio>
 
 #ifdef __STDC_HOSTED__
@@ -40,8 +39,9 @@ using namespace std;
 #include "log.h"
 
 #ifdef HAVE_LIBPQ
+# include <libpq-fe.h>
 #else
-#warning "You need to install Postgresql for data base support"
+# warning "You need to install Postgresql for data base support"
 #endif
 
 const int LINELEN = 80;
@@ -95,13 +95,21 @@ Database::dbHostSet(std::string host)
 bool
 Database::openDB (void)
 {
-    // DEBUGLOG_REPORT_FUNCTION;
+    DEBUGLOG_REPORT_FUNCTION;
 
     unsigned long flag = 0;
 
     dbglogfile <<"Connecting to Postgresql database "  << _dbname.c_str()
                << " on " << _dbhost.c_str()
                << " as user " << _dbuser.c_str() << endl;
+
+    _connection = PQconnectdb("dbname = powerguru");
+     /* Check to see that the backend connection was successfully made */
+    if (PQstatus(_connection) != CONNECTION_OK)
+    {
+        dbglogfile << "ERROR: Connection to database failed" << std::endl;
+        //exit_nicely(_connection);
+    }
 
     return true;
 }
@@ -110,20 +118,24 @@ Database::openDB (void)
 bool
 Database::closeDB (void)
 {
+    DEBUGLOG_REPORT_FUNCTION;
+    //exit_nicely(_connection);
+    
     return true;
 }
 
 bool
-Database::queryInsert(const char *query)
+Database::queryInsert(const std::string &query)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
     int retries, result;
-  
-    retries = 2;
-  
-    dbglogfile << "Query is: " << query << endl;
-  
+    std::string str = "INSERT INTO onewire VALUES(";
+    str += query + ");";
+    
+    PQexec(_connection, str.c_str());
+    dbglogfile << "Query is: " << str << endl;
+    
     dbglogfile << "Lost connection to the database server, shutting down..." << endl;
     return false;
 }
@@ -145,6 +157,7 @@ Database::queryResults(const char *query)
     return (void *)0;
 }
 
+#if 0
 bool
 Database::queryInsert(vector<meter_data_t *> data)
 {
@@ -179,7 +192,9 @@ Database::queryInsert(vector<meter_data_t *> data)
   
     return true;  
 }
-  
+#endif
+
+#if 0
 bool
 Database::queryInsert(meter_data_t *data)
 {
@@ -206,67 +221,6 @@ Database::queryInsert(meter_data_t *data)
     ttm->tm_year+= 1900;          // years since 1900
     ttm->tm_mon+=1;               // months since January
 
-#if 0  
-    // FIXME: For now source is the facility
-    // Build the query string to insert the data
-    sprintf(query, "INSERT INTO meters () VALUES ( \
-        '%d',                   // Unit address (int)\
-        '%s',                   // Device Type enum)\
-        '%d-%d-%d %d:%d:%d',    // timestamp\
-        '%d',                   // Charger Amps (int)\
-        '%d',                   // AC Load Amps (int)\
-        '%f',                   // Battery Volts (float)\
-        '%f',                   // AC Volts Out (float)\
-        '%f',                   // AC1 Volts In (float)\
-        '%f',                   // AC2 Volts In (float)\
-        '%d',                   // PV Amps In (int)\
-        '%f',                   // PV Volts In (float)\
-        '%f',                   // Buy Amps (int)\
-        '%f',                   // Sell Amps (int)\
-        '%f',                   // Dail Kwh (float)\
-        '%d',                   // Frequency in Hertz (int)\
-        '%f'                    // Battery Temperature Compenation (float)\
-        )",
-            //  sprintf(query, "INSERT INTO meters () VALUES ('%d','%s','%0.4d-%0.2d-%d %0.2d:%0.2d:%0.2d','%d','%d','%f','%f','%f','%f','%d','%f','%f','%f','%d','%f','%f')",
-            data->unit,
-            type,
-            ttm->tm_year,ttm->tm_mon,ttm->tm_mday,ttm->tm_hour,ttm->tm_min,ttm->tm_sec,
-            data->charge_amps,
-            data->ac_load_amps,
-            data->battery_volts,
-            data->ac_volts_out,
-            data->ac1_volts_in,
-            data->ac2_volts_in,
-            data->pv_amps_in,
-            data->pv_volts_in,
-            data->buy_amps,
-            data->sell_amps,
-            data->daily_kwh,
-            data->hertz,
-            data->tempcomp_volts
-        );
-#else
-    query << "INSERT INTO meters () VALUES (";
-    query << data->unit << ",";
-    query << "\'" << type << "\',";
-    query << "\'" << ttm->tm_year << "-" << ttm->tm_mon << "-" << ttm->tm_mday << " ";
-    query << ttm->tm_hour << ":" << ttm->tm_min << ":" << ttm->tm_sec << "\',";
-    query << data->charge_amps << ",";
-    query << data->ac_load_amps << ",";
-    query << data->battery_volts << ",";
-    query << data->ac_volts_out << ",";
-    query << data->ac1_volts_in << ",";
-    query << data->ac2_volts_in << ",";
-    query << data->pv_amps_in << ",";
-    query << data->pv_volts_in << ",";
-    query << data->buy_amps << ",";
-    query << data->sell_amps << ",";
-    query << data->daily_kwh << ",";
-    query << data->hertz << ",";
-    query << data->tempcomp_volts << ")";
-    query << ends;
-#endif
-
 #ifdef __STDC_HOSTED__
     string str = query.str().c_str();
 #else
@@ -278,24 +232,7 @@ Database::queryInsert(meter_data_t *data)
   
     return true;
 }
-
-char *
-Database::gettime()
-{
-    struct timeval tp;
-    struct tm *tm, result;
-    static char tmpbuf[30];
- 
-    gettimeofday(&tp, 0);
-    tm = localtime_r(&(tp.tv_sec), &result);
-    asctime(tm);
-    memset(tmpbuf, 0, 20);
-     
-    strftime(tmpbuf, 20, "%Y-%m-%d %H:%M:%S", tm);
- 
-//    DBG_MSG(DBG_INFO, "TIMESTAMP is %s\n", tmpbuf);
-    return tmpbuf;
-}
+#endif
 
 // local Variables:
 // mode: C++
