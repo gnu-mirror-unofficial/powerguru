@@ -132,9 +132,12 @@ public:
             temp->lowtemp =std::stof(getValue(device, "templow"));
             temp->hightemp = std::stof(getValue(device, "temphigh"));
             // Add data to the database
+            std::string stamp;
+            stamp = pdb.gettime(stamp);
             std::string query = family + ',';
             query += "\'" + id;
             query += "\', \'" + type;
+            query += "\', \'" + stamp;
             query += "\', " + std::to_string(temp->temp);
             query += ", " + std::to_string(temp->lowtemp);
             query +=  ", " + std::to_string(temp->hightemp);
@@ -239,9 +242,12 @@ public:
                 temp->hightemp = std::stof(getValue(*it, "temphigh"));
                 _temperatures[*it] = temp;
 
+                std::string stamp;
+                stamp = pdb.gettime(stamp);
                 std::string query = data->family + ',';
                 query += "\'" + data->id;
                 query += "\', \'" + data->type;
+                query += "\', \'" + stamp;
                 query += "\', " + std::to_string(temp->temp);
                 query += ", " + std::to_string(temp->lowtemp);
                 query +=  ", " + std::to_string(temp->hightemp);
