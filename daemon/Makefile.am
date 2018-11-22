@@ -36,6 +36,11 @@ if BUILD_OWNET
 pgd_LDADD += $(OWNET_LIBS)
 endif
 
+if BUILD_POSTGRESQL
+pgd_CPPFLAGS += $(PQ_CPPFLAGS)
+pgd_LDADD += $(PQ_LIBS)
+endif
+
 bin_PROGRAMS = pgd
 
 pgd_SOURCES = main.cc threads.cc
