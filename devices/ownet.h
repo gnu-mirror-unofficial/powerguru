@@ -31,6 +31,7 @@
 #include <log.h>
 #include <owcapi.h>
 #include <boost/algorithm/string.hpp>
+#include "database.h"
 
 extern LogFile dbglogfile;
 
@@ -44,7 +45,6 @@ struct ownet {
 } typedef ownet_t;
 
 struct temperature {
-    //ownet_t ownet;
     float temp;
     float lowtemp;
     float hightemp;
@@ -53,16 +53,31 @@ struct temperature {
 class Ownet {
 private:
     enum family_t {CONTROL = 05, THERMOMETER = 10, THERMOMETER2 = 28};
-    std::map<std::string, ownet_t> _sensors;
+    std::map<std::string, ownet_t *> _sensors;
     bool _owserver = false;
     std::map<std::string, temperature_t *> _temperatures;
     std::mutex _mutex;
-
+    int poll_sleep = 2;
+#ifdef HAVE_LIBPQ
+    Database pdb;
+#endif
 public:
+    //
+    // Thread have a polling frequency to avoid eating up all the cpu cycles
+    // by polling to quickly.
+    int getPollSleep(void) {
+        return poll_sleep;
+    }
+    void setPollSleep(int x) {
+        poll_sleep = x;
+    }
+
+    // see if we're connected to the owserver
     bool isConnected(void) {
         return _owserver;
     }
 
+    // see if any 1 wire sensors were found during scanning
     bool hasSensors(void) {
         if (_sensors.size() >0) {
             return true;
@@ -71,6 +86,7 @@ public:
         }
     }
 
+    // extract a value from an owfs file
     std::string getValue(const std::string &device, std::string file) {
 //        DEBUGLOG_REPORT_FUNCTION;
         char * buf;
@@ -85,20 +101,28 @@ public:
             //std::cout << ", Got(" << s << "): " <<  buf << std::endl;
         }
 
-        std::string bar(buf);
+        std::string value = (buf);
         free(buf);
 
-        return bar;
+        return value;
     }
 
-    std::map<std::string, ownet_t> &getSensors(void) {
+    // return a handle to all the sensors
+    ownet_t *getSensor(const std::string &device) {
+        return _sensors[device];
+    }
+
+    std::map<std::string, ownet_t *> &getSensors(void) {
         return _sensors;
     }
 
+    // get all the temperature fields for a device.
     temperature_t *getTemperature(const std::string &device) {
         DEBUGLOG_REPORT_FUNCTION;
 
         std::string family = getValue(device, "family");
+        std::string id = getValue(device, "id");
+        std::string type = getValue(device, "type");
 
         temperature_t *temp = 0;
         if (family == "10") {
@@ -107,6 +131,15 @@ public:
             temp->temp = std::stof(getValue(device, "temperature"));
             temp->lowtemp =std::stof(getValue(device, "templow"));
             temp->hightemp = std::stof(getValue(device, "temphigh"));
+            // Add data to the database
+            std::string query = family + ',';
+            query += "\'" + id;
+            query += "\', \'" + type;
+            query += "\', " + std::to_string(temp->temp);
+            query += ", " + std::to_string(temp->lowtemp);
+            query +=  ", " + std::to_string(temp->hightemp);
+            pdb.queryInsert(query);
+
             std::lock_guard<std::mutex> guard(_mutex);
             _temperatures[device] = temp;
         } else {
@@ -119,18 +152,18 @@ public:
     void dump(void) {
         DEBUGLOG_REPORT_FUNCTION;
 
-        std::map<std::string, ownet_t>::iterator sit;
+        std::map<std::string, ownet_t *>::iterator sit;
         for (sit = _sensors.begin(); sit != _sensors.end(); sit++) {
             std::cout << "Data for device: " << sit->first << std::endl;
-            std::cout << "\tfamily: " << sit->second.family << std::endl;
-            std::cout << "\ttype: " << sit->second.type << std::endl;
-            std::cout << "\tid: " << sit->second.id << std::endl;
+            std::cout << "\tfamily: " << sit->second->family << std::endl;
+            std::cout << "\ttype: " << sit->second->type << std::endl;
+            std::cout << "\tid: " << sit->second->id << std::endl;
         }
         std::map<std::string, temperature_t *>::iterator tit;
         for (tit = _temperatures.begin(); tit != _temperatures.end(); tit++) {
-            std::cout << "Current temperature: " << tit->second->temp << std::endl;
-            std::cout << "Low temperture: " << tit->second->lowtemp << std::endl;
-            std::cout << "High Temperature: " << tit->second->hightemp << std::endl;
+            std::cout << "\tCurrent temperature: " << tit->second->temp << std::endl;
+            std::cout << "\tLow temperture: " << tit->second->lowtemp << std::endl;
+            std::cout << "\tHigh Temperature: " << tit->second->hightemp << std::endl;
         }
     }
 #else
@@ -179,31 +212,45 @@ public:
             }
         }
 
+#ifdef HAVE_LIBPQ
+        if (!pdb.openDB()) {
+            dbglogfile << "ERROR: Couldn't open database!" << std::endl;
+            exit(1);
+        }
+#endif
+
         int i = 0;
         std::vector<std::string>::iterator it;
         for(it = results.begin(); it != results.end(); it++,i++ ) {
-            ownet_t data;
-            data.family = getValue(it->c_str(), "family");
-            data.type = getValue(it->c_str(), "type");
-            data.id = getValue(it->c_str(), "id");
-            if (data.type.length() == 0 || data.id.length() == 0) {
+            ownet_t *data = new ownet_t[1];
+            data->family = getValue(it->c_str(), "family");
+            data->type = getValue(it->c_str(), "type");
+            data->id = getValue(it->c_str(), "id");
+            if (data->type.length() == 0 || data->id.length() == 0) {
                 break;
             }
             std::string dev = *it + "temperature";
             if (OW_present(dev.c_str()) == 0) {
                 dbglogfile << "Temperature sensor found: " << *it << std::endl;
                 temperature_t *temp= new temperature_t[1];
-
+                memset(temp, 0, sizeof(temperature_t));
                 temp->temp = std::stof(getValue(*it, "temperature"));
                 temp->lowtemp = std::stof(getValue(*it, "templow"));
                 temp->hightemp = std::stof(getValue(*it, "temphigh"));
                 _temperatures[*it] = temp;
+
+                std::string query = data->family + ',';
+                query += "\'" + data->id;
+                query += "\', \'" + data->type;
+                query += "\', " + std::to_string(temp->temp);
+                query += ", " + std::to_string(temp->lowtemp);
+                query +=  ", " + std::to_string(temp->hightemp);
+                pdb.queryInsert(query);
             } else {
                 dbglogfile << "Temperature sensor not found!" << std::endl;
             }
             _sensors[*it] = data;
         }
-
     }
 
 //    ~Ownet(void);
