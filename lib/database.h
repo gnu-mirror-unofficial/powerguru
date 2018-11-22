@@ -29,18 +29,16 @@
 #include <list>
 #include <iomanip> 
 #include <vector>
+#include <sys/time.h>
 
-//#include "database.h"
-
-#ifdef HAVE_MYSQL
-#include <mysql/errmsg.h>
-#include <mysql/mysql.h>
-//#else
-//#warning "You need to install MySQL for data base support"
+#ifdef HAVE_MARIADB
+# include <mysql/errmsg.h>
+# include <mysql/mysql.h>
 #endif
 
-// This shuts up warnings about these constants not being used.
-#pragma GCC system_header
+#ifdef HAVE_LIBPQ
+# include <libpq-fe.h>
+#endif
 
 static const char *DBTABLE = "powerguru";
 static const char *DBNAME  = "powerguru";
@@ -52,6 +50,7 @@ enum dbtype {NODB, DBDATABASE, DBPGSQL, DBODBC, DBGDBM, DBSTL};
 
 typedef enum { NO_DEVICE, MX_OUTBACK, FX_OUTBACK, SW_XANTREX } device_t;
 
+#ifdef HAVE_LIBXML
 typedef struct
 {
     int   unit;                   // The unit number for the device
@@ -76,6 +75,7 @@ typedef struct
     // compensated. Xantrex Only.
   
 }  meter_data_t ;
+#endif
 
 class Database
 {
@@ -83,15 +83,29 @@ public:
     Database();
     ~Database();
   
+    std::string &gettime(std::string &time) {
+        struct timeval tp;
+        struct tm *tm, result;
+        char tmpbuf[30];  
+        gettimeofday(&tp, 0);
+        tm = localtime_r(&(tp.tv_sec), &result);
+        asctime(tm);
+        memset(tmpbuf, 0, 20);
+        strftime(tmpbuf, 20, "%Y-%m-%d %H:%M:%S", tm);
+//    DBG_MSG(DBG_INFO, "TIMESTAMP is %s\n", tmpbuf);
+        time = tmpbuf;
+        return time;
+    }
+
     bool openDB ();
     bool closeDB ();
     bool queryInsert(std::vector<meter_data_t *> data);
+    //bool queryInsert(temperature_t &data);
     bool queryInsert(meter_data_t *data);
-    bool queryInsert(const char *query);
+    bool queryInsert(const std::string &query);
     void *queryResults(const char *query);
     //bool deleteDB(etamsg_t *data);
     //bool insertDB(etamsg_t *data);
-    char *gettime();
 
     // Accessors
     void dbUserSet(std::string user);
@@ -111,8 +125,8 @@ private:
     MYSQL           *_connection;
     MYSQL           _mysql;
 #endif
-#ifdef LIBPQ
-    bool           *_connection;
+#ifdef HAVE_LIBPQ
+    PGconn           *_connection;
 #endif
 };
 
