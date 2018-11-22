@@ -48,8 +48,6 @@
 #include "log.h"
 #include "err.h"
 
-using namespace std;
-
 //static const char *SERVICENAME = "powerguru";
 static const char *DEFAULTPROTO = "tcp";
 static const short DEFAULTPORT  = 7654;
@@ -83,25 +81,25 @@ Tcpip::~Tcpip(void)
 {    
 }
 
-const string
+const std::string&
 Tcpip::remoteIP(void)
 {
     return inet_ntoa(_client.sin_addr);
 }
 
-const string
+const std::string &
 Tcpip::remoteIP(struct in_addr sockin)
 {
     return inet_ntoa(sockin);
 }
 
-const string
+const std::string &
 Tcpip::remoteName(void)
 {
     return hostByAddrGet(inet_ntoa(_client.sin_addr));
 }
 
-const string
+const std::string &
 Tcpip::remoteName(struct in_addr sockin)
 {
     return hostByAddrGet(inet_ntoa(sockin));
@@ -120,19 +118,19 @@ Tcpip::createNetServer(void)
 retcode_t
 Tcpip::createNetServer(short port)
 {
-    string str = DEFAULTPROTO;
+    std::string str = DEFAULTPROTO;
     return createNetServer(port, str);
 }
 
 retcode_t
-Tcpip::createNetServer(string &service)
+Tcpip::createNetServer(std::string &service)
 {
-    string str = DEFAULTPROTO;
+    std::string str = DEFAULTPROTO;
     return createNetServer(service, str);
 }
 
 retcode_t
-Tcpip::createNetServer(string &service, string &proto)
+Tcpip::createNetServer(std::string &service, std::string &proto)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
@@ -143,13 +141,13 @@ Tcpip::createNetServer(string &service, string &proto)
     // See if we got a service data structure
     if (serv == 0) {
         dbglogfile << "ERROR: unable to get " << service
-                   << " service entry" << endl;
+                   << " service entry" << std::endl;
         _port = 0;
         return ERROR;
     }
 
     dbglogfile << "Port number is " << serv->s_port
-               << ", byte swapped is " << htons(serv->s_port) << endl;
+               << ", byte swapped is " << htons(serv->s_port) << std::endl;
 
     // Store the port number
     _port = serv->s_port;
@@ -159,7 +157,7 @@ Tcpip::createNetServer(string &service, string &proto)
 }
 
 retcode_t
-Tcpip::createNetServer(short port, string &protocol)
+Tcpip::createNetServer(short port, std::string &protocol)
 {
     DEBUGLOG_REPORT_FUNCTION;
   
@@ -191,7 +189,7 @@ Tcpip::createNetServer(short port, string &protocol)
     if ((ppe = getprotobyname(protocol.c_str())) == 0) {
         // error, wasn't able to get a protocol entry
         dbglogfile << "WARNING: unable to get " << protocol
-                   << " protocol entry" << endl;
+                   << " protocol entry" << std::endl;
         return ERROR;
     }
   
@@ -207,14 +205,14 @@ Tcpip::createNetServer(short port, string &protocol)
   
     // error, wasn't able to create a socket
     if (_sockIOfd < 0) {
-        dbglogfile << "unable to create socket: " << strerror(errno) << endl;
+        dbglogfile << "unable to create socket: " << strerror(errno) << std::endl;
         return SUCCESS;
     }
 
     on = 1;
     if (setsockopt(_sockIOfd, SOL_SOCKET, SO_REUSEADDR,
                    (char *)&on, sizeof(on)) < 0) {
-        dbglogfile << "setsockopt SO_REUSEADDR failed" << endl;
+        dbglogfile << "setsockopt SO_REUSEADDR failed" << std::endl;
         return ERROR;
     }
 
@@ -226,7 +224,7 @@ Tcpip::createNetServer(short port, string &protocol)
                  sizeof(sock_in)) == -1) {
             dbglogfile << "WARNING: unable to bind to"
                        << inet_ntoa(sock_in.sin_addr)
-                       << " port!" << strerror(errno) << endl;
+                       << " port!" << strerror(errno) << std::endl;
       
             // If there is something already bound to this IP number,
             // then we increment the number to be the next one in the
@@ -247,7 +245,7 @@ Tcpip::createNetServer(short port, string &protocol)
                     continue;
                 } else {
                     dbglogfile <<
-                        "ERROR: There is another process already bound to this port!" << endl;
+                        "ERROR: There is another process already bound to this port!" << std::endl;
                     return ERROR;
                 }
             }
@@ -260,24 +258,24 @@ Tcpip::createNetServer(short port, string &protocol)
         char                ascip[32];
         inet_ntop(AF_INET, &_ipaddr, ascip, INET_ADDRSTRLEN);
         dbglogfile << "Host Name is " << host->h_name << " IP is " <<
-            ascip << endl;
+            ascip << std::endl;
 #endif
     
         dbglogfile << "Server bound to service "
                    << " on port: " << ntohs(sock_in.sin_port)
                    << " on IP " << inet_ntoa(sock_in.sin_addr)
-                   << " using fd #" << _sockIOfd << endl;
+                   << " using fd #" << _sockIOfd << std::endl;
     
         if (type == SOCK_STREAM && listen(_sockIOfd, 5) < 0) {
             dbglogfile << "ERROR: unable to listen on port: "
-                       << port << ": " <<  strerror(errno) << endl; 
+                       << port << ": " <<  strerror(errno) << std::endl; 
             return ERROR;
         }
 
         _port = port;
     
 #if 0
-        dbglogfile << "Listening for net traffic on fd #\n" << _sockfd << endl;
+        dbglogfile << "Listening for net traffic on fd #\n" << _sockfd << std::endl;
 #endif
     
         return SUCCESS;
@@ -309,7 +307,7 @@ Tcpip::newNetConnection(bool block)
     alen = sizeof(struct sockaddr_in);
   
 #ifdef NET_DEBUG
-    dbglogfile << "Trying to accept net traffic on fd #" << _sockfd << endl;
+    dbglogfile << "Trying to accept net traffic on fd #" << _sockfd << std::endl;
 #endif
   
     if (_sockIOfd <= 2) {
@@ -338,7 +336,7 @@ Tcpip::newNetConnection(bool block)
         }
     
         if (FD_ISSET(0, &fdset)) {
-            dbglogfile << "There is data at the console for stdin!" << endl;
+            dbglogfile << "There is data at the console for stdin!" << std::endl;
             return SUCCESS;
         }
 
@@ -346,12 +344,12 @@ Tcpip::newNetConnection(bool block)
         if (ret == -1 && errno == EINTR) {
             dbglogfile <<
                 "The accept() socket for fd #%d was interupted by a system call!"
-                       << _sockIOfd << endl;
+                       << _sockIOfd << std::endl;
         }
     
         if (ret == -1) {
             dbglogfile << "ERROR: The accept() socket for fd " << _sockIOfd
-                       << " never was available for writing!" << endl;
+                       << " never was available for writing!" << std::endl;
             return ERROR;
         }
     
@@ -359,7 +357,7 @@ Tcpip::newNetConnection(bool block)
             if (_debug) {
                 dbglogfile <<
                     "ERROR: The accept() socket for fd #%d timed out waiting to write!"
-                           << _sockIOfd << endl;
+                           << _sockIOfd << std::endl;
             }
         }
     }
@@ -368,12 +366,12 @@ Tcpip::newNetConnection(bool block)
     _sockfd = accept(_sockIOfd, &fsin, &alen);
   
     if (_sockfd < 0) {
-        dbglogfile << "unable to accept : " << strerror(errno) << endl;
+        dbglogfile << "unable to accept : " << strerror(errno) << std::endl;
         return ERROR;
     }
   
     dbglogfile << "Accepting tcp/ip connection on fd #"
-               << _sockfd << endl;
+               << _sockfd << std::endl;
 
     memcpy(&_client, &fsin, sizeof(struct sockaddr));
   
@@ -385,8 +383,8 @@ retcode_t
 Tcpip::createNetClient(void)
 {
     DEBUGLOG_REPORT_FUNCTION;
-    string str = DEFAULTPROTO;
-    string host = "localhost";
+    std::string str = DEFAULTPROTO;
+    std::string host = "localhost";
   
     return createNetClient(host, DEFAULTPORT, str);
 }
@@ -395,37 +393,37 @@ retcode_t
 Tcpip::createNetClient(short port)
 {
     DEBUGLOG_REPORT_FUNCTION;
-    string str = DEFAULTPROTO;
-    string host = "localhost";
+    std::string str = DEFAULTPROTO;
+    std::string host = "localhost";
   
     return createNetClient(host, port, str);
 }
 
 retcode_t
-Tcpip::createNetClient(string &hostname, short port)
+Tcpip::createNetClient(std::string &hostname, short port)
 {
     DEBUGLOG_REPORT_FUNCTION;
-    string str = DEFAULTPROTO;
+    std::string str = DEFAULTPROTO;
     return createNetClient(hostname, port, str);
 }
 
 retcode_t
-Tcpip::createNetClient(string &hostname)
+Tcpip::createNetClient(std::string &hostname)
 {
     DEBUGLOG_REPORT_FUNCTION;
-    string str = DEFAULTPROTO;
+    std::string str = DEFAULTPROTO;
     return createNetClient(hostname, DEFAULTPORT, str);
 }
 
 retcode_t
-Tcpip::createNetClient(string &hostname, string &srvname, string &protocol)
+Tcpip::createNetClient(std::string &hostname, std::string &srvname, std::string &protocol)
 {
     DEBUGLOG_REPORT_FUNCTION;
     //    return createNetClient(hostname, srvname, "tcp");
 }
 
 retcode_t
-Tcpip::createNetClient(string &hostname, short port, string &protocol)
+Tcpip::createNetClient(std::string &hostname, short port, std::string &protocol)
 {
     DEBUGLOG_REPORT_FUNCTION;
     struct sockaddr_in	sock_in;
@@ -448,7 +446,7 @@ Tcpip::createNetClient(string &hostname, short port, string &protocol)
                            << thishostname;
             }
         } else {
-            dbglogfile << "WARNING: Couldn't get the hostname for this machine!" << endl;
+            dbglogfile << "WARNING: Couldn't get the hostname for this machine!" << std::endl;
         }
     } else {
         strcpy(thishostname, hostname.c_str());
@@ -462,7 +460,7 @@ Tcpip::createNetClient(string &hostname, short port, string &protocol)
 #if 0
     char                ascip[32];
     inet_ntop(AF_INET, &sock_in.sin_addr.s_addr, ascip, INET_ADDRSTRLEN);
-    dbglogfile << "The IP address for this client socket is " << ascip << endl;
+    dbglogfile << "The IP address for this client socket is " << ascip << std::endl;
 #endif
   
     sock_in.sin_port = htons(port);
@@ -477,7 +475,7 @@ Tcpip::createNetClient(string &hostname, short port, string &protocol)
   
     if (protoDataGet(protocol) == 0) {
         dbglogfile << "unable to get <%s> protocol entry\n"
-                   << protoNameGet() << endl;
+                   << protoNameGet() << std::endl;
         return ERROR;
     }
   
@@ -485,7 +483,7 @@ Tcpip::createNetClient(string &hostname, short port, string &protocol)
   
     if (_sockfd < 0) {
         dbglogfile << "WARNING: unable to create socket: "
-                   << strerror(errno) << endl;
+                   << strerror(errno) << std::endl;
         return ERROR;
     }
 
@@ -510,13 +508,13 @@ Tcpip::createNetClient(string &hostname, short port, string &protocol)
             if (ret == -1 && errno == EINTR) {
                 dbglogfile <<
                     "The connect() socket for fd #%d was interupted by a system call!"
-                           << _sockfd << endl;
+                           << _sockfd << std::endl;
             }
       
             if (ret == -1) {
                 dbglogfile <<
                     "The connect() socket for fd #%d never was available for writing!"
-                           << _sockfd << endl;
+                           << _sockfd << std::endl;
                 shutdown(_sockfd, SHUT_RDWR);
                 return ERROR;
             }
@@ -525,7 +523,7 @@ Tcpip::createNetClient(string &hostname, short port, string &protocol)
                 if (_debug) {
                     dbglogfile <<
                         "WARNING: The connect() socket for fd #%d timed out waiting to write!"
-                               << _sockfd << endl;
+                               << _sockfd << std::endl;
                 }
             }
         }
@@ -536,7 +534,7 @@ Tcpip::createNetClient(string &hostname, short port, string &protocol)
             dbglogfile << "unable to connect to "
                        << thishostname
                        << ", port " << port
-                       << ": " << strerror(errno) << endl;
+                       << ": " << strerror(errno) << std::endl;
             close(_sockfd);
             return ERROR;
         }
@@ -544,7 +542,7 @@ Tcpip::createNetClient(string &hostname, short port, string &protocol)
 
     dbglogfile << "Client connected to service at port " << port
                << " at IP " << inet_ntoa(sock_in.sin_addr)
-               << " using fd #" << _sockfd << endl;
+               << " using fd #" << _sockfd << std::endl;
   
     // For a client, the IO file descriptor is the same as the default one
     _sockIOfd = _sockfd;
@@ -613,10 +611,10 @@ Tcpip::closeNet(int sockfd)
             if (shutdown(sockfd, SHUT_RDWR) < 0) {
                 if (errno != ENOTCONN) {
                     dbglogfile << "WARNING: Unable to shutdown socket for fd #"
-                               << sockfd << strerror(errno) << endl;
+                               << sockfd << strerror(errno) << std::endl;
                 } else {
                     dbglogfile << "The socket using fd #" << sockfd
-                               << " has been shut down successfully." << endl;
+                               << " has been shut down successfully." << std::endl;
                     return SUCCESS;
                 }
             }
@@ -624,13 +622,13 @@ Tcpip::closeNet(int sockfd)
             if (close(sockfd) < 0) {
                 dbglogfile <<
                     "WARNING: Unable to close the socket for fd "
-                           <<	sockfd << strerror(errno) << endl;
+                           <<	sockfd << strerror(errno) << std::endl;
                 sleep(1);
                 retries++;
             } else {
                 dbglogfile << "Closed the socket for "
                            << serviceNameGet()
-                           << " on fd " << sockfd << endl;
+                           << " on fd " << sockfd << std::endl;
                 return SUCCESS;
             }
         }
@@ -652,7 +650,7 @@ Tcpip::toggleDebug(bool val)
 
 // Return true if there is data in the socket, otherwise return false.
 retcode_t
-Tcpip::anydata(vector<const unsigned char *> &msgs)
+Tcpip::anydata(std::vector<const unsigned char *> &msgs)
 {
     DEBUGLOG_REPORT_FUNCTION;
     //printf("%s: \n", __FUNCTION__);
@@ -662,7 +660,7 @@ Tcpip::anydata(vector<const unsigned char *> &msgs)
 // This waits for data on the socket, and on stdin. This way we can sit
 // here in a kernel sleep instead of polling all devices.
 retcode_t
-Tcpip::anydata(int fd, vector<const unsigned char *> &msgs)
+Tcpip::anydata(int fd, std::vector<const unsigned char *> &msgs)
 {
     DEBUGLOG_REPORT_FUNCTION;
     fd_set                fdset;
@@ -699,26 +697,26 @@ Tcpip::anydata(int fd, vector<const unsigned char *> &msgs)
         // If interupted by a system call, try again
         if (ret == -1 && (errno == EINTR || errno == EAGAIN)) {
             dbglogfile << "The socket for fd #%d was interupted by a system call!"
-                       << fd << endl;
+                       << fd << std::endl;
             continue;
         }
         if (ret == 0) {
-            dbglogfile << "There is no data in the socket for fd #" << fd << endl;
+            dbglogfile << "There is no data in the socket for fd #" << fd << std::endl;
             msgs.clear();
             return SUCCESS;
         }
         if (ret == -1) {
             dbglogfile << "The socket for fd #%d never was available!"
-                       << fd << endl;
+                       << fd << std::endl;
             return ERROR;
         }
         if (ret > 0) {
             if (FD_ISSET(fileno(stdin), &fdset)) {
-                dbglogfile << "There is data at the console for stdin!" << endl;
+                dbglogfile << "There is data at the console for stdin!" << std::endl;
                 msgs.clear();
                 return SUCCESS;
             }
-            dbglogfile << "There is data in the socket for fd #" << fd << endl;
+            dbglogfile << "There is data in the socket for fd #" << fd << std::endl;
         }
         memset(buf, 0, INBUF);
         if (FD_ISSET(_sockfd, &fdset)) {
@@ -742,8 +740,8 @@ Tcpip::anydata(int fd, vector<const unsigned char *> &msgs)
             return ERROR;
         }
         cr = strlen(buf);
-//     dbglogfile << "read " << ret << " bytes, first msg terminates at " << cr << endl;
-//     dbglogfile << "read " << buf << endl;
+//     dbglogfile << "read " << ret << " bytes, first msg terminates at " << cr << std::endl;
+//     dbglogfile << "read " << buf << std::endl;
         ptr = buf;
         // If we get a single XML message, do less work
         if (ret == cr + 1) {
@@ -791,7 +789,7 @@ Tcpip::anydata(int fd, vector<const unsigned char *> &msgs)
                 memset(packet, 0, adjusted_size);
                 strcpy(packet, ptr);
                 ptr += cr + 1;
-                //dbglogfile << "Packet is: " << packet << endl;
+                //dbglogfile << "Packet is: " << packet << std::endl;
             } // end of if remainder
             if (*packet == '<') {
                 eom = strrchr(packet, '\n'); // drop the CR off the end there is one
@@ -804,11 +802,11 @@ Tcpip::anydata(int fd, vector<const unsigned char *> &msgs)
                 msgs.push_back((const unsigned char *)packet);
             } else {
                 if (*packet == *ptr) {
-                    // dbglogfile << "Read all XML messages in packet " << packet << endl;
+                    // dbglogfile << "Read all XML messages in packet " << packet << std::endl;
                     break;
                 } else { 
-                    //dbglogfile << "WARNING: Throwing out partial packet " << endl;
-                    dbglogfile << "WARNING: Throwing out partial packet " << packet << endl;
+                    //dbglogfile << "WARNING: Throwing out partial packet " << std::endl;
+                    dbglogfile << "WARNING: Throwing out partial packet " << packet << std::endl;
                     break;
                 }
             }
@@ -873,7 +871,7 @@ Tcpip::readNet(int fd, char *buffer, int nbytes, int timeout)
         FD_SET(fd, &fdset);
     } else {
         dbglogfile << "WARNING: Can't do anything with socket fd #"
-                   << fd << endl;
+                   << fd << std::endl;
         return -1;
     }
   
@@ -895,22 +893,22 @@ Tcpip::readNet(int fd, char *buffer, int nbytes, int timeout)
     if (ret == -1 && errno == EINTR) {
         dbglogfile <<
             "The socket for fd #" << fd << " we interupted by a system call!"
-                                  << endl;
-        dbglogfile << "WARNING: error is " << strerror(errno) << endl;
+                                  << std::endl;
+        dbglogfile << "WARNING: error is " << strerror(errno) << std::endl;
         return 0;
     }
   
     if (ret == -1) {
         dbglogfile <<
             "The socket for fd #" << fd << " never was available for reading!"
-                                  << endl;
+                                  << std::endl;
         return -1;
     }
   
     if (ret == 0) {
 #if 0                           // FIXME: too verbose
         dbglogfile <<
-            "The socket for fd #" << fd << " timed out waiting to read!" << endl;
+            "The socket for fd #" << fd << " timed out waiting to read!" << std::endl;
 #endif
         return 0;
     }
@@ -918,8 +916,8 @@ Tcpip::readNet(int fd, char *buffer, int nbytes, int timeout)
     ret = read(fd, buffer, nbytes);
 #if 0
     if (ret != 0) {
-        dbglogfile << "Read " << ret << " bytes from fd #" << fd << endl;
-        dbglogfile << "Buffer says " << buffer << endl;
+        dbglogfile << "Read " << ret << " bytes from fd #" << fd << std::endl;
+        dbglogfile << "Buffer says " << buffer << std::endl;
     }
 #endif
     return ret;
@@ -928,7 +926,7 @@ Tcpip::readNet(int fd, char *buffer, int nbytes, int timeout)
 // Write data to the socket. We first make sure the socket is ready for
 // data.
 int
-Tcpip::writeNet(string buffer)
+Tcpip::writeNet(const std::string &buffer)
 {
     return writeNet(_sockfd, buffer.c_str(), buffer.size(), DEFAULTTIMEOUT);
 }
@@ -969,7 +967,7 @@ Tcpip::writeNet(int fd, char const *buffer, int nbytes, int timeout)
   
     bufptr = buffer;
 
-    dbglogfile << "Writing to socket: \r\n\t" << buffer << endl;
+    dbglogfile << "Writing to socket: \r\n\t" << buffer << std::endl;
 
     while (retries-- > 1) {
         // Wait for the socket to be ready for writing
@@ -978,7 +976,7 @@ Tcpip::writeNet(int fd, char const *buffer, int nbytes, int timeout)
             FD_SET(fd, &fdset);
         } else {
             dbglogfile << "WARNING: Can't do anything with socket fd #!"
-                       << fd << endl;
+                       << fd << std::endl;
             return -1;
         }
     
@@ -994,18 +992,18 @@ Tcpip::writeNet(int fd, char const *buffer, int nbytes, int timeout)
         // If interupted by a system call, try again
         if (ret == -1 && errno == EINTR) {
             dbglogfile <<
-                "The socket for fd #" << fd << " we interupted by a system call!" << endl;
+                "The socket for fd #" << fd << " we interupted by a system call!" << std::endl;
         }
     
         if (ret == -1) {
             dbglogfile << "The socket for fd #" << fd
-                       << " never was available for writing!" << endl;
+                       << " never was available for writing!" << std::endl;
             continue;
         }
     
         if (ret == 0) {
             dbglogfile << "The socket for fd #"
-                       << fd << " timed out waiting to write!" << endl;
+                       << fd << " timed out waiting to write!" << std::endl;
             continue;
         }
         ret = write(fd, bufptr, nbytes);
@@ -1014,13 +1012,13 @@ Tcpip::writeNet(int fd, char const *buffer, int nbytes, int timeout)
     
     
         if (ret == 0) {
-            dbglogfile << "Couldn't write any bytes to fd #" << fd << endl;
+            dbglogfile << "Couldn't write any bytes to fd #" << fd << std::endl;
             return ret;
         }
     
         if (ret < 0) {
             dbglogfile << "Couldn't write " << nbytes << " bytes to fd #"
-                       << fd << endl;
+                       << fd << std::endl;
             return ret;
         }
     
@@ -1028,17 +1026,17 @@ Tcpip::writeNet(int fd, char const *buffer, int nbytes, int timeout)
             bufptr += ret;            
             if (ret != nbytes) {
                 dbglogfile << "wrote " << ret << " bytes to fd #"
-                           << fd << " expected " <<  nbytes << endl;
+                           << fd << " expected " <<  nbytes << std::endl;
                 retries++;
             } else {
 #if 0
-                dbglogfile << "Wrote " << ret << " bytes to fd #" << fd << endl;
+                dbglogfile << "Wrote " << ret << " bytes to fd #" << fd << std::endl;
 #endif
                 return ret;
             }
       
             if (ret == 0) {
-                dbglogfile << "Wrote 0 bytes to fd #" << fd << endl;
+                dbglogfile << "Wrote 0 bytes to fd #" << fd << std::endl;
             }
         }
     }

@@ -50,21 +50,21 @@
 #define TIMESTAMP_LENGTH 24             // timestamp length
 #define TIMESTAMP_FORMAT "%Y-%m-%d %H:%M:%S     " // timestamp format
 
-extern std::ostream& stampon(std::ostream& x);
-extern std::ostream& stampoff(std::ostream& x);
-extern std::ostream& timestamp(std::ostream& x);
-extern std::ostream& datetimestamp(std::ostream& x);
+extern std::ostream &stampon(std::ostream& x);
+extern std::ostream &stampoff(std::ostream& x);
+extern std::ostream &timestamp(std::ostream& x);
+extern std::ostream &datetimestamp(std::ostream& x);
 
 // Print a number in binary:
 class Verbose {
     int level;
 public:
     Verbose(int l) { level = l; }
-    friend std::ostream& operator<<(std::ostream&, Verbose&);
+    friend std::ostream &operator<<(std::ostream &, Verbose &);
 };
 
 // Get the current timestamp
-std::string timestamp();
+std::string &timestamp(std::string &);
 
 // This is a basic file logging class
 class LogFile { // public std::ofstream {
@@ -86,20 +86,20 @@ public:
     } state;
   
     file_state GetState (void) { return state; }
-    LogFile& operator << (ErrCond&);
-    LogFile& operator << (int x);
-    LogFile& operator << (long x);
-    LogFile& operator << (unsigned int x);
+    LogFile &operator << (ErrCond&);
+    LogFile &operator << (int x);
+    LogFile &operator << (long x);
+    LogFile &operator << (unsigned int x);
     // These both resolve to an unsigned int.
     // LogFile& operator << (size_t x);
     // LogFile& operator << (time_t x);
-    LogFile& operator << (float x);
-    LogFile& operator << (double &x);
-    LogFile& operator << (bool x);
-    LogFile& operator << (void *);
-    LogFile& operator << (const char *);
-    LogFile& operator << (const unsigned char *);
-    LogFile& operator << (std::string );
+    LogFile &operator << (float x);
+    LogFile &operator << (double &x);
+    LogFile &operator << (bool x);
+    LogFile &operator << (void *);
+    LogFile &operator << (const char *);
+    LogFile &operator << (const unsigned char *);
+    LogFile &operator << (const std::string &);
     std::ostream& operator << (std::ostream & (&)(std::ostream &));
     const char *GetEntry(void);
   

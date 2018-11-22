@@ -79,7 +79,7 @@ public:
     int readNet(int fd, char *buffer, int nbytes, int timeout);
   
     // Write to the socket  
-    int writeNet(std::string buffer);
+    int writeNet(const std::string &buffer);
     int writeNet(char const *buffer);
     int writeNet(char const *buffer, int nbytes);
     int writeNet(int fd, char const *buffer);
@@ -100,10 +100,10 @@ public:
     retcode_t authNetServer(void);
 
     // Extract some info from the other end of the connection.
-    const std::string remoteIP(void);
-    const std::string remoteIP(struct in_addr addr);
-    const std::string remoteName(void);
-    const std::string remoteName(struct in_addr addr);
+    const std::string &remoteIP(void);
+    const std::string &remoteIP(struct in_addr addr);
+    const std::string &remoteName(void);
+    const std::string &remoteName(struct in_addr addr);
 
     Tcpip &operator = (Tcpip &tcp);
 

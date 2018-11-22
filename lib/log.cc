@@ -3,8 +3,6 @@
 #include <cstring>
 // #include <strstream>
 
-using namespace std;
-
 // Target Manager internal logging sub-system
 #include "log.h"
 
@@ -16,12 +14,12 @@ using namespace std;
 #include <time.h>
 
 # if 0
-ofstream LogFile::outstream;
+std::ofstream LogFile::outstream;
 string LogFile::logentry;
 bool LogFile::stamp;
 enum LogFile::file_state LogFile::state;
 #endif
-ofstream LogFile::console;
+std::ofstream LogFile::console;
 int LogFile::verbose;
 
 const unsigned char hexchars[]="0123456789abcdef";
@@ -33,24 +31,24 @@ extern "C" char digit2hex(int);
 extern "C" int hex2digit (int);
 
 
-ostream& operator<<(ostream& os, Verbose& b) {
+std::ostream& operator<<(std::ostream& os, Verbose& b) {
     // dbglogfile.verbosity(b);
     return os;
 }
 
 #if 0
-ostream& stampon(ostream& x) {
+std::ostream& stampon(std::ostream& x) {
     LogFile::stamp(true);
     return x;
 }
 
-ostream& stampoff(ostream& x) {
+std::ostream& stampoff(std::ostream& x) {
     LogFile::SetStamp(false);
     return x;
 }
 #endif
 
-ostream& timestamp(ostream& x) {
+std::ostream& timestamp(std::ostream& x) {
     time_t t;
     char buf[10];
 
@@ -61,20 +59,19 @@ ostream& timestamp(ostream& x) {
     return x << buf << ": ";
 }
 
-string timestamp() {
+std::string &timestamp(std::string &str) {
     time_t t;
-    string sbuf;
     char buf[10];
 
     memset (buf, '0', 10);	// this terminates the string
     time (&t);			// get the current time
     strftime (buf, sizeof(buf), "%H:%M:%S", localtime (&t));
-    sbuf = buf;
+    str = buf;
 
-    return sbuf;
+    return str;
 }
 
-ostream& datetimestamp(ostream& x) {
+std::ostream& datetimestamp(std::ostream& x) {
     time_t t;
     char buf[20];
 
@@ -87,14 +84,14 @@ ostream& datetimestamp(ostream& x) {
 
 // FIXME: This controls the entire output stream
 #if 0
-ostream & operator << (ostream &os, string x) {
+std::ostream & operator << (std::ostream &os, std::string x) {
     if (dbglogfile.get_verbosity() > 0)
 	cout << timestamp << x;
     return os << x.c_str();
 }
 #endif
 
-ostream &operator<<(ostream &os, LogFile &l) {
+std::ostream &operator<<(std::ostream &os, LogFile &l) {
     return os << l.GetEntry();
 }
 
@@ -109,7 +106,7 @@ LogFile::GetEntry(void) {
 LogFile::LogFile (void) {
     verbose = 0;
     stamp = true;
-    LogFile::outstream.open (DEFAULT_LOGFILE, ios::out);
+    LogFile::outstream.open (DEFAULT_LOGFILE, std::ios::out);
     state = OPEN;
 }
 
@@ -118,7 +115,7 @@ LogFile::LogFile (const char *filespec) {
     stamp = true;
     if (state == OPEN)
         LogFile::outstream.close ();
-    LogFile::outstream.open (filespec, ios::out);
+    LogFile::outstream.open (filespec, std::ios::out);
     state = OPEN;
 }
 
@@ -126,10 +123,10 @@ retcode_t
 LogFile::Open (const char *filespec) {
     if (state == OPEN)
         LogFile::outstream.close ();
-    LogFile::outstream.open (filespec, ios::out);
+    LogFile::outstream.open (filespec, std::ios::out);
     state = OPEN;
   
-    // LogFile::outstream << "Opened " << filespec << endl;
+    // LogFile::outstream << "Opened " << filespec << std::endl;
   
     return SUCCESS;
 }
@@ -149,7 +146,7 @@ LogFile::Close (void) {
 LogFile&
 LogFile::operator << (ErrCond& e) {
     if (verbose > 0)
-        cout << e << endl;
+        std::cout << e << std::endl;
     LogFile::outstream << e;
     state = INPROGRESS;
 
@@ -160,7 +157,7 @@ LogFile&
 LogFile::operator << (long x)
 {
     if (verbose > 0)
-        cout << x;
+        std::cout << x;
     LogFile::outstream << x;
     state = INPROGRESS;
   
@@ -171,7 +168,7 @@ LogFile&
 LogFile::operator << (unsigned int x)
 {
     if (verbose > 0)
-        cout << x;
+        std::cout << x;
     LogFile::outstream << x;
     state = INPROGRESS;
   
@@ -183,7 +180,7 @@ LogFile::operator << (float x)
 { 
     LogFile::outstream << x;
     if (verbose > 0) {
-        cout << x;
+        std::cout << x;
     }
     state = INPROGRESS;
 
@@ -195,7 +192,7 @@ LogFile::operator << (double &x)
 {
     LogFile::outstream << x; 
     if (verbose > 0) {
-        cout << x;
+        std::cout << x;
     }
   
     state = INPROGRESS;
@@ -207,7 +204,7 @@ LogFile&
 LogFile::operator << (int x) {
     
     if (verbose > 0)
-	cout << x;
+        std::cout << x;
     LogFile::outstream << x;
     state = INPROGRESS;
 
@@ -218,7 +215,7 @@ LogFile&
 LogFile::operator << (void *ptr) {
     
     if (verbose > 0)
-	cout << ptr;
+        std::cout << ptr;
     LogFile::outstream << ptr;
     state = INPROGRESS;
 
@@ -226,24 +223,25 @@ LogFile::operator << (void *ptr) {
 }
 
 LogFile& 
-LogFile::operator << (string s) {
+LogFile::operator << (const std::string &s) {
     outstream << s;
     return *this;
 }
 
 LogFile& 
 LogFile::operator << (const char *c) {
-    logentry = timestamp();
+    std::string str;
+    logentry = timestamp(str);
     logentry += ": ";
 
     if (stamp == true && (state == IDLE || state == OPEN)) {
         LogFile::state = INPROGRESS;
 	if (verbose > 0)
-	    cout << logentry  << c;
+	    std::cout << logentry  << c;
         outstream << logentry << c;
     } else {
 	if (verbose > 0)
-	    cout << c;
+	    std::cout << c;
         outstream << c;
     }
     logentry += c;
@@ -253,7 +251,8 @@ LogFile::operator << (const char *c) {
 
 LogFile& 
 LogFile::operator << (const unsigned char *c) {
-    logentry = timestamp();
+    std::string str;
+    logentry = timestamp(str);
     logentry += ": ";
 
     if (c == NULL) {
@@ -263,11 +262,11 @@ LogFile::operator << (const unsigned char *c) {
     if (stamp == true && (state == IDLE || state == OPEN)) {
         LogFile::state = INPROGRESS;
 	if (verbose > 0)
-	    cout << logentry  << c;
+	    std::cout << logentry  << c;
         outstream << logentry << c;
     } else {
 	if (verbose > 0)
-	    cout << c;
+	    std::cout << c;
         outstream << c;
     }
     logentry += (const char*)c;
@@ -276,16 +275,16 @@ LogFile::operator << (const unsigned char *c) {
 }
 
 // This grabs the endl operator;
-ostream&
-LogFile::operator << (ostream & (&)(ostream &)) {
+std::ostream&
+LogFile::operator << (std::ostream & (&)(std::ostream &)) {
     if (verbose > 0)
-        cout << "\r" << endl;
-    LogFile::outstream << endl;;
+        std::cout << "\r" << std::endl;
+    LogFile::outstream << std::endl;;
     LogFile::outstream.flush();
     LogFile::state = IDLE;
 
     // FIXME: This is probably not the value to return
-    return cout;
+    return std::cout;
 }
 
 #if 0
@@ -328,14 +327,14 @@ LogFile::note (int level, const char *fmt, ...) {
     // don't ever print log messages to the screen.
 #if 0
     if (verbose >= level) {
-        cout << tmp;       ;
-        cout.flush();
+        std::cout << tmp;       ;
+        std::cout.flush();
     }
 #endif
 
     // write the message with a timestamp to the log file
     if (state == OPEN) {
-        logout << buf << ":" << tmp << endl;
+        logout << buf << ":" << tmp << std::endl;
         logout.flush();
     }
 
@@ -357,8 +356,8 @@ LogFile::printf (int level, const char *fmt, ...) {
     // don't ever print log messages to the screen.
 #if 0
     if (verbose >= level) {
-        cout << tmp;
-        cout.flush();
+        std::cout << tmp;
+        std::cout.flush();
     }
 #endif    
 

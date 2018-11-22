@@ -41,8 +41,6 @@
 #include "log.h"
 #include "serial.h"
 
-using namespace std;
-
 extern LogFile dbglogfile;
 LogFile seriallogfile; // ("tserial.log")
 
@@ -131,31 +129,24 @@ Serial::~Serial(void)
 // Open the serial port. This function must initialize the serial port so that
 // it can be read/write in raw mode.
 retcode_t
-Serial::Open(string name)
-{
-    return Open(name.c_str());
-}
-
-
-retcode_t
-Serial::Open(const char *filespec)
+Serial::Open(std::string &filespec)
 {
     DEBUGLOG_REPORT_FUNCTION;
   
-    dbglogfile << "Opening host device " << filespec << endl;
+    dbglogfile << "Opening host device " << filespec << std::endl;
 
     // We don't want to timestamp
     seriallogfile.SetStamp(false);
 
-    seriallogfile << "<?xml version='1.0'?>" << endl;
-    seriallogfile << "<device>\"" << filespec << "\"</device>" << endl;
+    seriallogfile << "<?xml version='1.0'?>" << std::endl;
+    seriallogfile << "<device>\"" << filespec << "\"</device>" << std::endl;
   
-    //  serialin.open(name, ios::in|ios::out);
+    //  serialin.open(name, ios::in|std::ios::out);
 
-    if (filespec != 0) {
-        if ((_uartfd = open(filespec, O_RDWR | O_NONBLOCK)) < 0) { //  | O_NONBLOCK
+    if (!filespec.empty()) {
+        if ((_uartfd = open(filespec.c_str(), O_RDWR | O_NONBLOCK)) < 0) { //  | O_NONBLOCK
             if (_uartfd < 0) {
-                errcond << "couldn't open " << filespec << endl;
+                errcond << "couldn't open " << filespec << std::endl;
                 throw errcond;
             }
         }
@@ -192,8 +183,8 @@ Serial::Close(void)
 {
     DEBUGLOG_REPORT_FUNCTION;
   
-    dbglogfile << endl << "Closing host device" << endl;
-    seriallogfile << endl << "Closing host device" << endl;
+    dbglogfile << std::endl << "Closing host device" << std::endl;
+    seriallogfile << std::endl << "Closing host device" << std::endl;
 
     tcsetattr(_uartfd, TCSANOW, &origtty);
 
@@ -221,7 +212,7 @@ Serial::Read(char *buf, int nbytes)
     int ret, sret, i;
     fd_set fdset;
     int retries = 2;
-    string data;
+    std::string data;
     struct timeval timeout;
 
     ret = -1;
@@ -238,11 +229,11 @@ Serial::Read(char *buf, int nbytes)
       
             sret = select(_uartfd+1, &fdset, NULL, NULL, &timeout);
             dbglogfile << "select returned " << sret
-                       << " for file descriptor  " << _uartfd << endl;
+                       << " for file descriptor  " << _uartfd << std::endl;
 #if 1
             if (sret == 0) {
                 memset(buf, 0, nbytes);
-                //seriallogfile << "<device><select>Timeout</select></device>" << endl;
+                //seriallogfile << "<device><select>Timeout</select></device>" << std::endl;
                 return sret;
             }
             if ((sret < 0) && (errno == EAGAIN)) {
@@ -254,13 +245,13 @@ Serial::Read(char *buf, int nbytes)
             memset(tmpbuf, 0, nbytes+1);
             memset(buf, 0, nbytes);
             ret = ::read (_uartfd, tmpbuf, nbytes);
-            dbglogfile << "read returned " << ret << " for file descriptor  " << _uartfd << endl;
+            dbglogfile << "read returned " << ret << " for file descriptor  " << _uartfd << std::endl;
             if (ret == 0) {
                 continue;
             }
       
             if (ret > 0) {
-                dbglogfile << "Read " << ret << " bytes" << endl;
+                dbglogfile << "Read " << ret << " bytes" << std::endl;
                 //if ((line.find('\n', 0) == string::npos) && (ret > 0)) 
                 // Filter out the control characters that appear on the
                 // end of the line
@@ -272,16 +263,17 @@ Serial::Read(char *buf, int nbytes)
                         data += tmpbuf[i];
                     }
                 } // end of for loop
-                // dbglogfile << "Reading more data, data left before is \"" << tmpbuf << "\"" << endl;
+                // dbglogfile << "Reading more data, data left before is \"" << tmpbuf << "\"" << std::endl;
             }
       
             //if (ret < 0)
             {
                 //data = line.substr(0, line.find('\n', 0));
                 if (data.size() > 0) {
-                    seriallogfile << "<read time=" << timestamp()
+                    std::string str;
+                    seriallogfile << "<read time=" << timestamp(str)
                                   << " bytes=" << (int)data.size()
-                                  << ">" << data << "</read>" << endl;
+                                  << ">" << data << "</read>" << std::endl;
           
                     memcpy(buf, data.c_str(), data.size());
                     return data.size();
@@ -299,12 +291,12 @@ Serial::Read(char *buf, int nbytes)
         
     //if ((ret == 1) && (ret == 0xa)) {
     if (ret == 1) {
-        dbglogfile << "Read CR " << endl;
+        dbglogfile << "Read CR " << std:;endl;
         //ret = ::read (_uartfd, buf, 36);
     }
         
     if (ret > 0) {
-        dbglogfile << "Read " << ret << " bytes" << endl;
+        dbglogfile << "Read " << ret << " bytes" << std::endl;
         for (i=0; i< nbytes; i++){
 #if 0
             if (buf[i] == 0xa) {
@@ -313,7 +305,7 @@ Serial::Read(char *buf, int nbytes)
             }
 #endif
             if ((buf[i] > ' ') && (buf[i] < 'z')) {
-                dbglogfile << "Copying character: " << i << endl;
+                dbglogfile << "Copying character: " << i << std::endl;
                 *bufptr++ = buf[i];
             } else {
                 buf[i] = ' ';
@@ -322,17 +314,17 @@ Serial::Read(char *buf, int nbytes)
         *bufptr = 0;
         seriallogfile << "<read  time=" << timestamp()
                       << " bytes=" << ret
-                      << ">" << buf << "</read>" << endl;
+                      << ">" << buf << "</read>" << std::endl;
     }
 }
 
 if ((sret == 0) && (ret <= 0)) {
-    dbglogfile << "WARNING: Too many retries." << endl;
+    dbglogfile << "WARNING: Too many retries." << std::endl;
 }
 
 //    seriallogfile.Write((const char *)buf, ret);
 
-//seriallogfile << "<read>" << buf << "</read>" << endl;
+//seriallogfile << "<read>" << buf << "</read>" << std::endl;
 } else {
       return ERROR;
   }
@@ -357,9 +349,10 @@ Serial::Write(const char *buf, int nbytes) const
         tcdrain(_uartfd);
         //    seriallogfile.write((const char *)buf, ret);
         //   seriallogfile << buf;
-        seriallogfile << "<write time=" << timestamp()
+        std::string str;
+        seriallogfile << "<write time=" << timestamp(str)
                       << " bytes=" << ret
-                      << ">" << buf << "</write>" << endl;
+                      << ">" << buf << "</write>" << std::endl;
         return nbytes;
     } else {
         return -1;
@@ -385,20 +378,20 @@ Serial::SetBaud (int baudcode)
 #endif
     int ret = tcsetattr(_uartfd, TCSANOW, &ctty);
     if (ret == 0) {
-        dbglogfile << __PRETTY_FUNCTION__ << " worked" << endl;
+        dbglogfile << __PRETTY_FUNCTION__ << " worked" << std::endl;
         return SUCCESS;
     }
   
-    seriallogfile << "<device><baud>\"" << serial_speeds[baudcode] << "\"</baud></device>" << endl;
+    seriallogfile << "<device><baud>\"" << serial_speeds[baudcode] << "\"</baud></device>" << std::endl;
 
     // See if it worked
     //int ret = tcsetattr(_uartfd, TCSADRAIN, &currenttty);
     ibaud = cfgetispeed(&currenttty);
     obaud = cfgetospeed(&currenttty);
-    dbglogfile << "Input baud is now set to " << serial_speeds[ibaud] << endl;
-    dbglogfile << "Output baud is now set to " << serial_speeds[obaud] << endl;
+    dbglogfile << "Input baud is now set to " << serial_speeds[ibaud] << std::endl;
+    dbglogfile << "Output baud is now set to " << serial_speeds[obaud] << std::endl;
 
-    dbglogfile << __PRETTY_FUNCTION__ << " failed" << endl;
+    dbglogfile << __PRETTY_FUNCTION__ << " failed" << std::endl;
     return ERROR;
 }
 
@@ -419,7 +412,7 @@ Serial::SetBlocking(bool mode)
 {
     tcgetattr(_uartfd, &currenttty);
   
-    //seriallogfile << "<device><blocking>True</device>" << endl;
+    //seriallogfile << "<device><blocking>True</device>" << std::endl;
 
     currenttty.c_cc[VMIN] = 0;
     currenttty.c_cc[VTIME] = 10;
@@ -446,14 +439,14 @@ Serial::SetDTR (bool value)
 
     ioctl(_uartfd, TIOCMGET, (unsigned long) &arg);
 
-    cerr << "ARG is " << arg << endl;
+    std::cerr << "ARG is " << arg << std::endl;
   
     // Turn off everything but DTR
     if (value) {  
-        seriallogfile << "<device><DTR>True</DTR></device>" << endl;
+        seriallogfile << "<device><DTR>True</DTR></device>" << std::endl;
         arg = TIOCM_DTR;
     } else { 
-        seriallogfile << "<device><DTR>False</DTR></device>" << endl;
+        seriallogfile << "<device><DTR>False</DTR></device>" << std::endl;
         arg = 0;
     }
     // arg |= TIOCM_DTR | ~TIOCM_RTS;
@@ -501,10 +494,10 @@ Serial::DumpTtyState (void)
     int ibaud, obaud;
 
     ibaud = cfgetispeed(&currenttty);
-    dbglogfile << "Input baud rate is " << serial_speeds[ibaud] << endl;
+    dbglogfile << "Input baud rate is " << serial_speeds[ibaud] << std::endl;
 
     obaud = cfgetospeed(&currenttty);
-    dbglogfile << "Output baud rate is " << serial_speeds[obaud] << endl;
+    dbglogfile << "Output baud rate is " << serial_speeds[obaud] << std::endl;
   
 }
 
@@ -560,11 +553,11 @@ Serial::Putc (int x)
 
 // This grabs the endl operator. If we see this, then we are done
 // formatting the string. We currently don't do anything with this.
-ostream&
-Serial::operator << (ostream & (&)(ostream &)) {
-    ostream outserial (serialin.rdbuf());
+std::ostream&
+Serial::operator << (std::ostream & (&)(std::ostream &)) {
+    std::ostream outserial (serialin.rdbuf());
     outserial.write("\n", 1);
-    return cout;                  // FIXME: this is probably bogus
+    return std::cout;                  // FIXME: this is probably bogus
 }
 
 Serial& 
@@ -572,7 +565,7 @@ Serial::operator << (char const *x)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
-    ostream outserial (serialin.rdbuf());
+    std::ostream outserial (serialin.rdbuf());
     outserial.write(x, strlen(x));
 
     seriallogfile << x;
@@ -581,11 +574,11 @@ Serial::operator << (char const *x)
 }
 
 Serial& 
-Serial::operator << (string &x)
+Serial::operator << (std::string &x)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
-    ostream outserial (serialin.rdbuf());
+    std::ostream outserial (serialin.rdbuf());
 
     //outserial.write(x, x.length());
 
@@ -594,12 +587,12 @@ Serial::operator << (string &x)
     return *this;
 }
 
-ostream& 
-operator << (ostream &os, Serial& e)
+std::ostream& 
+operator << (std::ostream &os, Serial& e)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
-    string msg;
+    std::string msg;
 
 #if 0
     if (e.GetCode() > EMEDIUMTYPE) {

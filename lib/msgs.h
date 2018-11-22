@@ -98,7 +98,8 @@ public:
         STATUS,
         COMMAND,
         CONFIG,
-        HEARTBEAT
+        HEARTBEAT,
+        RESPONSE
     } xml_msg_e;
   
     typedef retcode_t (Msgs::*methodPtr_t)(XMLNode *node);
@@ -116,7 +117,7 @@ public:
 
     retcode_t init(void);
     retcode_t init(net_mode_e mode);
-    retcode_t init(std::string hostname);
+    retcode_t init(std::string &hostname);
     retcode_t init(net_mode_e mode, std::string hostname);
     retcode_t init(bool block);
     retcode_t init(net_mode_e mode, bool block);

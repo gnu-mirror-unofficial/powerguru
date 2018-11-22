@@ -67,8 +67,7 @@ public:
     termios *GetTtyState (void);
 
     // These methods operate on the serial port
-    retcode_t Open   (std::string name);
-    retcode_t Open   (const char *name);
+    retcode_t Open   (std::string &name);
     retcode_t Close  (void);
     int Read   (char *buf, int nbytes);
     int Write  (const char *buf, int nbytes) const;

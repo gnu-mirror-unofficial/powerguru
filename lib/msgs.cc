@@ -131,12 +131,12 @@ Msgs::init(net_mode_e mode, std::string hostname)
 // By default, if just a hostname is supplied, we assume it's to establish
 // a network connection to the specified host.
 retcode_t
-Msgs::init(std::string hostname)
+Msgs::init(std::string &hostname)
 {
     DEBUGLOG_REPORT_FUNCTION;
   
     if (createNetClient(hostname)) {
-        dbglogfile << "Connected to server at " << hostname.c_str() << endl;
+        dbglogfile << "Connected to server at " << hostname << endl;
         init();                     // initialize the table of pointers
         _net_mode = CLIENT;
         writeNet(heloCreate(_version));
@@ -912,10 +912,13 @@ Msgs::responseCreate(xml_msg_e type, const char *tag, string val)
           str = "meters";
           break;
       case CONFIG:
-          str = "meters";
+          str = "config";
           break;
       case COMMAND:
-          str = "meters";
+          str = "command";
+          break;
+      case RESPONSE:
+          str = "response";
           break;
     };
   
@@ -1448,9 +1451,8 @@ Msgs::commandProcess(XMLNode *node)
 
     // dbglogfile <<  node->valueGet() << endl;
 
-#if 0
     if (_net_mode == DAEMON) {
-        if (strcmp(node->value Get(), "auxilary") == 0) {
+        if (strcmp(node->valueGet(), "auxilary") == 0) {
             str = responseCreate(COMMAND, node->valueGet(), "0.0");
         } else if (strcmp(node->valueGet(), "relay") == 0) {
             str = responseCreate(COMMAND, node->valueGet(), "none");
@@ -1458,8 +1460,11 @@ Msgs::commandProcess(XMLNode *node)
             str = responseCreate(COMMAND, node->valueGet(), "inverter");    
         } else if (strcmp(node->valueGet(), "") == 0) {
             str = responseCreate(COMMAND, node->valueGet(), "charger");
+        } else {
+            dbglogfile << "VALUEGET: " << node->valueGet() << std::endl;
+            str = responseCreate(RESPONSE, node->valueGet(), "foobar");
         }
-        if (writeNet(str)) {
+        if (writeNet(str + "\r\n")) {
             return ERROR;
         } else {
             return SUCCESS;
@@ -1475,7 +1480,6 @@ Msgs::commandProcess(XMLNode *node)
     
         return SUCCESS;
     }
-#endif
 
     return ERROR;  
 }
