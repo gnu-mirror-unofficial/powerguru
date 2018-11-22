@@ -1,5 +1,5 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006-2018 Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -35,13 +35,26 @@ public:
   enum state_e {IDLE, OPEN, INPROGRESS, CLOSED};
   FakeUart(void);
   ~FakeUart(void);
-  retcode_t Open(ErrCond *Err);
-  retcode_t Open(std::string &filespec, ErrCond &Err);
-  retcode_t Close(std::string &filespec, ErrCond &Err);
+  retcode_t Open(ErrCond &err);
+  retcode_t Open(std::string &filespec, ErrCond &err);
+  retcode_t Close(std::string &filespec, ErrCond &err);
 
-  int Read(unsigned char *, int, ErrCond &Err);
-  int Write(unsigned char *, int, ErrCond &Err);
+  int Read(unsigned char *, int, ErrCond &);
+  int Write(const unsigned char *, int, ErrCond &) 
+  {
 
+  }
+  
+  int Write(std::string &str, ErrCond &) {
+    DEBUGLOG_REPORT_FUNCTION;
+    
+    if (!str.empty()) {
+      //dbglogfile << "Writing " << str << " to uart FD: " << _uartfd << std::endl;
+      //write(4, str.c_str(), str.size());
+      //write (_uartfd, str.c_str(), str.size());
+      write(4, "Hello World!\r\n", 12); 
+    }
+  }
   void SendEOL(void);
 
    // get a byte from the console
@@ -68,12 +81,12 @@ public:
 
   FILE *GetStreamHandle(void) { return uartStream; }
 
-  int GetFileDescriptor(void) { return uartfd; }
+  int GetFileDescriptor(void) { return _uartfd; }
 
 
 private:
   std::string name;
-  int uartfd;
+  int _uartfd;
   FILE *uartStream;
   state_e state;
 };

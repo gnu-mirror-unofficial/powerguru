@@ -21,12 +21,12 @@
 # include "config.h"
 #endif
 
+#include <string>
 #include <cstring>
 #include <vector>
-#include <stdlib.h>
+#include <cstdlib>
 #include <unistd.h>
 
-#include <cstring>
 #include <iostream>
 #include <fstream>
 
@@ -45,20 +45,20 @@ extern char *optarg;
 #include "fakeuart.h"
 #include "rc.h"
 
-using namespace std;
 using namespace rcinit;
-using namespace outbackpower;
+using namespace pdev;
 
 static void usage (const char *);
 extern LogFile dbglogfile;
  
-retcode_t sim_mx(const char *filespec);
-retcode_t sim_fx(const char *filespec);
-  
+retcode_t sim_mx(const std::string &filespec);
+retcode_t sim_fx(const std::string &filespec);
+
+int
 main(int argc, char *argv[])
 {
     int c, i, ch, ret;
-    char *filespec = 0;
+    std::string device;
     ErrCond Err;
     outback_type_t otype;
     
@@ -71,13 +71,14 @@ main(int argc, char *argv[])
     RCinitFile config;
     config.load_files();
     if (config.deviceGet().size() > 0) {    
-      filespec = (char *)config.deviceGet().c_str();
+      device = config.deviceGet();
+    } else {
+        device = DEFAULT_UART;
     }
 
     // Default to being an MX charge controller device
     otype = OUTBACK_MX;
     
-    filespec = DEFAULT_UART;
     // Process the command line arguments.
     while ((c = getopt (argc, argv, "hvd:t:")) != -1) {
       switch (c) {
@@ -88,11 +89,11 @@ main(int argc, char *argv[])
       case 'v':
         // verbosity++;
 	dbglogfile.set_verbosity();
-	dbglogfile << "Verbose output turned on" << endl;
+	dbglogfile << "Verbose output turned on" << std::endl;
 	break;
         
       case 'd':
-	filespec = strdup(optarg);
+	device = strdup(optarg);
 	break;
 
       case 't':
@@ -101,7 +102,7 @@ main(int argc, char *argv[])
         } else if (strncmp(optarg, "fx", 2) == 0) {
           otype = OUTBACK_MX;
         } else {
-          cerr << "ERROR: No Device Type specified, \"" << optarg << "\" is bogus!" << endl;
+            std::cerr << "ERROR: No Device Type specified, \"" << optarg << "\" is bogus!" << std::endl;
           exit(-1);
         }
         
@@ -115,80 +116,83 @@ main(int argc, char *argv[])
 
     // Say which device we're simulating
     if (otype == OUTBACK_MX) {
-      dbglogfile << "Simulating a Outback MX60 charge controller" << endl;
-      sim_mx(filespec);
+      dbglogfile << "Simulating a Outback MX60 charge controller" << std::endl;
+      sim_mx(device);
     }
     if (otype == OUTBACK_FX) {
-      dbglogfile << "Simulating a Outback FX Series Inverter" << endl;
-      sim_fx(filespec);
+      dbglogfile << "Simulating a Outback FX Series Inverter" << std::endl;
+      sim_fx(device);
     }
 
+    exit(0);
 }
 
 static void
 usage (const char *prog)
 {
-    cerr <<"This program implements a command line interface" << endl; 
-    cerr << "for an Outback Power Systems Device" << endl;
-    cerr << "Usage: " << prog << " [hvd]" << endl;
-    cerr << "\t-h\t\t\t\tHelp (this display)" << endl;
-    cerr << "\t-v\t\t\t\tVerbose mode" << endl;
-    cerr << "\t-d [filespec]\t\t\tSpecify Serial Port (default=/dev/ttyS0)" << endl;
-    cerr << "\t-t [t]\t\t\t\tSpecify Device Type (default=mx)" << endl;
+    std::cerr <<"This program implements a command line interface" << std::endl; 
+    std::cerr << "for an Outback Power Systems Device" << std::endl;
+    std::cerr << "Usage: " << prog << " [hvd]" << std::endl;
+    std::cerr << "\t-h\t\t\t\tHelp (this display)" << std::endl;
+    std::cerr << "\t-v\t\t\t\tVerbose mode" << std::endl;
+    std::cerr << "\t-d [filespec]\t\t\tSpecify Serial Port (default=/dev/ttyS0)" << std::endl;
+    std::cerr << "\t-t [t]\t\t\t\tSpecify Device Type (default=mx)" << std::endl;
     
     exit (-1);
 }
 
 retcode_t
-sim_mx(const char *filespec)
+sim_mx(const std::string &device)
 {
-    struct stat stats;
-    char *home;
-    string loadfile;
-    ErrCond Err;
-    string line, newline;
-    ifstream in;
+    //struct stat stats;
+    std::string datafile;
+    std::string home;
+    ErrCond err;
+    std::string line, newline;
+    std::ifstream in;
     FakeUart fu;
-    if (filespec == 0) {
+    if (device.empty()) {
         return ERROR;
     }
     
-    fu.Open(&Err);
-    
-    // Check the users home directory
-    home = getenv("HOME");
-    if (home) {
-        loadfile = home;
-        loadfile += "/.powerguru/mx60.data";
-    }
-    
     // See if it exists in the right place
-    dbglogfile << "Seeing if " << loadfile.c_str() << " exists." << endl;
-    if (stat(loadfile.c_str(), &stats) == 0) {
-        in.open(loadfile.c_str());
+    fu.Open(err);
+    
+    // Check the users home directory for the data file
+    datafile = std::getenv("HOME");
+    datafile += "/.powerguru/mx60.data";
+    
+    //dbglogfile << "Seeing if the TTY "<< device << " exists." << std::endl;
+    //if (stat(datafile.c_str(), &stats) == 0) {
+    in.open(datafile);
+    if (!in) {
+        dbglogfile << "ERROR: Couldn't open datafile: " << datafile << std::endl;
+        return ERROR;
+    } else {
+        dbglogfile << "Opened datafile: " << datafile << std::endl;
+    }
         
-        if (!in) {
-            dbglogfile << "ERROR: Couldn't open file: " << filespec << endl;
-            return ERROR;
-        }
-        
-        // Read in each line and send it
-        while (getline(in, line)) {
-            newline = '*';
-            newline += line;
-            newline += '\n';
-            fu.Write((unsigned char *)newline.c_str(), newline.size(), Err);
-            // All outback products send their data at 1 second intervals
-            sleep(1);
-        }
-    } 
+    // Read in each line and send it
+    while (getline(in, line)) {
+        //newline = '*';
+        newline = line;
+        newline += "\r\n";
+        std::cout << newline;
+        write(4, newline.c_str(), newline.size());
+        //fu.Write(newline, err);
+        //fu.Write((const unsigned char *)newline.c_str(), newline.size(), err);
+        // All outback products send their data at 1 second intervals
+        sleep(1);
+    }
+ 
     in.close();
     return ERROR;
 }
 
 retcode_t
-sim_fx(const char *filespec)
+sim_fx(const std::string &device)
 {
+    return ERROR;
 }
 
 // local Variables:
