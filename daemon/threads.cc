@@ -43,10 +43,50 @@ extern char *optarg;
 #include "log.h"
 #include "err.h"
 #include "ownet.h"
+#include "console.h"
+#include "database.h"
 
 extern LogFile dbglogfile;
 
 using namespace std::chrono_literals;
+
+#if 0
+void
+console_handler(Console &con)
+{
+    DEBUGLOG_REPORT_FUNCTION;
+    while ((ch = con.Getc()) != 'q') {
+        if (ch > 0) {                // If we have something, process it
+            con.Putc (ch);          // echo inputted character to screen
+            switch (ch) {
+              case 'Q':
+              case 'q':
+                  con.Puts("Qutting PowerGuru due to user input!\n");
+                  msg.writeNet("quit");
+                  con.Reset();
+                  exit(0);
+                  break;
+              case '?':
+                  con.Puts("PowerGuru client\n");
+                  con.Puts("\t? - help\r\n");
+                  con.Puts("\tq - Quit\r\n");
+                  con.Puts("\tQ - Quit\r\n");
+                  sleep(2);
+              default:
+                  break;
+            };
+        }
+
+}
+#endif
+
+//#if defined(HAVE_LIBPQ) && defined(HAVE_MARIADB)
+void
+msg_handler(Database &db)
+{
+    DEBUGLOG_REPORT_FUNCTION;
+}
+//#endif
 
 #ifdef BUILD_OWNET
 void
@@ -54,22 +94,25 @@ ownet_handler(pdev::Ownet &ownet)
 {
     DEBUGLOG_REPORT_FUNCTION;
     dbglogfile << "PowerGuru - 1 Wire Mode" << std::endl;
-    //dev::Ownet ownet;
-    //ownet.dump();
     bool poll = true;
-    
-    std::map<std::string, pdev::ownet_t> sensors = ownet.getSensors();
-    std::map<std::string, pdev::ownet_t>::iterator it;
-    while (poll) {
+
+    // Open the network connection to the database.
+    std::string query = "INSERT INTO onewire VALUES(";
+    query += "";
+    query += ");";
+
+    std::map<std::string, pdev::ownet_t *> sensors = ownet.getSensors();
+    std::map<std::string, pdev::ownet_t *>::iterator it;
+    while (ownet.getPollSleep() != 0) {
         for (it = sensors.begin(); it != sensors.end(); it++) {
-            if (it->second.family == "10") {
+            if (it->second->family == "10") {
                 ownet.getTemperature(it->first.c_str());
             }
         }
         ownet.dump();
         
         // Don't eat up all the cpu cycles!
-        std::this_thread::sleep_for(std::chrono::seconds(2));
+        std::this_thread::sleep_for(std::chrono::seconds(ownet.getPollSleep()));
     }
 }
 #endif
@@ -80,7 +123,9 @@ outback_handler(pdev::Ownet &ownet)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
-    dbglogfile << "FIXME: unimplementd"<< std::endl;
+    dbglogfile << "FIXME: outback_handler() unimplementd"<< std::endl;
+    // Don't eat up all the cpu cycles!
+    std::this_thread::sleep_for(std::chrono::seconds(ownet.getPollSleep()));
 }
 #endif
 
@@ -90,7 +135,9 @@ xantrex_handler(pdev::Ownet &ownet)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
-    dbglogfile << "FIXME: unimplemented"<< std::endl;
+    dbglogfile << "FIXME: xantrext_handler() unimplemented"<< std::endl;
+    // Don't eat up all the cpu cycles!
+    std::this_thread::sleep_for(std::chrono::seconds(ownet.getPollSleep()));
 }
 #endif
 
