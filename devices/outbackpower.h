@@ -34,8 +34,6 @@
 // series. Each packet is 49 bytes, and is transmitted as ASCII
 // numerals for portability, with an ASCII comma character
 // seperating each field.
-namespace pdev
-{
 
 // Outback FX Inverter protocol
 struct outback_fx
@@ -351,9 +349,6 @@ private:
     warning_mode_t _warning_mode;
     int _checksum;
 };
-
-// end of namespace pdev
-}
 
 // __OUTBACK_POWER_H__
 #endif

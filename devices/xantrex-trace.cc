@@ -24,7 +24,6 @@
 #include <vector>
 #include <map>
 
-#include "err.h"
 #include "log.h"
 #include "console.h"
 #include "xantrex-trace.h"
@@ -1579,6 +1578,68 @@ XantrexUI::exportMeterData(meter_data_t *data)
 
     return data;
 }
+
+#ifdef BUILD_XANTREX
+    if (xantrexmode) {
+        XantrexUI ui;
+        // Open a console for user input
+        con.Open();
+        if (poll) {
+            // Open the serial port
+            try {
+                ui.Open(filespec);
+            }
+            catch (ErrCond catch_err) {
+                cerr << catch_err << endl;
+                exit(1);
+            }
+            //
+            for (i=0; i<1000; i++) {
+                //display = ui.MenuHeadingPlus();
+#if 0
+                ch = con.Getc();
+                switch (ch) {
+                    // Toggle the DTR state, which is as close as we get to
+                    // flow control.
+                  case 'Q':
+                  case 'q':
+                      return SUCCESS;
+                      break;
+                  case '?':
+                      con.Puts("PowerGuru - Outback Mode\r\n");
+                      con.Puts("\t? - help\r\n");
+                      con.Puts("\tq - Quit\r\n");
+                      con.Puts("\tQ - Quit\r\n");
+                      sleep(2);
+                  default:
+                      break;
+                };
+#endif
+
+                vector<meter_data_t *> data = ui.PollMeters(1);
+//           ui.MenuHeadingPlus();
+//           ui.MenuHeadingMinus();
+#if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
+                pdb.queryInsert(data);
+#if 0
+                for (i=0; i<data->size(); i++) {
+                    //cout << "Inverter/Charger amps: " << data[i]->inverter_amps << endl;
+                    cout << "Input amps AC: " << data[i]->input_amps << endl;
+                    cout << "Load  amps AC: " << data[i]->load_amps << endl;
+                    cout << "Battery actual volts DC: " << data[i]->actual_volts << endl;
+                    cout << "Battery TempComp volts DC: " << data[i]->tempcomp_volts << endl;
+                    cout << "Inverter volts AC: " << data[i]->inverter_volts << endl;
+                    cout << "Grid (AC1) volts AC: " << data[i]->ac1 << endl;
+                    cout << "Generator (AC2) volts AC: " << data[i]->ac2 << endl;
+                    cout << "Read Frequency Hertz: " << data[i]->hertz << endl;
+                    //pdb.queryInsert(data[i]);
+                    //delete data[i];
+                }
+#endif
+#endif
+                //sleep(1);
+                cout << endl;
+            }
 
 // local Variables:
 // mode: C++

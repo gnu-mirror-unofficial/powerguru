@@ -24,7 +24,6 @@
 #include <cstring>
 #include <vector>
 #include <map>
-#include "err.h"
 #include <console.h>
 
 #include "serial.h"

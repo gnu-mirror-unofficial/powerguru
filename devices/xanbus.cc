@@ -23,7 +23,6 @@
 #include <vector>
 #include <map>
 
-#include "err.h"
 #include "log.h"
 #include "console.h"
 #include "xanbus.h"

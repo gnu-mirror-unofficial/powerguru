@@ -24,14 +24,12 @@
 #include <vector>
 #include <map>
 
-#include "err.h"
 #include "log.h"
 #include "console.h"
 #include "outbackpower.h"
 #include "database.h"
 
 using namespace std;
-using namespace pdev;
 
 const int PACKET_SIZE = 49;
 
@@ -91,9 +89,6 @@ outback::commInit(string filespec)
         exit(0);
     }    
 
-#if 0
-    Open(filespec);
-#else
     try {
         Open(filespec);
     }
@@ -101,7 +96,6 @@ outback::commInit(string filespec)
         dbglogfile << catch_err << endl;
         exit(1);
     }
-#endif
   
     return commInit(GetFD());
 }
@@ -712,9 +706,24 @@ outback::exportMeterData(meter_data_t *data)
     // The Voltage coming in from the PV panels before MPPT
     data->pv_volts_in = _pv_input_voltage;
 
-  
     return data;
 }
+
+#ifdef BUILD_OUTBACK
+// Talk to an Outback Power Systems device
+        con.Puts("PowerGuru - Outback Mode\r\n");
+        //outback outdev("/dev/pts/7");
+        outback outdev(filespec);
+        if (poll) {
+            // outdev.poll();
+#if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
+        } else {
+            if (outdev.main(con, pdb) == ERROR) {
+                dbglogfile << "ERROR: Main Loop exited with an error!" << endl;
+            }
+#endif
+        }
+#endif
 
 // local Variables:
 // mode: C++

@@ -20,7 +20,6 @@
 # include "config.h"
 #endif
 
-#include "err.h"
 #include "log.h"
 #include "ownet.h"
 #include <string>

@@ -235,7 +235,7 @@ public:
             std::string dev = *it + "temperature";
             if (OW_present(dev.c_str()) == 0) {
                 dbglogfile << "Temperature sensor found: " << *it << std::endl;
-                temperature_t *temp= new temperature_t[1];
+                temperature_t *temp = new temperature_t[1];
                 memset(temp, 0, sizeof(temperature_t));
                 temp->temp = std::stof(getValue(*it, "temperature"));
                 temp->lowtemp = std::stof(getValue(*it, "templow"));
@@ -255,6 +255,7 @@ public:
             } else {
                 dbglogfile << "Temperature sensor not found!" << std::endl;
             }
+            std::lock_guard<std::mutex> guard(_mutex);
             _sensors[*it] = data;
         }
     }
