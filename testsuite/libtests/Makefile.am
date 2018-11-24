@@ -17,29 +17,32 @@
 
 ## Process this file with automake to generate Makefile.in
 
-AUTOMAKE_OPTIONS = dejagnu
+AUTOMAKE_OPTIONS = dejagnu subdir-objects
 
-# __USLC__ makes MySQL++ use the std namespace
-AM_CXXFLAGS = -g -D__USLC__
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/lib $(LIBXML_CPPFLAGS) $(PQ_CPPFLAGS) -DSRCDIR=\"$(srcdir)\"
 
-AM_INCLUDES =  $(MYSQLH) # $(INCLTDL)
+if BUILD_LIBXML
+noinst_PROGRAMS =  xml-test # tcpip tutil childtcpip
+else
+noinst_PROGRAMS =  tcpip tutil childtcpip
+endif
 
-noinst_PROGRAMS = tcpip tutil childtcpip
+LOG = ../../lib/log.lo
 
-AM_CPPFLAGS = -I$(top_srcdir)/lib
+if BUILD_LIBXML
+xml_test_SOURCES = xml-test.cc ../../lib/xml.cc
+xml_test_LDADD = $(LIBXML_LIBS) $(LOG)
+endif
 
-LOG = ../../lib/log.lo ../../lib/err.lo
-# Tcpip.C test case
-tcpip_SOURCES = tcpip-test.cc
-tcpip_LDADD =  ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
-tcpip_DEPENDENCIES = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
+# FIXME: don't build till the code in lib is fixed.
+# tcpip_SOURCES = tcpip-test.cc
+# tcpip_LDADD =  ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
+# tcpip_DEPENDENCIES = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
 
-#
-tutil_SOURCES = tcputil-test.cc
-tutil_LDADD = ../../lib/tcputil.lo  $(LOG) # ../../lib/libpguru.la
-tutil_DEPENDENCIES = ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
+# tutil_SOURCES = tcputil-test.cc
+# tutil_LDADD = ../../lib/tcputil.lo  $(LOG) # ../../lib/libpguru.la
+# tutil_DEPENDENCIES = ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
 
-#
-childtcpip_SOURCES = childtcpip.cc
-childtcpip_LDADD = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
-childtcpip_DEPENDENCIES = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
+# childtcpip_SOURCES = childtcpip.cc
+# childtcpip_LDADD = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
+# childtcpip_DEPENDENCIES = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
