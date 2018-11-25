@@ -34,298 +34,76 @@
 
 #include "xml.h"
 #include "log.h"
-#include "err.h"
-#include "msgs.h"
-
-using namespace std;
 
 extern LogFile dbglogfile;
 
-XMLAttr::XMLAttr() : _name(0), _value(0)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-}
-
-const char *
-XMLAttr::nameGet(void)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    return (const char *)_name;
-}
-
-void
-XMLAttr::nameSet(const xmlChar *name)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    _name = name;
-}
-
-const char *
-XMLAttr::valueGet(void)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    return (const char *)_value;
-}
-
-void
-XMLAttr::valueSet(const xmlChar *val)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    _value = val;
-}
-
-XMLAttr::~XMLAttr()
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-}
-
 // XMLNode methods. An XMLNode holds all the info for an XML node,
 // including it's children and attributes.
-XMLNode::XMLNode() : _name(0), _value(0)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-}
+// XMLNode::XMLNode()
+// {
+//     // DEBUGLOG_REPORT_FUNCTION;
+// }
 
-vector<XMLNode *>
-XMLNode::childrenGet(void)
-{
-    return _children;
-}
+// XMLNode::~XMLNode()
+// {
+//     // DEBUGLOG_REPORT_FUNCTION;
+//     unsigned int i;
+// }
 
-vector<XMLAttr *>
-XMLNode::attributesGet(void)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    return _attributes;
-}
-
+// Convert a raw XML node to a C++ representation
 XMLNode *
-XMLNode::childGet(int x)
+XML::extractNode(xmlNodePtr node)
 {
-    // DEBUGLOG_REPORT_FUNCTION;
-    return _children[x];
-}
-
-void
-XMLNode::childAdd(XMLNode *node)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    _children.push_back(node);
-}
-
-XMLAttr *
-XMLNode::attribGet(int x)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    return _attributes[x];
-}
-
-void
-XMLNode::attribAdd(XMLAttr *attr)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    _attributes.push_back(attr);
-}
-
-XMLNode *
-XMLNode::operator [] (int x)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    return _children[x];
-}
-
-XMLNode *
-XMLNode::operator = (XMLNode &node)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    _name = node._name;
-    _value = node._value;
-    _children = node._children;
-    _attributes = node._attributes;
-    return this;
-}
-
-XMLNode *
-XMLNode::operator = (XMLNode *node)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    _name = node->_name;
-    _value = node->_value;
-    _children = node->_children;
-    _attributes = node->_attributes;
-    return this;
-}
-
-const char *
-XMLNode::nameGet(void)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    return (const char *)_name;
-}
-
-void
-XMLNode::nameSet(const xmlChar *name)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    _name = name;
-}
-
-const char *
-XMLNode::valueGet(void)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    return (const char *)_value;
-}
-
-void
-XMLNode::valueSet(const xmlChar *val)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    _value = val;
-}
-
-
-XMLNode::~XMLNode()
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    unsigned int i;
-  
-    for (i=0; i<_children.size(); i++) {
-//     if (_children[i]->_name) {
-//       delete _children[i]->_name;
-//     }
-//     if (_children[i]->_value) {
-//       delete _children[i]->_value;
-//     }
-        delete _children[i];
-    }
-
-    for (i=0; i<_attributes.size(); i++) {
-        //     if (_attributes[i]->_name) {
-//       delete _attributes[i]->_name;
-//     }
-//     if (_attributes[i]->_value) {
-//       delete _attributes[i]->_value;
-//     }
-        delete _attributes[i];
-    }
-
-    _children.clear();
-    _attributes.clear();
-}
-
-int
-XMLNode::childrenSize(void)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    return _children.size();  
-}
-
-bool
-XMLNode::hasContent(void)
-{
-    return (_value > 0) ? true : false;
-}
-
-bool
-XMLNode::hasChildren(void)
-{
-    return (_children.size() > 0) ? true : false;
-}
-
-bool
-XMLNode::hasAttributes(void)
-{
-    return (_attributes.size() > 0) ? true : false;
-}
-
-int
-XMLNode::attributesSize(void)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    return _attributes.size();
-}
-
-// XML Constructor
-XML::XML()
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-}
-
-// Parse the ASCII XML string into memory
-XML::XML(string xml_in)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-    parseXML(xml_in);
-}
-
-XML::XML(struct node *childNode)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-}
-
-XML::~XML()
-{
-    // DEBUGLOG_REPORT_FUNCTION;
-}
-
-XMLNode*
-XML::extractNode(xmlNodePtr node, bool mem)
-{
-    // DEBUGLOG_REPORT_FUNCTION;
+    DEBUGLOG_REPORT_FUNCTION;
     xmlAttrPtr attr;
     xmlNodePtr childnode;
     xmlChar *ptr = NULL;
-    XMLNode *element, *child;
+    XMLNode *child;
     int len;
 
-    element = new XMLNode;
-    memset(element, 0, sizeof (XMLNode));
-            
-    //  dbglogfile << "\rCreated new element for " << (const char *)node->name << " at " << element << endl;
+    // dbglogfile << "\rCreated new element for " << (const char *)node->name << " at " << element << std::endl;
 
-    dbglogfile << "extracting node " << (const char *)node->name << endl;
+    dbglogfile << "extracting node " << node->name << std::endl;
+
+    XMLNode *xml = new XMLNode;
+    std::string name;
+    std::string value;
 
     // See if we have any Attributes (properties)
-    attr = node->properties;
-    while (attr != NULL) {
+    if (attr = node->properties) {
+        // extract all the attributes for this node
+        while (attr != NULL) {
+            name = reinterpret_cast<const char *>(attr->name);
+            value = reinterpret_cast<const char *>(attr->children->content);
+            xml->attribAdd(name, value);
+            attr = attr->next;
 #if 0
-        dbglogfile << " extractNode " << (const char *)node->name
-                   << " has property "
-                   << (const char *)attr->name << " value is "
-                   << (const char *)attr->children->content << endl;
+            dbglogfile << "FIXME: attribute " << node->name
+                       << " has property "
+                       << name << " value is "
+                       << value << std::endl;
 #endif
-        XMLAttr *attrib = new XMLAttr;
-        memset(attrib, 0, sizeof (XMLAttr));
-        attrib->nameSet(xmlStrdup(attr->name));
-        attrib->valueSet(xmlStrdup(attr->children->content));
-#if 0
-        dbglogfile << "\tPushing attribute " << (const char *)attr->name
-                   << " for element "
-                   << (const char *)node->name << " has value "
-                   << (const char *)attr->children->content << endl;
-#endif
-        element->attribAdd(attrib);
-        attr = attr->next;
+        }
     }
 
-    element->nameSet(xmlStrdup(node->name));
+    name = reinterpret_cast<const char *>(node->name);
+    xml->nameSet(name);
     if (node->children) {
         //ptr = node->children->content;
         ptr = xmlNodeGetContent(node->children);
         if (ptr != NULL) {
-            if ((strchr((const char *)ptr, '\n') == 0) && (ptr[0] != 0))
-                {
-                    if (node->children->content == NULL) {
-                        //dbglogfile << "Node " << (const char *)node->name << " has no contents" << endl;
-                    } else {
-#if 0
-                        dbglogfile << "extractChildNode from text for " << (const char *)node->name
-                                   << " has contents " << (const char *)ptr << endl;
+            if ((strchr((const char *)ptr, '\n') == 0) && (ptr[0] != 0)) {
+                if (node->children->content == NULL) {
+                    dbglogfile << "FIXME: Node " << name << " has no contents" << std::endl;
+                } else {
+                    value = reinterpret_cast<const char *>(node->children->content);
+#if 1
+                    dbglogfile << "extractChildNode from text for " << name
+                               << " has contents " << value << std::endl;
 #endif
-                        element->valueSet(xmlStrdup(ptr));
-                    }
+                    xml->valueSet(value);
                 }
+            }
             xmlFree(ptr);
         }
     }
@@ -335,36 +113,35 @@ XML::extractNode(xmlNodePtr node, bool mem)
 
     while (childnode != NULL) {
         if (childnode->type == XML_ELEMENT_NODE) {
-            //dbglogfile << "\t\t extracting node " << (const char *)childnode->name << endl;
-            child = extractNode(childnode, mem);
+            dbglogfile << "\t\t extracting node " << (const char *)childnode->name << std::endl;
+            XMLNode *child = extractNode(childnode);
             //if (child->_value.get_type() != as_value::UNDEFINED) {
 #if 0
-            if (child->valueGet() != "") {
+            if (!child->valueGet().empty() {
                 dbglogfile << "\tPushing childNode " << child->nameGet()
                            << " value " << child->valueGet()
                            <<  " on element "
-                           <<  element << endl;
+                           <<  xml << std::endl;
             } else {
                 dbglogfile << "\tPushing childNode " << child->nameGet().c_str()
-                           << endl;
+                           << std::endl;
             }
 #endif
-            element->childAdd(child);
+            xml->childAdd(child);
         }
         childnode = childnode->next;
     }
 
-    return element;
+    return xml;
 }
 
+#if 0
 // Read in an XML document from the specified source
 bool
-XML::parseDoc(xmlDocPtr document, bool mem)
+XML::parseRoot(xmlDocPtr document)
 {
-    // DEBUGLOG_REPORT_FUNCTION;
-    XMLNode *top;
+    DEBUGLOG_REPORT_FUNCTION;
     xmlNodePtr cur;
-    Msgs msg;
   
     if (document == 0) {
         dbglogfile << "ERROR: Can't load XML file!";
@@ -374,28 +151,28 @@ XML::parseDoc(xmlDocPtr document, bool mem)
     cur = xmlDocGetRootElement(document);
   
     if (cur != NULL) {
-        top = extractNode(cur, mem);
         //    msg.dump(top);
-        msg.process(top);
-        _nodes = top;
-        cur = cur->next;
+        // msg.process(top);
+        //node = _nodes->push_back(extractNode(cur));
+        //cur = cur->next;
     }  
 
     return true;
 }
+#endif
 
 // This reads in an XML file from disk and parses into into a memory resident
 // tree which can be walked through later.
 bool
-XML::parseXML(string xml_in)
+XML::parseMem(const std::string &xml_in)
 {
-    // DEBUGLOG_REPORT_FUNCTION;
+    DEBUGLOG_REPORT_FUNCTION;
     bool          ret = true;
 
-    dbglogfile << "Parse XML from memory: " << xml_in.c_str() << endl;
+    dbglogfile << "Parse XML from memory: " << xml_in.c_str() << std::endl;
 
     if (xml_in.size() == 0) {
-        dbglogfile << "ERROR: XML data is empty!" << endl;
+        dbglogfile << "ERROR: XML data is empty!" << std::endl;
         return false;
     }
 
@@ -415,12 +192,12 @@ XML::parseXML(string xml_in)
             node = processNode(reader, node);
         }
         xmlFreeTextReader(reader);
-        if (ret != false) {
-            dbglogfile << "couldn't parse" << xml_in << endl;
+        if (ret != false) {xg
+            dbglogfile << "couldn't parse" << xml_in << std::endl;
             return false;
         }
     } else {
-        dbglogfile << "Unable to open " << xml_in << endl;
+        dbglogfile << "Unable to open " << xml_in << std::endl;
         return false;
     }
     xmlCleanupParser();
@@ -431,10 +208,11 @@ XML::parseXML(string xml_in)
   
     _doc = xmlParseMemory(xml_in.c_str(), xml_in.size());
     if (_doc == 0) {
-        dbglogfile << "ERROR: Can't parse XML data!" << endl;
+        dbglogfile << "ERROR: Can't parse XML data!" << std::endl;
         return false;
     }
-    ret = parseDoc(_doc, true);
+    //ret = parseRoot(_doc);
+    //ret = xmlDocGetRootElement(_doc);
     xmlCleanupParser();
     xmlFreeDoc(_doc);
     xmlMemoryDump();
@@ -476,11 +254,11 @@ const char *tabs[] = {
 #ifdef USE_XMLREADER
 // This is an xmlReader (SAX) based parser. For some reason it core dumps
 // when compiled with GCC 3.x, but works just fine with GCC 4.x.
-XMLNode*
-XML::processNode(xmlTextReaderPtr reader, XMLNode *node)
+const XMLNode &
+XML::processNode(xmlTextReaderPtr reader, XMLNode &node)
 {
-    // DEBUGLOG_REPORT_FUNCTION;
-    // dbglogfile << " node is " << node << endl;
+    DEBUGLOG_REPORT_FUNCTION;
+    // dbglogfile << " node is " << node << std::endl;
     static XMLNode *parent[10];
     xmlChar *name, *value;
     int   depth;
@@ -512,7 +290,7 @@ XML::processNode(xmlTextReaderPtr reader, XMLNode *node)
       case XML_READER_TYPE_NONE:
           break;
       case XML_READER_TYPE_SIGNIFICANT_WHITESPACE: // This is an empty text node
-          //dbglogfile << "Whitespace at depth " << depth << endl;
+          //dbglogfile << "Whitespace at depth " << depth << std::endl;
           break;
       case XML_READER_TYPE_END_ELEMENT:
           if (depth == 0) {          // This is the last node in the file
@@ -521,7 +299,7 @@ XML::processNode(xmlTextReaderPtr reader, XMLNode *node)
           }
           parent[depth]->_children.push_back(element);
           //      dbglogfile << "Pushing element XXX on node "
-          //                 << node->_name << parent[depth]->_name << endl;
+          //                 << node->_name << parent[depth]->_name << std::endl;
           //       dbglogfile << "End element at depth %d is %s for parent %s %p\n", depth, name,
 //               parent[depth]->_name, parent[depth]);
           element = parent[depth];
@@ -585,15 +363,15 @@ XML::processNode(xmlTextReaderPtr reader, XMLNode *node)
 // This reads in an XML file from disk and parses into into a memory resident
 // tree which can be walked through later.
 bool
-XML::load(const char *filespec)
+XML::parseFile(const std::string &filespec)
 {
-    // DEBUGLOG_REPORT_FUNCTION;
-    bool ret = true;
-    dbglogfile << "Load disk XML file: " << filespec << endl;
+    DEBUGLOG_REPORT_FUNCTION;
+    dbglogfile << "Load disk XML file: " << filespec << std::endl;
   
     //dbglogfile << %s: mem is %d\n", __FUNCTION__, mem);
 
 #ifdef USE_XMLREADER
+    bool ret = true;
     XMLNode *node = 0;
     xmlTextReaderPtr reader;  
   
@@ -606,11 +384,11 @@ XML::load(const char *filespec)
         }
         xmlFreeTextReader(reader);
         if (ret != false) {
-            dbglogfile << "couldn't parse" << filespec << endl;
+            dbglogfile << "couldn't parse" << filespec << std::endl;
             return false;
         }
     } else {
-        dbglogfile << "ERROR: Unable to open %s\n" << filespec << endl;
+        dbglogfile << "ERROR: Unable to open %s\n" << filespec << std::endl;
         return false;
     }
     xmlCleanupParser();
@@ -618,12 +396,13 @@ XML::load(const char *filespec)
 #else
 #ifdef USE_DOM
     xmlInitParser();
-    _doc = xmlParseFile(filespec);
+    _doc = xmlParseFile(filespec.c_str());
     if (_doc == 0) {
-        dbglogfile << "ERROR: Can't load XML file: " << filespec << endl;
+        dbglogfile << "ERROR: Can't load XML file: " << filespec << std::endl;
         return false;
     }
-    ret = parseDoc(_doc, false);
+    //_nodes = extractNode(xmlDocGetRootElement(_doc));
+    _nodes = extractNode(xmlDocGetRootElement(_doc));
     xmlCleanupParser();
     xmlFreeDoc(_doc);
     xmlMemoryDump();
@@ -634,35 +413,28 @@ XML::load(const char *filespec)
 #endif
 }
 
-XMLNode *
-XML::operator [] (int x) {
-    // DEBUGLOG_REPORT_FUNCTION;
-    return _nodes.childGet(x);
-}
+// const XMLNode &
+// XML::operator [] (int x) {
+//     // DEBUGLOG_REPORT_FUNCTION;
+//     return _nodes->childGet(x);
+// }
 
-bool
-XML::hasChildren(void)
-{
-    return (_nodes.childrenSize() > 0)? true : false;
-}
+// bool
+// XML::hasChildren(void)
+// {
+//     return (_nodes->childrenSize() > 0)? true : false;
+// }
 
-const char *
-XML::nodeNameGet(void)
-{
-    return (const char *)_nodes.nameGet();
-}
+// const std::string &
+// XML::nodeNameGet(void)
+// {
+//     return _nodes->nameGet();
+// }
 
-int
-XML::size(void)
+void
+XMLNode::operator = (XMLNode &node)
 {
-    return _nodes.size();
-}
-
-XML *
-XML::operator = (XMLNode *node)
-{
-    _nodes = node;    
-    return this;
+    _name = node.nameGet();
 }
 
 int

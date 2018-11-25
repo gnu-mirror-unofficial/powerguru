@@ -26,87 +26,88 @@
 
 #include <cstring>
 #include <vector>
+#include <map>
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <libxml/xmlreader.h>
 #include <libxml/xmlstring.h>
 #include "xml.h"
 #include "log.h"
-#include "err.h"
 
+#if 0
 // This holds the data (name & value) for an XML node's attributes.
 class XMLAttr {
 public:
-  XMLAttr();
-  ~XMLAttr();
-  const char *nameGet(void);
-  void nameSet(const xmlChar *name);
-  const char *valueGet(void);
-  void valueSet(const xmlChar *val);
- private:
-  const xmlChar *_name;
-  const xmlChar *_value;
+    XMLAttr();
+    ~XMLAttr();
+    const std::string &nameGet(void);
+    void nameSet(const std::string &name);
+    const std::string &valueGet(void);
+    void valueSet(const std::string &val);
+private:
+    std::string _name;
+    std::string _value;
 };
+#endif
 
 // This holds the data (name & value) for an XML node.
 class XMLNode
 {
 public:
-  XMLNode();
-  ~XMLNode();
+    XMLNode() {};
+    ~XMLNode() {};
 
-  int size(void) { return _children.size(); }
-  XMLNode *operator [] (int x);
-  XMLNode *operator = (XMLNode &node);
-  XMLNode *operator = (XMLNode *node);
+    XMLNode *childGet(int x) { return _children[x]; }
+    XMLNode *operator [] (int x) { return _children[x]; }
+    void operator = (XMLNode &node);
 
-  const char *nameGet(void);
-  //  void nameSet(std::string name);
-  void nameSet(const xmlChar *name);
-  const char *valueGet(void);
-  //  void valueSet(std::string val);
-  void valueSet(const xmlChar *val);
-  
-  std::vector<XMLNode *> childrenGet(void);
-  XMLNode *childGet(int x);
-  void childAdd(XMLNode *node);
-  
-  std::vector<XMLAttr *> attributesGet(void);
-  XMLAttr *attribGet(int x);
-  void attribAdd(XMLAttr *attr);
-  int childrenSize(void);
-  int attributesSize(void);
-  bool hasContent(void);
-  bool hasChildren(void);
-  bool hasAttributes(void);
- private:
-  const xmlChar         *_name;
-  const xmlChar         *_value;
-  std::vector<XMLNode *> _children;
-  std::vector<XMLAttr *> _attributes;
+    const std::string &nameGet(void) { return _name; }
+    void nameSet(const std::string &name) { _name = name; }
+    const std::string &valueGet(void) { return _value; }
+    void valueSet(const std::string &val) { _value = val; }
+    void childAdd(XMLNode *node) { _children.push_back(node);} ;
+    std::string &attribGet(const std::string &name) { return _attributes[name]; };
+    void attribAdd(const std::string &name, const std::string &value) {
+        _attributes[name] = value;
+    }
+
+    int childrenSize(void) { return _children.size(); };
+    bool hasContent(void);
+    bool hasChildren(void) { return (_children.size() > 0)? true : false; };
+    bool hasAttributes(void) { return (_attributes.size() > 0)? true : false;};
+private:
+    std::string _name;
+    std::string _value;
+    std::vector<XMLNode *> _children;
+    std::map<std::string, std::string> _attributes;
 };
 
 // This is the top level for parsing an XML network message or file.
 class XML {
- public:
-  XML();
-  XML(std::string xml_in);
-  XML(struct node * childNode);
-  ~XML();
+public:
+    XML() {} ;
+    XML(const std::string &xml_in) {};
+    XML(struct node * childNode) {};
+    ~XML() {};
 
-  bool parseDoc(xmlDocPtr document, bool mem);
-  bool parseXML(std::string xml_in);
-  bool load(const char *filespec);
-  bool hasChildren(void);
-  XMLNode *extractNode(xmlNodePtr node, bool mem);
-  XMLNode *processNode(xmlTextReaderPtr reader, XMLNode *node);
-  const char *nodeNameGet(void);
-  int size(void);  
-  XMLNode *operator [] (int x);
-  XML *operator = (XMLNode *node);
+    // bool parseRoot(xmlDocPtr document);
+    bool parseMem(const std::string &ml_in);
+    bool parseFile(const std::string &filespec);
+
+    const std::string &nameGet(void) { return _nodes->nameGet(); }
+    void nameSet(const std::string &name) { _nodes->nameSet(name); }
+    bool hasChildren(void) {  return _nodes->hasChildren(); }
+    bool hasAttributes(void) { return _nodes->hasAttributes(); }
+    //XMLNode *processNode(xmlTextReaderPtr reader);
+    //const std::string &nodeNameGet(void) { return nameGet(); }
+
+    XMLNode *childGet(int x) { return _nodes->childGet(x); };
+    //XMLNode *operator [] (int x) { return _nodes[x]; };
+    //const XML &operator = (const XMLNode &node);
 private:
-  xmlDocPtr     _doc;
-  XMLNode       _nodes;
+    XMLNode *extractNode(xmlNodePtr node);
+    xmlDocPtr     _doc;
+    XMLNode       *_nodes;
 };
 
 int memadjust(int x);
