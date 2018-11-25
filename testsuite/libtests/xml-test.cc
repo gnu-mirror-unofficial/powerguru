@@ -98,22 +98,59 @@ xml_tests(void) {
     } else {
         runtest.fail ("XML::parseFile()");
     }
-    const std::string name = xml.nodeNameGet();
+    std::string name = xml.nameGet();
     if (name == "one") {
-        runtest.pass ("XML::nodeNameGet()");
+        runtest.pass ("XML::nameGet(file)");
     } else {
-        runtest.fail ("XML::nodeNameGet()");
+        runtest.fail ("XML::nameGet(file)");
     }
 
     std::string testxml = "<one2><two2>two2<three2>three2</three2></two2></one2>";
-    //XMLNode *testnode = new XMLNode;
-    // xmlNodePtr
     if (xml.parseMem(testxml)) {
         runtest.pass ("XML::parseMem()");
     } else {
         runtest.fail ("XML::parseMem()");
     }
+    // 
+    name = xml.nameGet();
+    if (name == "one2") {
+        runtest.pass ("XML::nameGet(memory)");
+    } else {
+        runtest.fail ("XML::nameGet(memory)");
+    }
 
+    if (xml.hasChildren()) {
+        runtest.pass ("XML::hasChildren()");
+    } else {
+        runtest.fail ("XML::hasChildren()");
+    }
+
+    if (!xml.hasAttributes()) {
+        runtest.pass ("XML::hasAttributes()");
+    } else {
+        runtest.fail ("XML::hasAttributes()");
+    }
+    // Get first child element
+    XMLNode *child = xml.childGet(0);
+    if (child->nameGet() == "two") {
+        runtest.pass ("XML::nameGet(child)");
+    } else {
+        runtest.fail ("XML::nameGet(child)");
+    }
+    
+    if (child->hasAttributes() && (child->attribGet("foo") == "bar")) {
+        runtest.pass ("XML::attribGet()");
+    } else {
+        runtest.fail ("XML::attribGet()");
+    }
+
+    // Get the child of the child
+    child = child->childGet(0);
+    if (child->nameGet() == "three") {
+        runtest.pass ("XML::nameGet(child)");
+    } else {
+        runtest.fail ("XML::nameGet(child)");
+    }    
 }
 
 void
