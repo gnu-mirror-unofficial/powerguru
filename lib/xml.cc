@@ -86,8 +86,18 @@ XML::extractNode(xmlNodePtr node)
         }
     }
 
-    name = reinterpret_cast<const char *>(node->name);
-    xml->nameSet(name);
+    if (node->name != 0) {
+        name = reinterpret_cast<const char *>(node->name);
+        xml->nameSet(name);
+    }
+    // Sometimes the content is at the end of a line, so remove the carriage return
+    // and trailing garbage. It's a const, so return a substring instead of trying
+    // to change the value string.
+    if (node->children->content != 0) {
+        value = reinterpret_cast<char *>(node->children->content);
+        xml->valueSet(value.substr(0, value.find('\n')));
+    }
+
     if (node->children) {
         //ptr = node->children->content;
         ptr = xmlNodeGetContent(node->children);
@@ -101,7 +111,7 @@ XML::extractNode(xmlNodePtr node)
                     dbglogfile << "extractChildNode from text for " << name
                                << " has contents " << value << std::endl;
 #endif
-                    xml->valueSet(value);
+                    xml->valueSet(value.substr(0, value.find('\n')));
                 }
             }
             xmlFree(ptr);
@@ -211,8 +221,7 @@ XML::parseMem(const std::string &xml_in)
         dbglogfile << "ERROR: Can't parse XML data!" << std::endl;
         return false;
     }
-    //ret = parseRoot(_doc);
-    //ret = xmlDocGetRootElement(_doc);
+    _nodes = extractNode(xmlDocGetRootElement(_doc));
     xmlCleanupParser();
     xmlFreeDoc(_doc);
     xmlMemoryDump();
