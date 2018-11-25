@@ -102,18 +102,12 @@ XML::extractNode(xmlNodePtr node)
         //ptr = node->children->content;
         ptr = xmlNodeGetContent(node->children);
         if (ptr != NULL) {
-            if ((strchr((const char *)ptr, '\n') == 0) && (ptr[0] != 0)) {
-                if (node->children->content == NULL) {
-                    dbglogfile << "FIXME: Node " << name << " has no contents" << std::endl;
-                } else {
-                    value = reinterpret_cast<const char *>(node->children->content);
+            value = reinterpret_cast<const char *>(node->children->content);
 #if 1
-                    dbglogfile << "extractChildNode from text for " << name
-                               << " has contents " << value << std::endl;
+            dbglogfile << "\tChild node: " << name
+                       << " has contents " << value << std::endl;
 #endif
-                    xml->valueSet(value.substr(0, value.find('\n')));
-                }
-            }
+            xml->valueSet(value.substr(0, value.find('\n')));
             xmlFree(ptr);
         }
     }
@@ -123,19 +117,14 @@ XML::extractNode(xmlNodePtr node)
 
     while (childnode != NULL) {
         if (childnode->type == XML_ELEMENT_NODE) {
-            dbglogfile << "\t\t extracting node " << (const char *)childnode->name << std::endl;
+            dbglogfile << "\tfound node " << (const char *)childnode->name << std::endl;
             XMLNode *child = extractNode(childnode);
             //if (child->_value.get_type() != as_value::UNDEFINED) {
-#if 0
-            if (!child->valueGet().empty() {
-                dbglogfile << "\tPushing childNode " << child->nameGet()
-                           << " value " << child->valueGet()
-                           <<  " on element "
-                           <<  xml << std::endl;
-            } else {
-                dbglogfile << "\tPushing childNode " << child->nameGet().c_str()
-                           << std::endl;
-            }
+#if 1
+            dbglogfile << "\tPushing child Node " << child->nameGet()
+                       << " value " << child->valueGet()
+                       <<  " on element "
+                       <<  xml->nameGet() << std::endl;
 #endif
             xml->childAdd(child);
         }

@@ -93,52 +93,103 @@ xml_tests(void) {
     std::string xmlfile = SRCDIR;
     xmlfile += "/test.xml";
     
+    std:: cout << "Testing file parsing" << std::endl;
     if (xml.parseFile(xmlfile)) {
         runtest.pass ("XML::parseFile()");
     } else {
         runtest.fail ("XML::parseFile()");
     }
+    
     std::string name = xml.nameGet();
-    if (name == "one") {
-        runtest.pass ("XML::nameGet(file)");
+    std::string value = xml.valueGet();
+    if (name == "one" && value == "One") {
+        runtest.pass ("XML::parseFile(name, value)");
     } else {
-        runtest.fail ("XML::nameGet(file)");
+        runtest.fail ("XML::parseFile(name, value)");
     }
 
-    std::string testxml = "<one2><two2>two2<three2>three2</three2></two2></one2>";
+    if (xml.hasChildren()) {
+        runtest.pass ("XML::hasChildren(file)");
+    } else {
+        runtest.fail ("XML::hasChildren(file)");
+    }
+
+    if (!xml.hasAttributes()) {
+        runtest.pass ("XML::hasAttributes(file)");
+    } else {
+        runtest.fail ("XML::hasAttributes(file)");
+    }
+
+    // Get first child element
+    XMLNode *child = xml[0];
+    name = child->nameGet();
+    value = child->valueGet();
+    if (name == "two" && value == "Two") {
+        runtest.pass ("XML[0]");
+    } else {
+        runtest.fail ("XML]0]");
+    }
+    
+    if (child->hasAttributes() && (child->attribGet("foo") == "Bar")) {
+        runtest.pass ("XML::attribGet(child)");
+    } else {
+        runtest.fail ("XML::attribGet(child)");
+    }
+
+    // there should only be one child, so this should return an error.
+    if (xml[1] == 0) {
+        runtest.pass ("XM[1]: out of range");
+    } else {
+        runtest.fail ("XML[1]: out of range");
+    }
+        
+    child = child->childGet(0);
+    if (child->nameGet() == "three2" && child->valueGet() == "Three2") {
+        runtest.xpass ("XML[0][0]");
+    } else {
+        runtest.xfail ("XML[0][0]");
+    }
+
+    // Memory parsing
+    std:: cout << "Testing memory parsing" << std::endl;
+    std::string testxml = "<one2>One2<two2>Two2<three2 bar='foo'>Three2</three2></two2></one2>";
     if (xml.parseMem(testxml)) {
         runtest.pass ("XML::parseMem()");
     } else {
         runtest.fail ("XML::parseMem()");
     }
-    // 
-    name = xml.nameGet();
-    if (name == "one2") {
-        runtest.pass ("XML::nameGet(memory)");
-    } else {
-        runtest.fail ("XML::nameGet(memory)");
-    }
-
     if (xml.hasChildren()) {
-        runtest.pass ("XML::hasChildren()");
+        runtest.pass ("XML::hasChildren(mem)");
     } else {
-        runtest.fail ("XML::hasChildren()");
+        runtest.fail ("XML::hasChildren(mem)");
     }
 
     if (!xml.hasAttributes()) {
-        runtest.pass ("XML::hasAttributes()");
+        runtest.pass ("XML::hasAttributes(mem)");
     } else {
-        runtest.fail ("XML::hasAttributes()");
+        runtest.fail ("XML::hasAttributes(mem)");
     }
+    // 
+    name = xml.nameGet();
+    value = xml.valueGet();
+    if (name == "one2" && value == "One2") {
+        runtest.pass ("XML::nameGet(mem)");
+    } else {
+        runtest.fail ("XML::nameGet(mem)");
+        std::cerr << "FIXME2: " << name << " | " << value << std::endl;
+    }
+
     // Get first child element
-    XMLNode *child = xml.childGet(0);
-    if (child->nameGet() == "two") {
+    child = xml[0];
+    name = child->nameGet();
+    value = child->valueGet();
+    if (name == "two2" && value == "Two2") {
         runtest.pass ("XML::nameGet(child)");
     } else {
         runtest.fail ("XML::nameGet(child)");
     }
     
-    if (child->hasAttributes() && (child->attribGet("foo") == "bar")) {
+    if (!child->hasAttributes()) {
         runtest.pass ("XML::attribGet()");
     } else {
         runtest.fail ("XML::attribGet()");
@@ -146,11 +197,16 @@ xml_tests(void) {
 
     // Get the child of the child
     child = child->childGet(0);
-    if (child->nameGet() == "three") {
+    if (child->nameGet() == "three2" && child->valueGet() == "Three2") {
         runtest.pass ("XML::nameGet(child)");
     } else {
         runtest.fail ("XML::nameGet(child)");
     }    
+    if (child->hasAttributes() && (child->attribGet("bar") == "foo")) {
+        runtest.pass ("XML::attribGet()");
+    } else {
+        runtest.fail ("XML::attribGet()");
+    }
 }
 
 void

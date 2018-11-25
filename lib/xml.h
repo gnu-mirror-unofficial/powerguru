@@ -34,22 +34,6 @@
 #include "xml.h"
 #include "log.h"
 
-#if 0
-// This holds the data (name & value) for an XML node's attributes.
-class XMLAttr {
-public:
-    XMLAttr();
-    ~XMLAttr();
-    const std::string &nameGet(void);
-    void nameSet(const std::string &name);
-    const std::string &valueGet(void);
-    void valueSet(const std::string &val);
-private:
-    std::string _name;
-    std::string _value;
-};
-#endif
-
 // This holds the data (name & value) for an XML node.
 class XMLNode
 {
@@ -58,7 +42,10 @@ public:
     ~XMLNode() {};
 
     XMLNode *childGet(int x) { return _children[x]; }
-    XMLNode *operator [] (int x) { return _children[x]; }
+    XMLNode *operator [] (int x) {
+        return (x < _children.size())? _children[x]: 0;
+    }
+    
     void operator = (XMLNode &node);
 
     const std::string &nameGet(void) { return _name; }
@@ -87,7 +74,7 @@ class XML {
 public:
     XML() {} ;
     XML(const std::string &xml_in) {};
-    XML(struct node * childNode) {};
+    //XML(struct node * childNode) {};
     ~XML() {};
 
     // bool parseRoot(xmlDocPtr document);
@@ -95,14 +82,16 @@ public:
     bool parseFile(const std::string &filespec);
 
     const std::string &nameGet(void) { return _nodes->nameGet(); }
+    const std::string &valueGet(void) { return _nodes->valueGet(); }
     void nameSet(const std::string &name) { _nodes->nameSet(name); }
     bool hasChildren(void) {  return _nodes->hasChildren(); }
     bool hasAttributes(void) { return _nodes->hasAttributes(); }
-    //XMLNode *processNode(xmlTextReaderPtr reader);
     //const std::string &nodeNameGet(void) { return nameGet(); }
 
-    XMLNode *childGet(int x) { return _nodes->childGet(x); };
-    //XMLNode *operator [] (int x) { return _nodes[x]; };
+    XMLNode *operator [] (int x) {
+        // range check the index for better error handling
+        return (x < _nodes->childrenSize())? _nodes->childGet(x): 0;
+    };
     //const XML &operator = (const XMLNode &node);
 private:
     XMLNode *extractNode(xmlNodePtr node);
