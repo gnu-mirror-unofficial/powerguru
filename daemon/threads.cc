@@ -41,28 +41,31 @@ extern char *optarg;
 #endif
 
 #include "log.h"
-#include "err.h"
 #include "ownet.h"
 #include "console.h"
 #include "database.h"
+#include "tcpip.h"
+#include "xml.h"
 
 extern LogFile dbglogfile;
 
 using namespace std::chrono_literals;
 
-#if 0
 void
 console_handler(Console &con)
 {
     DEBUGLOG_REPORT_FUNCTION;
+    
+    // Open a console for user input
+    con.Open();
+    int ch = 0;
     while ((ch = con.Getc()) != 'q') {
         if (ch > 0) {                // If we have something, process it
             con.Putc (ch);          // echo inputted character to screen
             switch (ch) {
               case 'Q':
               case 'q':
-                  con.Puts("Qutting PowerGuru due to user input!\n");
-                  msg.writeNet("quit");
+                  dbglogfile <<"Qutting PowerGuru due to user input!\n" << std::endl;
                   con.Reset();
                   exit(0);
                   break;
@@ -76,17 +79,65 @@ console_handler(Console &con)
                   break;
             };
         }
-
+    }
 }
-#endif
 
-//#if defined(HAVE_LIBPQ) && defined(HAVE_MARIADB)
 void
-msg_handler(Database &db)
+client_handler(void)
 {
     DEBUGLOG_REPORT_FUNCTION;
+
+    retcode_t   ret;
+    Tcpip net;
+    net.toggleDebug(true);
+    net.createNetServer(6000);
+    net.newNetConnection(true);
+
+    bool loop = true;
+    std::vector<unsigned char> data;
+    while (loop) {
+        if (net.readNet(data).size() < 0) {
+            dbglogfile << "ERROR: Got error from socket " << std::endl;
+            loop = false;
+        } else {
+            std::string buffer = (char *)data.data();
+            if (buffer[0] == 0) {
+                loop = false;
+                continue;
+            }
+            //if (buffer.size() == 1 && *data.data() == 0) {
+            if (data.size() == 1) {
+                loop = false;
+            }
+            if (data.size() == 0) {
+                sleep(1);
+                continue;
+            }
+            buffer.erase(buffer.find('\n')-1);
+            // if the first character is a <, assume it's in XML formst.
+            if (buffer[0] == '<') {
+                XML xml;
+                xml.parseMem(buffer);
+                dbglogfile << "FIXME:: \"" << xml.nameGet() << "\"" << std::endl;
+                if (xml.nameGet() == "command") {
+                    std::cerr << "FIXME: Command: " << xml.valueGet() << std::endl;
+                    if (xml.valueGet() == "help") {
+                        net.writeNet("Hello World!\n");
+                    }
+                    
+                } else if (xml.nameGet() == "data") {
+                    std::cerr << "FIXME: DATA: " << xml.valueGet() << std::endl;
+                } else {
+                    std::cerr << "FIXME: JUNK: " << xml.valueGet() << std::endl;
+                }
+            } else {
+                std::cerr << buffer << std::endl;
+            }
+        }
+    }
+
+    net.closeNet();
 }
-//#endif
 
 #ifdef BUILD_OWNET
 void
