@@ -46,7 +46,6 @@
 #include "tcpip.h"
 #include "tcputil.h"
 #include "log.h"
-#include "err.h"
 
 //static const char *SERVICENAME = "powerguru";
 static const char *DEFAULTPROTO = "tcp";
@@ -67,14 +66,10 @@ int  Tcpip::_sockfd;
 int  Tcpip::_sockIOfd;
 
 Tcpip::Tcpip(void)
-    : _ipaddr(INADDR_ANY),
-      _proto(0),
-      _debug(false),
-      _console(false)
-      // _sockfd(-1), _sockIOfd(-1), 
+
 {
     // Get the low level host data for this machine
-    hostDataGet();
+    //hostDataGet();
 }
 
 Tcpip::~Tcpip(void)
@@ -684,9 +679,6 @@ Tcpip::anydata(int fd, std::vector<const unsigned char *> &msgs)
     while (retries-- > 0) {
         FD_ZERO(&fdset);
         // also return on any input from stdin
-        if (_console) {
-            FD_SET(fileno(stdin), &fdset);
-        }
         FD_SET(fd, &fdset);
     
         tval.tv_sec = 10;
@@ -702,22 +694,17 @@ Tcpip::anydata(int fd, std::vector<const unsigned char *> &msgs)
         }
         if (ret == 0) {
             dbglogfile << "There is no data in the socket for fd #" << fd << std::endl;
-            msgs.clear();
+            // msgs.clear();
             return SUCCESS;
         }
         if (ret == -1) {
-            dbglogfile << "The socket for fd #%d never was available!"
-                       << fd << std::endl;
+            dbglogfile << "The socket for fd #%d never was available!" << fd << std::endl;
             return ERROR;
         }
         if (ret > 0) {
-            if (FD_ISSET(fileno(stdin), &fdset)) {
-                dbglogfile << "There is data at the console for stdin!" << std::endl;
-                msgs.clear();
-                return SUCCESS;
-            }
             dbglogfile << "There is data in the socket for fd #" << fd << std::endl;
         }
+
         memset(buf, 0, INBUF);
         if (FD_ISSET(_sockfd, &fdset)) {
             ret = ::read(_sockfd, buf, INBUF-2);
@@ -740,8 +727,8 @@ Tcpip::anydata(int fd, std::vector<const unsigned char *> &msgs)
             return ERROR;
         }
         cr = strlen(buf);
-//     dbglogfile << "read " << ret << " bytes, first msg terminates at " << cr << std::endl;
-//     dbglogfile << "read " << buf << std::endl;
+        //dbglogfile << "read " << ret << " bytes, first msg terminates at " << cr << std::endl;
+        //dbglogfile << "read " << buf << std::endl;
         ptr = buf;
         // If we get a single XML message, do less work
         if (ret == cr + 1) {
@@ -833,94 +820,71 @@ Tcpip::anydata(int fd, std::vector<const unsigned char *> &msgs)
     return SUCCESS;
 }
 
-// Read from the socket
-int
-Tcpip::readNet(char *buffer, int nbytes)
+// This blocks waiting for data on the socket, so it's easy on the cpu. If
+// There is data, it peeks at how many bytes there are in the socket, and
+// allocates a buffer of the exact size.
+std::vector<unsigned char> &
+Tcpip::readNet(std::vector<unsigned char> &buf)
 {
-    return readNet(_sockfd, buffer, nbytes, DEFAULTTIMEOUT);
-}
-
-int
-Tcpip::readNet(int fd, char *buffer, int nbytes)
-{
-    return readNet(fd, buffer, nbytes, DEFAULTTIMEOUT);
-}
-
-int
-Tcpip::readNet(char *buffer, int nbytes, int timeout)
-{
-    return readNet(_sockfd, buffer, nbytes, timeout);
-}
-
-int
-Tcpip::readNet(int fd, char *buffer, int nbytes, int timeout)
-{
-    DEBUGLOG_REPORT_FUNCTION;
+    //DEBUGLOG_REPORT_FUNCTION;
     fd_set              fdset;
     int                 ret = 0;
     struct timeval      tval;
-  
-    // have ensible limits...
-    if (fd == 0 || fd > 100) {
-        return -1;
-    }
-    
+
     // Wait for the socket to be ready for reading
-    if (fd > 2) {
+    if (_sockfd > 2) {
         FD_ZERO(&fdset);
-        FD_SET(fd, &fdset);
+        FD_SET(_sockfd, &fdset);
     } else {
         dbglogfile << "WARNING: Can't do anything with socket fd #"
-                   << fd << std::endl;
-        return -1;
+                   << _sockfd << std::endl;
     }
   
-    // Reset the timeout value, since select modifies it on return
-    if (timeout >= 0) {
-        tval.tv_sec = timeout;
-    } else {
-        tval.tv_sec = DEFAULTTIMEOUT;
-    }
+    tval.tv_sec = DEFAULTTIMEOUT;
     tval.tv_usec = 0;
-    if (timeout != BLOCKING_TIMEOUT) {
-        ret = select(fd+1, &fdset, NULL, NULL, &tval);
-    } else {
-        ret = select(fd+1, &fdset, NULL, NULL, NULL);        
+    ret = select(_sockfd+1, &fdset, NULL, NULL, &tval);
+
+    if (ret <= 0 && tval.tv_sec == 0) {
+        buf.clear();
+        return buf;
     }
-  
+
+    int nbytes = checkBytes();
+    buf.clear();
+    // This is a hack to preset the size of the data in the vector
+    buf.resize(nbytes + 1);
+    unsigned char *buffer = buf.data();
 
     // If interupted by a system call, try again
     if (ret == -1 && errno == EINTR) {
         dbglogfile <<
-            "The socket for fd #" << fd << " we interupted by a system call!"
+            "The socket for fd #" << _sockfd << " we interupted by a system call!"
                                   << std::endl;
         dbglogfile << "WARNING: error is " << strerror(errno) << std::endl;
-        return 0;
     }
   
     if (ret == -1) {
-        dbglogfile <<
-            "The socket for fd #" << fd << " never was available for reading!"
-                                  << std::endl;
-        return -1;
+        dbglogfile << "The socket for fd #" << _sockfd << " never was available for reading!"
+                   << std::endl;
     }
   
-    if (ret == 0) {
 #if 0                           // FIXME: too verbose
+    if (ret == 0) {
         dbglogfile <<
-            "The socket for fd #" << fd << " timed out waiting to read!" << std::endl;
-#endif
-        return 0;
+            "The socket for fd #" << _sockfd << " timed out waiting to read!" << std::endl;
     }
-
-    ret = read(fd, buffer, nbytes);
+#endif
+    ret = read(_sockfd, buffer, nbytes);
 #if 0
     if (ret != 0) {
-        dbglogfile << "Read " << ret << " bytes from fd #" << fd << std::endl;
+        dbglogfile << "Read " << ret << " bytes from fd #" << _sockfd << std::endl;
         dbglogfile << "Buffer says " << buffer << std::endl;
+        dbglogfile << "Read " << (int)buf.size() << " bytes from fd #" << _sockfd << std::endl;
+        dbglogfile << "Buffer says " << buf.data() << std::endl;
     }
 #endif
-    return ret;
+
+    return buf;
 }
 
 // Write data to the socket. We first make sure the socket is ready for
@@ -929,12 +893,6 @@ int
 Tcpip::writeNet(const std::string &buffer)
 {
     return writeNet(_sockfd, buffer.c_str(), buffer.size(), DEFAULTTIMEOUT);
-}
-
-int
-Tcpip::writeNet(char const *buffer)
-{
-    return writeNet(_sockfd, buffer, strlen(buffer), DEFAULTTIMEOUT);
 }
 
 int

@@ -28,17 +28,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-//#include <netdb.h>
 #include <cstring>
 #include <vector>
-// #ifdef HAVE_LIBXML
-// # include <libxml/encoding.h>
-// # include <libxml/xmlwriter.h>
-// # include <libxml/debugXML.h>
-// #endif
+#include <sys/ioctl.h>
 
 #include "log.h"
-#include "err.h"
 #include "tcputil.h"
 
 class Tcpip : public Tcputil
@@ -73,14 +67,10 @@ public:
     retcode_t anydata(int sockfd, std::vector<const unsigned char *> &msgs);
 
     // Read from the socket
-    int readNet(char *buffer, int nbytes);
-    int readNet(char *buffer, int nbytes, int timeout);
-    int readNet(int fd, char *buffer, int nbytes);
-    int readNet(int fd, char *buffer, int nbytes, int timeout);
+    std::vector<unsigned char> &readNet(std::vector<unsigned char> &buf);
   
     // Write to the socket  
     int writeNet(const std::string &buffer);
-    int writeNet(char const *buffer);
     int writeNet(char const *buffer, int nbytes);
     int writeNet(int fd, char const *buffer);
     int writeNet(int fd, char const *buffer, int nbytes);
@@ -108,15 +98,19 @@ public:
     Tcpip &operator = (Tcpip &tcp);
 
     void checkConsole(void) { _console = true; };
-  
+    int checkBytes() {
+        int bytes = 0;
+        ioctl(_sockfd, FIONREAD, &bytes);
+        return bytes;
+    }
   
 private:
     static int               _sockfd;
     static int               _sockIOfd;
     in_addr_t                _ipaddr;
     std::string              _hostname;
-    struct sockaddr_in	   _client;
-    const char              *_proto;
+    struct sockaddr_in	     _client;
+    std::string              _proto;
     short                    _port;
     bool                     _debug;
     bool                    _console;
