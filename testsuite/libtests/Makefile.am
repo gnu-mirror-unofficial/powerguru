@@ -21,10 +21,10 @@ AUTOMAKE_OPTIONS = dejagnu subdir-objects
 
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/lib $(LIBXML_CPPFLAGS) $(PQ_CPPFLAGS) -DSRCDIR=\"$(srcdir)\"
 
-if BUILD_LIBXML
-noinst_PROGRAMS =  xml-test # tcpip tutil childtcpip
-else
 noinst_PROGRAMS =  tcpip tutil childtcpip
+
+if BUILD_LIBXML
+noinst_PROGRAMS +=  xml-test
 endif
 
 LOG = ../../lib/log.lo
@@ -34,15 +34,14 @@ xml_test_SOURCES = xml-test.cc ../../lib/xml.cc
 xml_test_LDADD = $(LIBXML_LIBS) $(LOG)
 endif
 
-# FIXME: don't build till the code in lib is fixed.
-# tcpip_SOURCES = tcpip-test.cc
-# tcpip_LDADD =  ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
-# tcpip_DEPENDENCIES = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
+tcpip_SOURCES = tcpip-test.cc
+tcpip_LDADD =  ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
+tcpip_DEPENDENCIES = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
 
-# tutil_SOURCES = tcputil-test.cc
-# tutil_LDADD = ../../lib/tcputil.lo  $(LOG) # ../../lib/libpguru.la
-# tutil_DEPENDENCIES = ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
+tutil_SOURCES = tcputil-test.cc
+tutil_LDADD = ../../lib/tcputil.lo  $(LOG) # ../../lib/libpguru.la
+tutil_DEPENDENCIES = ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
 
-# childtcpip_SOURCES = childtcpip.cc
-# childtcpip_LDADD = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
-# childtcpip_DEPENDENCIES = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
+childtcpip_SOURCES = childtcpip.cc
+childtcpip_LDADD = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
+childtcpip_DEPENDENCIES = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
