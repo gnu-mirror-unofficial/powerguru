@@ -1,5 +1,5 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+// Copyright (C) 2005, 2006-2018.
 //      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
@@ -28,11 +28,7 @@
 #include <fstream>
 #include <cstring>
 #include <map>
-#ifdef __STDC_HOSTED__
 #include <sstream>
-#else
-#include <strstream>
-#endif
 
 #include "database.h"
 #include "log.h"
@@ -111,101 +107,97 @@ public:
 //   };
 
     Msgs();
-    Msgs(std::string host, std::string ip);
+    Msgs(const std::string &, const std::string &);
     Msgs(Tcpip *tcpip);
     ~Msgs();
 
     retcode_t init(void);
-    retcode_t init(net_mode_e mode);
-    retcode_t init(std::string &hostname);
-    retcode_t init(net_mode_e mode, std::string hostname);
-    retcode_t init(bool block);
-    retcode_t init(net_mode_e mode, bool block);
+    retcode_t init(net_mode_e);
+    retcode_t init(std::string &);
+    retcode_t init(net_mode_e, const std::string &);
+    retcode_t init(bool);
+    retcode_t init(net_mode_e, bool);
   
-    void dump(XMLNode *datain);
-    void process(XMLNode *datain);
-  
+    void dump(XMLNode &);
+    void process(const XMLNode &node);
+    
     // These parse incoming messages for the daemon
-    retcode_t statusProcess(XMLNode *node);
-    retcode_t powerguruProcess(XMLNode *node);
+    retcode_t statusProcess(const XMLNode &node);
+    retcode_t powerguruProcess(const XMLNode &node);
   
-    retcode_t heloProcess(XMLNode *node);
-    retcode_t serverProcess(XMLNode *node);
-    retcode_t clientProcess(XMLNode *node);
+    retcode_t heloProcess(const XMLNode &node);
+    retcode_t serverProcess(const XMLNode &node);
+    retcode_t clientProcess(const XMLNode &node);
   
-    retcode_t configProcess(XMLNode *node);
+    retcode_t configProcess(const XMLNode &node);
 
     // These are all the tags associated with meters
-    retcode_t metersProcess(XMLNode *node);
-    retcode_t chargeAmpsProcess(XMLNode *node);
-    retcode_t loadAmpsProcess(XMLNode *node);
-    retcode_t pvAmpsProcess(XMLNode *node);
-    retcode_t pvVoltsProcess(XMLNode *node);
-    retcode_t dailyKwhProcess(XMLNode *node);
-    retcode_t hertzProcess(XMLNode *node);
-    retcode_t batteryVoltsProcess(XMLNode *node);
-    retcode_t buyAmpsProcess(XMLNode *node);
-    retcode_t sellAmpsProcess(XMLNode *node);
-    retcode_t acVoltsOutProcess(XMLNode *node);
-    retcode_t ac1InProcess(XMLNode *node);
-    retcode_t ac2InProcess(XMLNode *node);
+    retcode_t metersProcess(const XMLNode &node);
+    retcode_t chargeAmpsProcess(const XMLNode &node);
+    retcode_t loadAmpsProcess(const XMLNode &node);
+    retcode_t pvAmpsProcess(const XMLNode &node);
+    retcode_t pvVoltsProcess(const XMLNode &node);
+    retcode_t dailyKwhProcess(const XMLNode &node);
+    retcode_t hertzProcess(const XMLNode &node);
+    retcode_t batteryVoltsProcess(const XMLNode &node);
+    retcode_t buyAmpsProcess(const XMLNode &node);
+    retcode_t sellAmpsProcess(const XMLNode &node);
+    retcode_t acVoltsOutProcess(const XMLNode &node);
+    retcode_t ac1InProcess(const XMLNode &node);
+    retcode_t ac2InProcess(const XMLNode &node);
 
-    retcode_t unimplementedProcess(XMLNode *node);
+    retcode_t unimplementedProcess(const XMLNode &node);
 
     // These are all the system commands
-    retcode_t commandProcess(XMLNode *node);
+    retcode_t commandProcess(const XMLNode &node);
 
     // These format client side messages to the daemon
-    std::string statusCreate(meter_data_t *data);
+    std::string &statusCreate(meter_data_t *data);
   
-    std::string heloCreate(float version);
+    std::string &heloCreate(float version);
   
-    std::string configCreate(std::string tag, int value);
-    std::string configCreate(std::string tag, float value);
-    std::string metersRequestCreate(std::string str);
-    std::string metersRequestCreate(xml_meters_e type);
+    std::string &configCreate(const std::string &, int value);
+    std::string &configCreate(const std::string &tag, float value);
+    std::string &metersRequestCreate(const std::string &str);
+    std::string &metersRequestCreate(xml_meters_e type);
 
     // This formats a response from the daemon to the client
-    std::string metersResponseCreate(const char *tag, int val);
-    std::string metersResponseCreate(const char *tag, float val);
-    std::string metersResponseCreate(const char *tag, std::string);
+    std::string &metersResponseCreate(const std::string &tag, int val);
+    std::string &metersResponseCreate(const std::string &tag, float val);
+    std::string &metersResponseCreate(const std::string &tag, const std::string &);
 
-    std::string responseCreate(xml_msg_e type, const char *tag, std::string);
+    std::string &responseCreate(xml_msg_e type, const std::string &, const std::string &);
   
-    std::string requestCreate(xml_meters_e tag);
-    std::string requestCreate(xml_status_e tag);
-    std::string requestCreate(xml_config_e tag);
-    std::string requestCreate(xml_command_e tag);
+    std::string &requestCreate(xml_meters_e tag);
+    std::string &requestCreate(xml_status_e tag);
+    std::string &requestCreate(xml_config_e tag);
+    std::string &requestCreate(xml_command_e tag);
 
-    std::string packet(void) { return _body.str(); }
+    const std::string &packet(void) { return std::string(); /* _body.str(); */}
     void print_msg(std::string msg);
 
-    void methodSet(const char *name, methodPtr_t func);
-    methodPtr_t methodGet(const char *name);
-    retcode_t methodProcess(const char *name, XMLNode *node);
+    void methodSet(const std::string &, methodPtr_t func);
+    methodPtr_t methodGet(const std::string &name);
+    retcode_t methodProcess(const std::string &name, XMLNode &);
     void methodsDump(void);
 
-    std::string cacheGet(const char *name);
-    retcode_t cacheAdd(const char *name, std::string);
+    std::string cacheGet(const std::string &);
+    retcode_t cacheAdd(const std::string &name, const std::string &);
     void cacheDump(void);
+    
+    std::string &thisIPGet(void) { return _thisip; };
+    std::string &remoteIPGet(void) { return _thishost; }; 
+    std::string &thisHostnameGet(void) { return _remoteip; };
+    std::string &remoteHostnameGet(void) { return _remotehost; };
 
-    std::string thisIPGet(void) { return _thisip; };
-    std::string remoteIPGet(void) { return _thishost; }; 
-    std::string thisHostnameGet(void) { return _remoteip; };
-    std::string remoteHostnameGet(void) { return _remotehost; };
-
-    retcode_t findTag(std::string tag);
+    retcode_t findTag(const std::string &);
   
 private:
     float               _version;
-    static std::map<const char *, methodPtr_t> _methods;
-    static std::map<const char *, std::string> _cache;
+    static std::map<const std::string, methodPtr_t> _methods;
+    static std::map<const std::string, std::string> _cache;
     static net_mode_e   _net_mode;
-#ifdef __STDC_HOSTED__
     std::ostringstream  _body;
-#else
-    std::ostrstream     _body;
-#endif
     std::string         _thisip;
     std::string         _thishost;
     std::string         _remoteip;
