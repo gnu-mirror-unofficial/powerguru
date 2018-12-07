@@ -141,18 +141,6 @@ LogFile::Close (void) {
     return SUCCESS;
 }
 
-// Overload the input operator, so we can stick a timestamp on
-// the message that gets printed.
-LogFile&
-LogFile::operator << (ErrCond& e) {
-    if (verbose > 0)
-        std::cout << e << std::endl;
-    LogFile::outstream << e;
-    state = INPROGRESS;
-
-    return *this;
-}
-
 LogFile&
 LogFile::operator << (long x)
 {
@@ -160,7 +148,7 @@ LogFile::operator << (long x)
         std::cout << x;
     LogFile::outstream << x;
     state = INPROGRESS;
-  
+
     return *this;
 }
 
@@ -171,7 +159,7 @@ LogFile::operator << (unsigned int x)
         std::cout << x;
     LogFile::outstream << x;
     state = INPROGRESS;
-  
+
     return *this;
 }
 
@@ -201,6 +189,18 @@ LogFile::operator << (double &x)
 }
 
 LogFile&
+LogFile::operator << (bool x)
+{
+    LogFile::outstream << x;
+    if (verbose > 0) {
+        std::cout << x;
+    }
+    state = INPROGRESS;
+
+    return *this;
+}
+
+LogFile&
 LogFile::operator << (int x) {
     
     if (verbose > 0)
@@ -223,8 +223,24 @@ LogFile::operator << (void *ptr) {
 }
 
 LogFile& 
-LogFile::operator << (const std::string &s) {
-    outstream << s;
+LogFile::operator << (const std::string &str) {
+    //outstream << s.c_str();
+    std::string date;
+    logentry = timestamp(date);
+    logentry += ": ";
+
+    if (stamp == true && (state == IDLE || state == OPEN)) {
+        LogFile::state = INPROGRESS;
+	if (verbose > 0)
+	    std::cout << logentry  << str;
+        outstream << logentry << str;
+    } else {
+	if (verbose > 0)
+	    std::cout << str;
+        outstream << str;
+    }
+//    logentry += str;
+
     return *this;
 }
 

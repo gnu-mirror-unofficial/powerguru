@@ -86,7 +86,6 @@ public:
     } state;
   
     file_state GetState (void) { return state; }
-    LogFile &operator << (ErrCond&);
     LogFile &operator << (int x);
     LogFile &operator << (long x);
     LogFile &operator << (unsigned int x);
