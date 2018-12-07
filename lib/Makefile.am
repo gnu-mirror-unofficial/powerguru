@@ -1,5 +1,5 @@
 # 
-# Copyright (C) 2005, 2006, 2007, 2008,	2009, 2010, 2011
+# Copyright (C) 2005, 2006-2018.
 #	Free Software Foundation, Inc.
 # 
 # This program is free software; you can redistribute it and/or modify
@@ -34,9 +34,9 @@ TTYS=@TTYS@
 libpguru_la_CPPFLAGS =	-I$(top_srcdir)/devices
 libpguru_la_LIBDADD =
 
+#	err.cc err.h
 libpguru_la_SOURCES = \
 	proc.cc proc.h \
-	err.cc err.h \
 	log.cc log.h \
 	rc.cc rc.h \
 	serial.cc serial.h \
@@ -46,8 +46,12 @@ libpguru_la_SOURCES = \
 	tcputil.cc tcputil.h \
 	tcpip.cc tcpip.h
 
+if BUILD_OUTBACK
+libpguru_la_SOURCES += msgs.cc msgs.h
+endif
+
 if BUILD_LIBXML
-libpguru_la_SOURCES += xml.cc xml.h msgs.cc msgs.h
+libpguru_la_SOURCES += xml.cc xml.h
 libpguru_la_CPPFLAGS += $(LIBXML_CPPFLAGS)
 libpguru_la_LIBDADD += $(LIBXML_LIBS)
 endif
