@@ -27,17 +27,9 @@
 
 #include <iostream>
 #include <iomanip>
-#ifdef __STDC_HOSTED__
 #include <sstream>
-#else
-#include <fstream>
-#include <strstream>
-#endif
 
 #include "err.h"
-
-
-using namespace std;
 
 #if 0
 ErrCond::ErrCond(void) {
@@ -53,7 +45,9 @@ ErrCond::ErrCond(int x) {
 ErrCond::~ErrCond(void) {
 }
 
-ErrCond::ErrCond(const char *filein, int linein, const char *funcin, int codein, string &s) {
+ErrCond::ErrCond(const std::string &filein, int linein,
+                 const std::string &funcin, int codein,
+                 const std::string &s) {
     file = filein;
     func = funcin;
     line = linein;
@@ -73,7 +67,9 @@ ErrCond::ClearErr(void) {
 }
 
 ErrCond &
-ErrCond::SetMsg (const char *filein, int linein, const char *funcin, int codein, string s) {
+ErrCond::SetMsg (const std::string &filein, int linein,
+                 const std::string &funcin, int codein,
+                 const std::stringstring &s) {
     file = filein;
     func = funcin;
     line = linein;
@@ -83,15 +79,10 @@ ErrCond::SetMsg (const char *filein, int linein, const char *funcin, int codein,
 }
 
 void
-ErrCond::SetMsg (string &s) {
+ErrCond::SetMsg (const std::string &s) {
     emsg = s;
 }
 
-void
-ErrCond::SetMsg (const char *s) {
-    emsg = s;
-}
- 
 void
 ErrCond::SetMsg (int x, const char *s) {
     ecode = x;
@@ -110,14 +101,7 @@ ErrCond::operator << (ostream & (&)(ostream &)) {
 }
 
 ErrCond& 
-ErrCond::operator << (const char *x)
-{
-    emsg += x;
-    return *this;
-}
-
-ErrCond& 
-ErrCond::operator << (string &x)
+ErrCond::operator << (const std::string &x)
 {
     emsg += x;
     return *this;
@@ -141,10 +125,10 @@ ErrCond::operator << (int x)
     return *this;
 }
 
-ostream& 
-operator << (ostream &os, ErrCond& e) {
-    string msg;
-  
+const std::ostream& 
+operator << (const std::ostream &os, ErrCond& e) {
+    std::string msg;
+    
     if (e.GetCode() > EMEDIUMTYPE) {
         msg = "WARNING: ";
     } else {

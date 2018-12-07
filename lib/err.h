@@ -1,5 +1,5 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+// Copyright (C) 2005, 2006 - 2018.
 //      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
@@ -22,20 +22,10 @@
 // This is the config file as produced by autoconf
 #include "config.h"
         
-#include <stdio.h>
-
+//#include <stdio.h>
 #include <errno.h>
-        
-// This is so we don't get warning from strncpy()
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
+#include <cstring>
 
-// We use a statically allocate string so the C API can be used wihout
 // having to malloc() any memory. And this is it's size.
 #define ERRMSGSIZE 78
         
@@ -136,15 +126,15 @@ public:
     }
 
     ~ErrCond(void);
-    ErrCond(const char *filein, int linein, const char *funcin, int codein, std::string &s);
+    ErrCond(const std::string &filein, int linein,
+            const std::string &funcin, int codein, const std::string &s);
     // methods
     void ClearErr(void);
   
-    ErrCond &SetMsg (const char *filein, int linein, const char *funcin, int codein, std::string s);
+    ErrCond &SetMsg (const std::string &filein, int linein, const std::string &funcin,
+                     int codein, const std::string &s);
 
-    void SetMsg (std::string &s);
-    void SetMsg (const char *s);
-    void SetMsg (int x, const char *s);
+    void SetMsg (const std::string &s);
     void SetCode(int x) { 
         ecode = x;
     }
@@ -154,26 +144,26 @@ public:
     int GetLine(void) { 
         return line;
     }
-    std::string &GetFile(void) { 
+    const std::string &GetFile(void) { 
         return file;
     }
   
-    std::string &GetFunc(void) { 
+    const std::string &GetFunc(void) { 
         return func;
     }
   
-    std::string &GetMsg(void) { 
+    const std::string &GetMsg(void) { 
         return emsg;
     }
 
-    ErrCond& operator << (ErrCond&);
-    ErrCond& operator << (int x);
-    ErrCond& operator << (char const *str);
-    ErrCond& operator << (std::string &str);
-    ErrCond& operator << (void *addr);
+    ErrCond &operator << (ErrCond &);
+    ErrCond &operator << (int x);
+    ErrCond &operator << (char const *str);
+    ErrCond &operator << (std::string &str);
+    ErrCond &operator << (void *addr);
 
     friend std::ostream & operator << (std::ostream &os, ErrCond& e);
-    std::ostream& operator << (std::ostream & (&)(std::ostream &));
+    const std::ostream& operator << (std::ostream & (&)(std::ostream &));
 private:
     std::string file;
     std::string func;
