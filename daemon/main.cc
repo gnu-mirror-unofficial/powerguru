@@ -41,24 +41,23 @@ extern char *optarg;
 
 // local header files
 #include "log.h"
-#include "err.h"
-//#ifdef BUILD_XANTREX
-#include "xantrex-trace.h"
-//#endif
+#ifdef BUILD_XANTREX
+include "xantrex-trace.h"
+#endif
 #ifdef BUILD_OUTBACK
 #include "outbackpower.h"
+#include "msgs.h"
 #endif
-//#ifdef BUILD_OWNET
+#ifdef BUILD_OWNET
 #include "ownet.h"
-//#endif
-#include "console.h"
+#endif
 #include "menuitem.h"
 #include "database.h"
 #include "snmp.h"
 #include "rc.h"
 #include "tcpip.h"
-#include "msgs.h"
 #include "xml.h"
+#include "serial.h"
 
 using namespace std;
 using namespace rcinit;
@@ -72,6 +71,7 @@ alarm_handler2 (int sig);
 
 int curses = 0;
 
+extern void client_handler(void);
 extern void ownet_handler(pdev::Ownet &);
 extern void outback_handler(pdev::Ownet &);
 extern void xantrex_handler(pdev::Ownet &);
@@ -80,13 +80,11 @@ int
 main(int argc, char *argv[])
 {
     int c, i;
-    ErrCond Err;
     string item, str;
     const char *filespec;
     MenuItem ti;
     string hostname;
     bool poll;
-    bool console;
     bool use_db;
     bool snmp;
     bool daemon;
@@ -102,12 +100,9 @@ main(int argc, char *argv[])
 #endif
     retcode_t   ret;
     std::condition_variable alldone;
-#if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
+#if defined(HAVE_MARIADB) || defined(HAVE_POSTGRESQL)
     Database pdb;
 #endif
-    //    XantrexUI ui;
-    //    Console con;
-
     if (argc == 1) {
         //usage(argv[0]);
     }
@@ -126,7 +121,6 @@ main(int argc, char *argv[])
 
     // Set the option flags to default values. We do it this way to
     // shut up GCC complaining they're not used.
-    console = false;
     poll = false;
     daemon = true;
     client = false;
@@ -146,21 +140,6 @@ main(int argc, char *argv[])
     // the command line arguments.
     RCinitFile config;
     config.load_files();
-#if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
-    if (config.dbhostGet().size() > 0) {
-        pdb.dbHostSet(config.dbhostGet());
-    }
-    if (config.dbnameGet().size() > 0) {    
-        pdb.dbNameSet(config.dbnameGet());
-    }
-    if (config.dbuserGet().size() > 0) {    
-        pdb.dbUserSet(config.dbuserGet());
-    }
-    if (config.dbpasswdGet().size() > 0) {    
-        pdb.dbPasswdSet(config.dbpasswdGet());
-    }
-#endif
-
     if (config.deviceGet().size() > 0) {    
         filespec = (char *)config.deviceGet().c_str();
     }
@@ -174,34 +153,12 @@ main(int argc, char *argv[])
               //xantrexmode = true;     // FIXME: force xantrex mode for now
               break;
 
-#if 0
-          case 'i':
-              ui.Dump();
-              exit(0);
-              break;
-
-          case 'a':
-              ui.DumpAliases();
-              exit(0);
-              break;
-
-          case 'i':
-              item = strdup(optarg);
-              monitor = true;
-              break;
-#endif
-        
           case 'd':
               filespec = strdup(optarg);
               break;
 
           case 'h':
               usage (argv[0]);
-              break;
-
-          case 'x':
-              //console = true;
-              //xantrexmode = true;
               break;
 
           case 'o':
@@ -265,15 +222,15 @@ main(int argc, char *argv[])
         }
     }
 
-    // Open the network connection to the database.
-#if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
-    if (use_db) {
-        if (!pdb.openDB()) {
-            dbglogfile << "ERROR: Couldn't open database!" << endl;
-            exit(1);
-        }
-    }
-#endif
+//     // Open the network connection to the database.
+// #if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
+//     if (use_db) {
+//         if (!pdb.openDB()) {
+//             dbglogfile << "ERROR: Couldn't open database!" << endl;
+//             exit(1);
+//         }
+//     }
+// #endif
     // Start the SNMP daemon support.
 #ifdef USE_SNMP
     if (snmp) {
@@ -282,56 +239,24 @@ main(int argc, char *argv[])
     }
 #endif
 
-    Console con;
-    // Open a console for user input
-    con.Open();
-
     dbglogfile << "PowerGuru - 1 Wire Mode" << std::endl;
     pdev::Ownet ownet;
-//#ifdef BUILD_OWNET
-    std::thread first (ownet_handler, std::ref(ownet));     // spawn new thread that calls foo()
-//#endif
-#ifdef BUILD_OUTBACK
-    std::thread second (outback_handler, std::ref(ownet));  // spawn new thread that calls bar(0)
+    std::thread first (client_handler);
+#ifdef BUILD_OWNET
+    //std::thread second (ownet_handler, std::ref(ownet));
 #endif
 #ifdef BUILD_XANTREX
-    std::thread third (xantrex_handler, std::ref(ownet));  // spawn new thread that calls bar(0)
+    std::thread third (xantrex_handler, std::ref(ownet));
 #endif
+#ifdef BUILD_OUTBACK
+    std::thread fourth(outback_handler, std::ref(ownet));
+#endif
+//    std::thread forth (console_handler, std::ref(con));
+//    std::thread forth (msg_handler, std::ref(pdb));
     
-#if 0
-    //if (poll) {
-    int ch;
-    while ((ch = con.Getc()) != 'q') {
-        if (ch > 0) {                // If we have something, process it
-            con.Putc (ch);          // echo inputted character to screen
-            switch (ch) {
-              case '?':
-                  con.Puts("Powerguru daemon\r\n");
-                  con.Puts("\t? - help\r\n");
-                  con.Puts("\r\n");
-                  break;
-              case 'q':
-                  exit(0);
-              case 'r':
-                  std::cout << "XXXXXX: " << ownet.getValue("/10.67C6697351FF", "/temperature") << std::endl;
-                  break;
-              case 'd':
-                  ownet.dump();
-                  break;
-            }
-        }
-    }
+#ifdef BUILD_OUTBACK
 
-#endif
-#if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
-    if (use_db) {
-        if (!pdb.closeDB()) {
-            dbglogfile << "ERROR: Couldn't open database!" << endl;
-            exit(1);
-        }
-    }
-#endif
-    // Network daemon/client mode. Normally we're a network daemon that
+// Network daemon/client mode. Normally we're a network daemon that
     // responses to requests by a remote client. Many house networks
     // are behind a firewall, so the daemon can also connect to a
     // publically accessible host to establish the connection the
@@ -340,7 +265,6 @@ main(int argc, char *argv[])
       
         Msgs msg;
         msg.toggleDebug(true);
-      
         // Make a client connection
         if (client == true) {
             msg.init(hostname);
@@ -391,24 +315,27 @@ main(int argc, char *argv[])
                 if (msg.findTag("command")) {
                     cerr << "Got command message!" << endl;
                 }
-                if (xml.parseXML(str) == ERROR) {
+                if (xml.parseMem(str) == ERROR) {
                     continue;
                 }
             }
             messages.clear();
         }
     }
-    con.Reset();
-    con.Close();
-
+    // con.Reset();
+    // con.Close();
+#endif
     // synchronize threads:
     first.join();                // pauses until first finishes
+#ifdef OWNET
+    second.join();                // pauses until second finishes
+#endif
 #ifdef BUILD_OUTBACK
-    second.join();               // pauses until second finishes
+    fourth.join();               // pauses until second finishes
 #endif
 #ifdef BUILD_XANTREX
     third.join();               // pauses until third finishes
-#end
+#endif
 
     exit(0);
 }
@@ -423,7 +350,6 @@ alarm_handler2 (int sig)
     struct sigaction  act;
 #if 0
     int ch;
-    struct errcond Err;
   
 #if 1
     // If there is keyboard input, stop looking for the old
@@ -435,7 +361,7 @@ alarm_handler2 (int sig)
         return;
     }
 #else
-    datasrc.RecvPacket((unsigned char *)&ch, 1, Err);
+    datasrc.RecvPacket((unsigned char *)&ch, 1);
     dbglogfile << " CH is " << ch << endl;
   
     if (ch > 0) {
@@ -463,7 +389,7 @@ usage (const char *prog)
     cerr << "SNMP Mode:" << endl;
     cerr << "\t-j\t\t\t\tEnable SNMP agent mode" << endl;
     cerr << "\t-r\t\t\t\trun in the background as a daemon." << endl;
-
+#if 0
     // Display the End User options
     cerr << "User Options:" << endl;
     // cerr << "\t-s [heading:item or name]\tSet Item value" << endl;
@@ -482,7 +408,8 @@ usage (const char *prog)
     cerr << "\t-x\t\t\t\tXantrex Console mode" << endl;
     cerr << "\t-o\t\t\t\tOutback Console mode" << endl;
     cerr << "\t-e\t\t\t\tEcho Input Mode" << endl;
-  
+#endif
+
     // Display the Database options
     cerr << "Database Options:" << endl;
     cerr << "\t-m hostname\t\t\tSpecify Database hostname or IP" << endl;
