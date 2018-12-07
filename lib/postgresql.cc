@@ -26,12 +26,7 @@
 #include <iomanip> 
 #include <vector>
 #include <cstdio>
-
-#ifdef __STDC_HOSTED__
 #include <sstream>
-#else
-#include <strstream>
-#endif
 
 using namespace std;
 
@@ -168,11 +163,7 @@ Database::queryInsert(vector<meter_data_t *> data)
     unsigned int   i;
     //char           query[QUERYLEN];
     //char           *ptr;
-#ifdef __STDC_HOSTED__
     ostringstream  query;
-#else
-    ostrstream     query;
-#endif
 
     if (data.size() == 0) {
         dbglogfile << "No data to insert." << endl;
@@ -204,11 +195,7 @@ Database::queryInsert(meter_data_t *data)
     struct timeval        tp;
     //char                  query[QUERYLEN];
     char                  *type = "MX";
-#ifdef __STDC_HOSTED__
     std::ostringstream    query;
-#else
-    std::ostrstream       query;
-#endif
 
     query.str("");
     //  memset (query, 0, QUERYLEN);
@@ -221,11 +208,7 @@ Database::queryInsert(meter_data_t *data)
     ttm->tm_year+= 1900;          // years since 1900
     ttm->tm_mon+=1;               // months since January
 
-#ifdef __STDC_HOSTED__
     string str = query.str().c_str();
-#else
-    string str = query.str();
-#endif
   
     // Execute the query
     queryInsert(str.c_str());
