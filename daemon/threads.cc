@@ -87,51 +87,53 @@ client_handler(void)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
-    retcode_t   ret;
+    retcode_t ret;
     Tcpip net;
-    net.toggleDebug(true);
-    net.createNetServer(6000);
-    net.newNetConnection(true);
+    int retries = 0;
 
-    bool loop = true;
-    std::vector<unsigned char> data;
-    while (loop) {
-        if (net.readNet(data).size() < 0) {
-            dbglogfile << "ERROR: Got error from socket " << std::endl;
-            loop = false;
-        } else {
-            std::string buffer = (char *)data.data();
-            if (buffer[0] == 0) {
+    net.createNetServer(DEFAULTPORT);
+
+    while (retries-- < 10) {
+        net.newNetConnection(true);
+
+        bool loop = true;
+        std::vector<unsigned char> data;
+        while (loop) {
+            if (net.readNet(data).size() < 0) {
+                dbglogfile << "ERROR: Got error from socket " << std::endl;
                 loop = false;
-                continue;
-            }
-            //if (buffer.size() == 1 && *data.data() == 0) {
-            if (data.size() == 1) {
-                loop = false;
-            }
-            if (data.size() == 0) {
-                sleep(1);
-                continue;
-            }
-            buffer.erase(buffer.find('\n')-1);
-            // if the first character is a <, assume it's in XML formst.
-            if (buffer[0] == '<') {
-                XML xml;
-                xml.parseMem(buffer);
-                dbglogfile << "FIXME:: \"" << xml.nameGet() << "\"" << std::endl;
-                if (xml.nameGet() == "command") {
-                    std::cerr << "FIXME: Command: " << xml.valueGet() << std::endl;
-                    if (xml.valueGet() == "help") {
-                        net.writeNet("Hello World!\n");
-                    }
-                    
-                } else if (xml.nameGet() == "data") {
-                    std::cerr << "FIXME: DATA: " << xml.valueGet() << std::endl;
-                } else {
-                    std::cerr << "FIXME: JUNK: " << xml.valueGet() << std::endl;
-                }
             } else {
-                std::cerr << buffer << std::endl;
+                std::string buffer = (char *)data.data();
+                //if (buffer.size() == 1 && *data.data() == 0) {
+                if (data.size() == 1 && buffer[0] == 0) {
+                    net.closeConnection();
+                    // loop = false;
+                    break;
+                }
+                if (data.size() == 0) {
+                    sleep(1);
+                    continue;
+                }
+                buffer.erase(buffer.find('\n')-1);
+                // if the first character is a <, assume it's in XML formst.
+                if (buffer[0] == '<') {
+                    XML xml;
+                    xml.parseMem(buffer);
+                    dbglogfile << "FIXME:: \"" << xml.nameGet() << "\"" << std::endl;
+                    if (xml.nameGet() == "command") {
+                        std::cerr << "FIXME: Command: " << xml.valueGet() << std::endl;
+                        if (xml.valueGet() == "help") {
+                            net.writeNet("Hello World!\n");
+                        }
+                        
+                    } else if (xml.nameGet() == "data") {
+                        std::cerr << "FIXME: DATA: " << xml.valueGet() << std::endl;
+                    } else {
+                        std::cerr << "FIXME: JUNK: " << xml.valueGet() << std::endl;
+                    }
+                } else {
+                    std::cerr << buffer << std::endl;
+                }
             }
         }
     }
