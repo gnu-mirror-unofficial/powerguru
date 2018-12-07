@@ -35,6 +35,9 @@
 #include "log.h"
 #include "tcputil.h"
 
+extern const std::string DEFAULTPROTO;
+extern const short DEFAULTPORT;
+
 class Tcpip : public Tcputil
 {
 public:
@@ -43,24 +46,42 @@ public:
 
     // Create a new server. After creating it, then you have to wait for an
     // incoming connection.
-    retcode_t createNetServer(void);
-    retcode_t createNetServer(short port);
-    retcode_t createNetServer(std::string &service);
-    retcode_t createNetServer(std::string &service, std::string &protocol);
-    retcode_t createNetServer(short port, std::string &protocol);
+    retcode_t createNetServer(void) {
+        return createNetServer(DEFAULTPORT);
+    };
+    retcode_t createNetServer(short port) {
+        return createNetServer(port, DEFAULTPROTO);
+    };
+    retcode_t createNetServer(const std::string &service) {
+        return createNetServer(service, DEFAULTPROTO);
+    };
+    retcode_t createNetServer(const std::string &service, const std::string &protocol);
+    retcode_t createNetServer(short port, const std::string &protocol);
 
     // Accept a client connection for the current server.
     retcode_t newNetConnection(void);
     retcode_t newNetConnection(bool block);
-  
     // Create a client connection to a tcp/ip server
-    retcode_t createNetClient(void);
-    retcode_t createNetClient(short port);
-    retcode_t createNetClient(std::string &hostname);
-    retcode_t createNetClient(std::string &hostname, short port);
-    retcode_t createNetClient(std::string &hostname, std::string &service);
-    retcode_t createNetClient(std::string &hostname, std::string &service, std::string &protocol);
-    retcode_t createNetClient(std::string &hostname, short port, std::string &protocol);
+    retcode_t createNetClient(void) {
+        return createNetClient("localhost", DEFAULTPORT, DEFAULTPROTO);
+    };
+    retcode_t createNetClient(short port) {
+        return createNetClient("localhost", port, DEFAULTPROTO);
+    };
+    retcode_t createNetClient(const std::string &hostname) {
+        return createNetClient(hostname, DEFAULTPORT, DEFAULTPROTO);
+    };
+    retcode_t createNetClient(const std::string &hostname, short port) {
+        return createNetClient(hostname, port, DEFAULTPROTO);
+    };
+    retcode_t createNetClient(const std::string &hostname, const std::string &service) {
+        return createNetClient(hostname, service, DEFAULTPROTO);
+    };
+    
+    retcode_t createNetClient(const std::string &hostname, const std::string &service,
+                              const std::string &protocol);
+    retcode_t createNetClient(const std::string &hostname, short port,
+                              const std::string &protocol);
 
     // If there is any data, process it
     retcode_t anydata(std::vector<const unsigned char *> &msgs);
@@ -70,21 +91,13 @@ public:
     std::vector<unsigned char> &readNet(std::vector<unsigned char> &buf);
   
     // Write to the socket  
+    int writeNet(const std::vector<unsigned char> &buffer);
     int writeNet(const std::string &buffer);
-    int writeNet(char const *buffer, int nbytes);
-    int writeNet(int fd, char const *buffer);
-    int writeNet(int fd, char const *buffer, int nbytes);
-    int writeNet(int fd, char const *buffer, int nbytes, int timeout);
-                                                                           
+
     // Close the connection
     retcode_t closeNet();
-    retcode_t closeNet(int fd);
     retcode_t closeConnection();
-    retcode_t closeConnection(int fd);
 
-    // Change the debug flag
-    void toggleDebug(bool val);  
-  
     // Authenticate the socket connection
     retcode_t authNetClient(void);
     retcode_t authNetServer(void);
@@ -104,16 +117,15 @@ public:
         return bytes;
     }
   
-private:
-    static int               _sockfd;
-    static int               _sockIOfd;
-    in_addr_t                _ipaddr;
-    std::string              _hostname;
-    struct sockaddr_in	     _client;
-    std::string              _proto;
-    short                    _port;
-    bool                     _debug;
-    bool                    _console;
+protected:
+    int                 _sockfd;
+    int                 _sockIOfd;
+    //in_addr_t         _ipaddr;
+    std::string         _hostname;
+    struct sockaddr_in	_client;
+    //std::string       _proto;
+    short               _port;
+    bool                _console;
 };
 
 // EOF __TCPIP_H__ */

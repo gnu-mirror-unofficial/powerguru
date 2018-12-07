@@ -1,6 +1,5 @@
 // 
-// Copyright (C) 2005, 2006 - 2018
-//      Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006 - 2018      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -37,366 +36,80 @@
 #endif
 
 #include "tcputil.h"
+#include "tcpip.h"
 #include "log.h"
 #include "err.h"
-
-using namespace std;
 
 extern LogFile dbglogfile;
 
 Tcputil::Tcputil(void)
-    : _debug(false)
+    : _service(0),
+      _proto(0)
 {
-    memset(&_host, 0, sizeof(struct hostent)); 
-    memset(&_service, 0, sizeof(struct servent));
+    // Get the hostname of this machine
+    char hostname[MAXHOSTNAMELEN];
+    std::memset(hostname, 0, MAXHOSTNAMELEN);
+    if (gethostname(hostname, MAXHOSTNAMELEN) == 0) {
+        _hostname = hostname;
+        dbglogfile << "The hostname for this machine is " << hostname << std::endl;
+    } else {
+        dbglogfile << "WARNING: Couldn't get the hostname for this machine!" << std::endl;
+    }
+
+    dbglogfile << "Has " << numberOfInterfaces() << " interfaces, using default one" << std::endl;
+
+    // Get the IP numbers for this machine
+    if (getaddrinfo(hostname, NULL, NULL, &_addrinfo) == 0) {
+        char _address[INET6_ADDRSTRLEN];
+        struct addrinfo *addr = _addrinfo;
+        while (addr->ai_next != 0) {
+            if (addr->ai_socktype == SOCK_DGRAM) {
+                std::memset(_address, 0, INET6_ADDRSTRLEN);
+                _ipaddr = inet_ntop(AF_INET,
+                                    &((struct sockaddr_in *)addr->ai_addr)->sin_addr,
+                                    _address, INET6_ADDRSTRLEN);
+                dbglogfile << "The IP number for this machine is " << _ipaddr << std::endl;
+            }
+            addr = addr->ai_next;
+        }
+    } else {
+        dbglogfile << "WARNING: Couldn't get the host entry for this machine!" << std::endl;
+    }
+    
+    _service = getservbyport(DEFAULTPORT, "tcp");
+    if (_service) {
+        dbglogfile <<  "Found service file entry for " << _service->s_name << std::endl;
+        _proto = getprotobyname(_service->s_proto);
+        if (_proto) {
+            dbglogfile << "The proto number for " << _proto->p_name
+                       << " is " << _proto->p_proto << std::endl;
+        } else {
+            dbglogfile << "WARNING: Couldn't get the host entry for this machine!" << std::endl;
+        }
+    } else {
+        dbglogfile << "Services file entry for port " << DEFAULTPORT << " was not found!" << std::endl;
+    }
+
 }
 
 Tcputil::~Tcputil(void)
 {
+    freeaddrinfo(_addrinfo);
 }
 
-const int
-Tcputil::servicePortGet(void)
-{
-    return servicePortGet(&_service);
-}
-
-const int
-Tcputil::servicePortGet(struct servent *x)
-{
-    if (_debug)
-        {
-            if (x)
-                {
-                    dbglogfile <<  "Port for service entry " << x->s_name
-                               << " is " << ntohs(x->s_port) << endl;
-                }
-        }
-    
-    return x->s_port;
-}
-    
-// Description: get the service name from a struct servent
-//              structure, which describes this connection.
-const std::string
-Tcputil::serviceNameGet(void)
-{
-    return serviceNameGet(&_service);
-}
-
-const std::string
-Tcputil::serviceNameGet(struct servent *x)
-{
-    if (_debug) {
-        if (x) {
-            if (x->s_name) {
-                dbglogfile << "Name for this service entry is " << x->s_name << endl;
-                return x->s_name;
-            }
-        }
-    }
-  
-    return "";
-}
-
-// Description: get the protocol (tcp or udp) from a struct servent
-//              structure, which describes this connection.
-const std::string
-Tcputil::serviceProtoGet(void)
-{
-    return serviceProtoGet(&_service);
-}
-
-const std::string
-Tcputil::serviceProtoGet(struct servent *x)
-{
-    if (_debug)
-        {
-            if (x)
-                {
-                    dbglogfile <<  "Protocol for this service entry is " << x->s_proto << endl;
-                }
-        }
-
-    return x->s_proto;
-}
-
-// Description: Lookup the service data for this service entry and protocol.
-const struct servent *
-Tcputil::lookupService(string name, string protocol)
-{
-    return lookupService(&_service, name, protocol);
-}
-
-const struct servent *
-Tcputil::lookupService(string name)
-{
-    return lookupService(&_service, name, "tcp");
-}
-
-const struct servent *
-Tcputil::lookupService(struct servent *entry, string name, string protocol)
+struct servent *
+Tcputil::lookupService(const std::string &name, const std::string &protocol)
 {
     // Get the service entry from  /etc/services for this 
-    entry = getservbyname(name.c_str(), protocol.c_str());
+    _service = getservbyname(name.c_str(), protocol.c_str());
 
-    if (entry)
-        {
-            memcpy(&_service, entry, sizeof(struct servent));
-            if (_debug)
-                {
-                    dbglogfile <<  "Found service file entry for " << name << endl;
-                }
-        }
-    else
-        {
-            if (_debug)
-                {
-                    dbglogfile << "Services file entry " << name << " was not found!" << endl;
-                }
-        }
-
-    return entry;
-}
-
-
-// Description: Get the network data for a host.
-const struct hostent *
-Tcputil::hostDataGet(string name)
-{
-    return hostDataGet(&_host, name);
-}
-
-const struct hostent *
-Tcputil::hostDataGet(void)
-{
-    return hostDataGet(&_host, "");
-}
-
-const struct hostent *
-Tcputil::hostDataGet(struct hostent *entry)
-{
-    return hostDataGet(entry, "");
-}
-
-const struct hostent *
-Tcputil::hostDataGet(struct hostent *entry, string name)
-{
-    char hostname[MAXHOSTNAMELEN];
-
-    memset(hostname, 0, MAXHOSTNAMELEN);
-    
-    if (name.size() != 0) {
-        strcpy(hostname, name.c_str());
+    if (_service) {
+        dbglogfile <<  "Found service file entry for " << name << std::endl;
     } else {
-        if (gethostname(hostname, MAXHOSTNAMELEN) == 0) {
-            if (_debug) {
-                dbglogfile << "The hostname for this machine is " << hostname << endl;
-            }
-        } else {
-            dbglogfile << "WARNING: Couldn't get the hostname for this machine!" << endl;
-        }
-    }
-    
-    entry = gethostbyname(hostname);
-    
-    if (entry) {
-        memcpy(&_host, entry, sizeof(struct hostent));
-        if (_debug) {
-            dbglogfile <<  "The IP number for this machine is "
-                       << inet_ntoa(*(struct in_addr *)entry->h_addr_list[0]) << endl;
-        }
-    } else {
-        dbglogfile << "WARNING: Couldn't get the host entry for this machine!" << endl;
+        dbglogfile << "Services file entry " << name << " was not found!" << std::endl;
     }
 
-    return entry;
-}
-
-// Description: Extract the name field from a hostent data structure.
-const string
-Tcputil::hostNameGet(void)
-{
-    return hostNameGet(&_host);
-}
-
-const string
-Tcputil::hostNameGet(struct hostent *x)
-{
-    if (x != 0)
-        {
-            return x->h_name;
-        }
-
-    return "";
-}
-
-// Description: Extract the IP address field from a hostent data
-//              structure, and convert it to a string.
-const string
-Tcputil::hostIPNameGet(void)
-{
-    return hostIPNameGet(&_host);
-}
-
-const string
-Tcputil::hostIPNameGet(struct hostent *x)
-{
-    return inet_ntoa(*reinterpret_cast<struct in_addr *>(x->h_addr_list[0]));
-}
-
-// Description: Extract the IP address field from a hostent data
-//              structure.
-const in_addr_t *
-Tcputil::hostIPGet(void)
-{
-    return hostIPGet(&_host);
-}
-
-const in_addr_t *
-Tcputil::hostIPGet(struct hostent *x)
-{
-    return reinterpret_cast<const in_addr_t *>(x->h_addr_list[0]);
-}
-
-// Description: Extract the IP length field from a hostent data
-//              structure.
-const int
-Tcputil::hostLengthGet(void)
-{
-    return hostLengthGet(&_host);
-}
-
-const int
-Tcputil::hostLengthGet(struct hostent *x)
-{
-    return x->h_length;
-}
-
-// Description: Turn on or off the internal debugging flag for this
-//              class. When true, this displays additional
-//              information to the user.
-void
-Tcputil::toggleDebug(bool val)
-{
-    _debug = val;
-}
-
-
-// Description: Get the protocol data from /etc/protocols
-const struct protoent *
-Tcputil::protoDataGet(void)
-{
-    if (_service.s_proto != 0)
-        return protoDataGet(&_proto, _service.s_proto);
-    else
-        return (struct protoent *)0;
-}
-
-const struct protoent *
-Tcputil::protoDataGet(std::string name)
-{
-    return protoDataGet(&_proto, name);
-}
-
-const struct protoent *
-Tcputil::protoDataGet(struct protoent *entry)
-{
-    return protoDataGet(entry, "");
-}
-
-const struct protoent *
-Tcputil::protoDataGet(struct protoent *entry,
-                      std::string name)
-{
-    char protoname[MAXHOSTNAMELEN];
-    
-    if (name.size() != 0)
-        {
-            strcpy(protoname, name.c_str());
-        }
-
-    entry = getprotobyname(protoname);
- 
-    if (_debug)
-        {
-            if (entry)
-                {
-                    dbglogfile << "The proto number for " << entry->p_name
-                               << " is " << entry->p_proto << endl;
-                }
-            else
-                {
-                    dbglogfile << "WARNING: Couldn't get the host entry for this machine!" << endl;
-                }
-        }
-
-    if (entry != 0) 
-        {
-            memcpy(&_proto, entry, sizeof(struct protoent));
-        }
-    
-    return &_proto;
-}
-        
-// Description: Extract the name field from a protoent data structure.
-const string
-Tcputil::protoNameGet(void)
-{
-    return protoNameGet(&_proto);
-}
-
-const string
-Tcputil::protoNameGet(struct protoent *x)
-{
-    return x->p_name;
-}
-
-// Description: Extract the protocol number field from a protoent data
-//              structure.
-const int
-Tcputil::protoNumGet(void)
-{
-    return protoNumGet(&_proto);
-}
-
-const int
-Tcputil::protoNumGet(struct protoent *x)
-{
-    return x->p_proto;
-}
-
-// Description: Get the host name based on an IP number in ASCII format.
-const string
-Tcputil::hostByAddrGet(std::string addr)
-{
-    struct in_addr binaddr;
-    
-    inet_pton(AF_INET, addr.c_str(), &binaddr);
-
-    return hostNameGet(gethostbyaddr((const char *)&binaddr, 4, AF_INET));
-}
-
-const string
-Tcputil::hostByAddrGet(void)
-{
-    return hostNameGet(gethostbyaddr(_host.h_addr_list[0], _host.h_length,
-                                     AF_INET));
-}
-
-// Description: Get the host data based on the host name
-const struct hostent *
-Tcputil::hostByNameGet(void)
-{
-    // If no name is supplied, get the data for the localhost
-    return hostDataGet();
-}
-
-const struct hostent *
-Tcputil::hostByNameGet(std::string host)
-{
-    memcpy(&_host, gethostbyname(host.c_str()), sizeof(struct hostent));
-    return &_host;
+    return _service;
 }
 
 // Description: Get the number of ethernet interfaces on this machine. Some
@@ -414,11 +127,10 @@ Tcputil::numberOfInterfaces(void)
     struct ifconf ifc;
     struct ifreq *ifr;
 #endif
-    if (0 > (fd = socket(AF_INET, SOCK_DGRAM,0)))
-        {
-            dbglogfile << "WARNING: Couldn't get file descriptor for AF_INET socket!" << endl;
-            return -1;
-        }
+    if (0 > (fd = socket(AF_INET, SOCK_DGRAM,0))) {
+        dbglogfile << "WARNING: Couldn't get file descriptor for AF_INET socket!" << std::endl;
+        return -1;
+    }
 #ifdef SIOCGLIFNUM
     // use AF_INET for IPv4 only or AF_INET6 for IPv6 only
     // note: if using AF_UNSPEC, some interface names may appear twice,
@@ -427,37 +139,34 @@ Tcputil::numberOfInterfaces(void)
     ln.lifn_flags = ln.lifn_count=0;
 
 
-    if(ioctl(fd,SIOCGLIFNUM,&ln) == -1)
-        {
-            dbglogfile << "Couldn't get ethernet interface data!: %s\n"
-                       << strerror(errno) << endl;
-            return -1;
-        }
+    if(ioctl(fd,SIOCGLIFNUM,&ln) == -1) {
+        dbglogfile << "Couldn't get ethernet interface data!: %s\n"
+                   << strerror(errno) << std::endl;
+        return -1;
+    }
 
-    dbglogfile << "There are " <<  << ln.lifn_count " ethernet interfaces." << endl;
+    dbglogfile << "There are " <<  << ln.lifn_count " ethernet interfaces." << std::endl;
 
     return ln.lifn_count;
 #else
     ifc.ifc_len = sizeof(buf);
     ifc.ifc_req = (struct ifreq *)buf;
     
-    if(ioctl(fd, SIOCGIFCONF, &ifc) == -1)
-        {
-            dbglogfile << "Couldn't get ethernet interface data!: %s"
-                       << strerror(errno) << endl;
-            return -1;
-        }
-
+    if(ioctl(fd, SIOCGIFCONF, &ifc) == -1) {
+        dbglogfile << "Couldn't get ethernet interface data!: %s"
+                   << strerror(errno) << std::endl;
+        return -1;
+    }
+    
     ifr = ifc.ifc_req;
     cplim = buf + ifc.ifc_len;
-    for (cp = buf; cp < cplim; cp += sizeof(ifr->ifr_name) + sizeof(ifr->ifr_addr))
-        {
-            ifr = (struct ifreq *) cp;
+    for (cp = buf; cp < cplim; cp += sizeof(ifr->ifr_name) + sizeof(ifr->ifr_addr)) {
+        ifr = (struct ifreq *) cp;
 #ifdef NET_DEBUG
-            dbglogfile << "interface name is: " << ifr->ifr_name << endl;
+        dbglogfile << "interface name is: " << ifr->ifr_name << std::endl;
 #endif
-            count++;
-        }
+        count++;
+    }
 #endif
 
     return count;

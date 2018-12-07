@@ -1,5 +1,5 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+// Copyright (C) 2005, 2006-2018.
 //      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
@@ -41,72 +41,27 @@ public:
     Tcputil();
     ~Tcputil();
     
-    // These get the hostent data for this machine
-    const struct hostent *hostDataGet();
-    const struct hostent *hostDataGet(std::string name);
-    const struct hostent *hostDataGet(struct hostent *entry);
-    const struct hostent *hostDataGet(struct hostent *entry,
-                                      std::string hostname);
-    const struct hostent *hostByNameGet();
-    const struct hostent *hostByNameGet(std::string addr);
-    
-    // These get the protoent data for this machine
-    const struct protoent *protoDataGet();
-    const struct protoent *protoDataGet(std::string name);
-    const struct protoent *protoDataGet(struct protoent *entry);
-    const struct protoent *protoDataGet(struct protoent *entry,
-                                        std::string protoname);
-    
     // This gets the servent data that contains the port
     // number as specified by it's /etc/services file entry.
-    const struct servent *lookupService(int number);
-    const struct servent *lookupService(std::string name);
-    const struct servent *lookupService(std::string name,
-                                        std::string protocol);
-    const struct servent *lookupService(struct servent *entry,
-                                        std::string name, std::string protocol);
+    //struct servent *lookupService(int number);
+    struct servent *lookupService(const std::string &name) {
+        return lookupService(name, "tcp");
+    };
+    struct servent *lookupService(const std::string &name,
+                                  const std::string &protocol);
+    int numberOfInterfaces(void);
+    // Accessors
+    short getPort(void) { return -1; }; // FIXME
+    int getProtocol(void) { return _addrinfo->ai_protocol; };
+    std::string &getHostnamet(void) { return _hostname; };
+    std::string &getIP(void) { return _ipaddr; };
     
-    // These are accessors that extract the relevant field out
-    // of a struct servent structure as returned by getservbyname().
-    const int servicePortGet();
-    const int servicePortGet(struct servent *x);
-    const std::string serviceNameGet();
-    const std::string serviceNameGet(struct servent *x);
-    const std::string serviceProtoGet();
-    const std::string serviceProtoGet(struct servent *x);
-    
-    // These are accessors that extract the relevant field out
-    // of a struct protoent structure as returned by getprotobyname().
-    const std::string protoNameGet();
-    const std::string protoNameGet(struct protoent *x);
-    const int protoNumGet();
-    const int protoNumGet(struct protoent *x);
-    
-    // These are accessors that extract the relevant fields
-    // out of a struct hostent structure as returned by
-    // gethostbyname()
-    const std::string hostNameGet();
-    const std::string hostNameGet(struct hostent *x);
-    const std::string hostIPNameGet();
-    const std::string hostIPNameGet(struct hostent *x);
-    const int hostLengthGet();
-    const int hostLengthGet(struct hostent *x);
-    const in_addr_t *hostIPGet();
-    const in_addr_t *hostIPGet(struct hostent *x);
-    
-    const std::string hostByAddrGet();
-    const std::string hostByAddrGet(std::string addr);
-    
-    int numberOfInterfaces();
-    
-    // Change the debug flag
-    void toggleDebug(bool val);
-    
-private:
-    bool               _debug;
-    struct hostent     _host;
-    struct servent     _service;
-    struct protoent    _proto;
+protected:
+    std::string        _hostname;
+    std::string        _ipaddr;
+    struct servent     *_service;
+    struct protoent    *_proto;
+    struct addrinfo    *_addrinfo;
 };
 
 // EOF __TCPUTIL_H__

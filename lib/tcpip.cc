@@ -36,20 +36,15 @@
 #include <iostream>
 #include <sys/param.h>
 #include <fcntl.h>
-#ifdef HAVE_LIBXML
-// # include <libxml/encoding.h>
-// # include <libxml/xmlwriter.h>
-// # include <libxml/debugXML.h>
-# include "xml.h"
-#endif
 
 #include "tcpip.h"
 #include "tcputil.h"
 #include "log.h"
 
 //static const char *SERVICENAME = "powerguru";
-static const char *DEFAULTPROTO = "tcp";
-static const short DEFAULTPORT  = 7654;
+const std::string DEFAULTPROTO = "tcp"; // tcp or udp
+const short DEFAULTPORT  = 7654;
+
 static const int INBUF          = 2048;
 static const int DEFAULTTIMEOUT = 5;
 const int BLOCKING_TIMEOUT      = -1;
@@ -59,11 +54,6 @@ extern LogFile dbglogfile;
 #ifndef INADDR_NONE
 #define INADDR_NONE  0xffffffff
 #endif
-
-// FIXME: This is so methods executed via a pointer can still do
-// I/O. It's probably a gross memory corruption problem too.
-int  Tcpip::_sockfd;
-int  Tcpip::_sockIOfd;
 
 Tcpip::Tcpip(void)
 
@@ -76,56 +66,12 @@ Tcpip::~Tcpip(void)
 {    
 }
 
-const std::string&
-Tcpip::remoteIP(void)
-{
-    return inet_ntoa(_client.sin_addr);
-}
-
-const std::string &
-Tcpip::remoteIP(struct in_addr sockin)
-{
-    return inet_ntoa(sockin);
-}
-
-const std::string &
-Tcpip::remoteName(void)
-{
-    return hostByAddrGet(inet_ntoa(_client.sin_addr));
-}
-
-const std::string &
-Tcpip::remoteName(struct in_addr sockin)
-{
-    return hostByAddrGet(inet_ntoa(sockin));
-}
-
 // Description: Create a tcp/ip network server. This creates a server
 //              that listens for incoming socket connections. This
 //              support IP aliasing on the host, and will sequntially
 //              look for IP address to bind this port to.
 retcode_t
-Tcpip::createNetServer(void)
-{
-    return createNetServer(DEFAULTPORT);
-}
-
-retcode_t
-Tcpip::createNetServer(short port)
-{
-    std::string str = DEFAULTPROTO;
-    return createNetServer(port, str);
-}
-
-retcode_t
-Tcpip::createNetServer(std::string &service)
-{
-    std::string str = DEFAULTPROTO;
-    return createNetServer(service, str);
-}
-
-retcode_t
-Tcpip::createNetServer(std::string &service, std::string &proto)
+Tcpip::createNetServer(const std::string &service, const std::string &proto)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
@@ -146,33 +92,34 @@ Tcpip::createNetServer(std::string &service, std::string &proto)
 
     // Store the port number
     _port = serv->s_port;
-    _proto = serv->s_proto;
+    //_proto = serv->s_proto;
   
     return createNetServer(serv->s_port, proto);
 }
 
 retcode_t
-Tcpip::createNetServer(short port, std::string &protocol)
+Tcpip::createNetServer(short port, const std::string &protocol)
 {
     DEBUGLOG_REPORT_FUNCTION;
   
-    struct protoent *ppe;
+    struct protoent *ppe = 0;
     struct sockaddr_in sock_in;
     int             on, type;
     int             retries = 0;
     const struct hostent  *host;
-    struct in_addr  *thisaddr, newaddr;
+    struct in_addr  *thisaddr = 0, newaddr;
     in_addr_t       nodeaddr, netaddr;
   
-    host = hostDataGet("localhost");
-    thisaddr = reinterpret_cast<struct in_addr *>(host->h_addr_list[0]);
-    _ipaddr = thisaddr->s_addr;
-    memset(&sock_in, 0, sizeof(sock_in));
+    // host = hostDataGet("localhost");
+    // thisaddr = reinterpret_cast<struct in_addr *>(_addrinfo->ai_addr->h_addr_list[0]);
+    thisaddr = &((struct sockaddr_in *)_addrinfo->ai_addr)->sin_addr;
+    //in_addr_t = ipaddr = thisaddr->s_addr;
+    std::memset(&sock_in, 0, sizeof(sock_in));
   
     //  sock_in.sin_addr.s_addr = thisaddr->s_addr;
     sock_in.sin_addr.s_addr = INADDR_ANY;
   
-    _ipaddr = sock_in.sin_addr.s_addr;
+    // ipaddr = sock_in.sin_addr.s_addr;
     sock_in.sin_family = AF_INET;
     sock_in.sin_port = htons(port);
   
@@ -247,7 +194,7 @@ Tcpip::createNetServer(short port, std::string &protocol)
             retries++;
         }
     
-        _hostname = hostByAddrGet(inet_ntoa(sock_in.sin_addr));
+        // _hostname = hostByAddrGet(inet_ntoa(sock_in.sin_addr));
     
 #if 0
         char                ascip[32];
@@ -349,14 +296,12 @@ Tcpip::newNetConnection(bool block)
         }
     
         if (ret == 0) {
-            if (_debug) {
-                dbglogfile <<
-                    "ERROR: The accept() socket for fd #%d timed out waiting to write!"
-                           << _sockIOfd << std::endl;
-            }
+            dbglogfile <<
+                "ERROR: The accept() socket for fd #%d timed out waiting to write!"
+                       << _sockIOfd << std::endl;
         }
     }
-  
+
     fcntl(_sockIOfd, F_SETFL, O_NONBLOCK); // Don't let accept() block
     _sockfd = accept(_sockIOfd, &fsin, &alen);
   
@@ -373,52 +318,18 @@ Tcpip::newNetConnection(bool block)
     return SUCCESS;
 }
 
-// Description: Create a new conection to a tcp/ip server.
 retcode_t
-Tcpip::createNetClient(void)
+Tcpip::createNetClient(const std::string &hostname,
+                       const std::string &srvname,
+                       const std::string &protocol)
 {
     DEBUGLOG_REPORT_FUNCTION;
-    std::string str = DEFAULTPROTO;
-    std::string host = "localhost";
-  
-    return createNetClient(host, DEFAULTPORT, str);
+    //return createNetClient(hostname, srvname, "tcp");
 }
 
 retcode_t
-Tcpip::createNetClient(short port)
-{
-    DEBUGLOG_REPORT_FUNCTION;
-    std::string str = DEFAULTPROTO;
-    std::string host = "localhost";
-  
-    return createNetClient(host, port, str);
-}
-
-retcode_t
-Tcpip::createNetClient(std::string &hostname, short port)
-{
-    DEBUGLOG_REPORT_FUNCTION;
-    std::string str = DEFAULTPROTO;
-    return createNetClient(hostname, port, str);
-}
-
-retcode_t
-Tcpip::createNetClient(std::string &hostname)
-{
-    DEBUGLOG_REPORT_FUNCTION;
-    std::string str = DEFAULTPROTO;
-    return createNetClient(hostname, DEFAULTPORT, str);
-}
-
-retcode_t
-Tcpip::createNetClient(std::string &hostname, std::string &srvname, std::string &protocol)
-{
-    DEBUGLOG_REPORT_FUNCTION;
-    //    return createNetClient(hostname, srvname, "tcp");
-}
-
-retcode_t
-Tcpip::createNetClient(std::string &hostname, short port, std::string &protocol)
+Tcpip::createNetClient(const std::string &hostname, short port,
+                       const std::string &protocol)
 {
     DEBUGLOG_REPORT_FUNCTION;
     struct sockaddr_in	sock_in;
@@ -436,10 +347,8 @@ Tcpip::createNetClient(std::string &hostname, short port, std::string &protocol)
     //  if ((hostname.size() == 0) || (hostname == "localhost")) {
     if (hostname.size() == 0) {
         if (gethostname(thishostname, MAXHOSTNAMELEN) == 0) {
-            if (_debug) {
-                dbglogfile << "The hostname for this machine is "
-                           << thishostname;
-            }
+            dbglogfile << "The hostname for this machine is "
+                       << thishostname;
         } else {
             dbglogfile << "WARNING: Couldn't get the hostname for this machine!" << std::endl;
         }
@@ -447,8 +356,8 @@ Tcpip::createNetClient(std::string &hostname, short port, std::string &protocol)
         strcpy(thishostname, hostname.c_str());
     }
   
-    const struct hostent *hent = hostByNameGet(thishostname);
-    memcpy(&sock_in.sin_addr, hent->h_addr, hent->h_length);
+    // const struct hostent *hent = hostByNameGet(thishostname);
+    // memcpy(&sock_in.sin_addr, hent->h_addr, hent->h_length);
   
     sock_in.sin_family = AF_INET;
   
@@ -459,7 +368,6 @@ Tcpip::createNetClient(std::string &hostname, short port, std::string &protocol)
 #endif
   
     sock_in.sin_port = htons(port);
-    //    sock_in.sin_port = (strtol(srvname.c_str(), &end, 0)) & 0xffff;
   
     // Set the protocol type
     if (protocol == "udp") {
@@ -468,13 +376,7 @@ Tcpip::createNetClient(std::string &hostname, short port, std::string &protocol)
         type = SOCK_STREAM;
     }
   
-    if (protoDataGet(protocol) == 0) {
-        dbglogfile << "unable to get <%s> protocol entry\n"
-                   << protoNameGet() << std::endl;
-        return ERROR;
-    }
-  
-    _sockfd = socket(PF_INET, type, protoNumGet());
+    _sockfd = socket(PF_INET, type, _proto->p_proto);
   
     if (_sockfd < 0) {
         dbglogfile << "WARNING: unable to create socket: "
@@ -482,8 +384,7 @@ Tcpip::createNetClient(std::string &hostname, short port, std::string &protocol)
         return ERROR;
     }
 
-    if (connect(_sockfd,
-                reinterpret_cast<struct sockaddr *>(&sock_in),
+    if (connect(_sockfd, reinterpret_cast<struct sockaddr *>(&sock_in),
                 sizeof(sock_in)) < 0) {
         retries = 1;
         while (retries-- > 0) {
@@ -515,11 +416,9 @@ Tcpip::createNetClient(std::string &hostname, short port, std::string &protocol)
             }
       
             if (ret == 0) {
-                if (_debug) {
-                    dbglogfile <<
-                        "WARNING: The connect() socket for fd #%d timed out waiting to write!"
-                               << _sockfd << std::endl;
-                }
+                dbglogfile <<
+                    "WARNING: The connect() socket for fd #%d timed out waiting to write!"
+                           << _sockfd << std::endl;
             }
         }
     
@@ -554,40 +453,20 @@ Tcpip::closeConnection(void)
     DEBUGLOG_REPORT_FUNCTION;
 
     if (_sockfd > 0) {
-        closeConnection(_sockfd);
-        _sockIOfd = 0;
+        //closeConnection(_sockfd); FIXME:
+        //close(_sockIOfd);
+        //_sockIOfd = 0;
+        close(_sockfd);
+        _sockfd = 0;
     }
   
     return ERROR;
 }
-
-retcode_t
-Tcpip::closeConnection(int fd)
-{
-    DEBUGLOG_REPORT_FUNCTION;
-
-    if (fd > 0) {
-        closeConnection(fd);
-    }
-  
-    return ERROR;
-}
-
 retcode_t
 Tcpip::closeNet(void)
 {
     DEBUGLOG_REPORT_FUNCTION;
   
-    closeNet(_sockfd);
-    _sockfd = 0;
-  
-    return ERROR;
-}
-
-retcode_t
-Tcpip::closeNet(int sockfd)
-{
-    DEBUGLOG_REPORT_FUNCTION;
     int retries = 0;
   
     // If we can't close the socket, other processes must be
@@ -595,52 +474,41 @@ Tcpip::closeNet(int sockfd)
     // few tries, we give up, cause there must be something
     // wrong.
 
-    if (sockfd <= 0) {
+    if (_sockfd <= 0) {
         return SUCCESS;
     }
   
     while (retries < 3) {
-        if (sockfd) {
+        if (_sockfd) {
             // Shutdown the socket connection
 #if 0
-            if (shutdown(sockfd, SHUT_RDWR) < 0) {
+            if (shutdown(_sockfd, SHUT_RDWR) < 0) {
                 if (errno != ENOTCONN) {
                     dbglogfile << "WARNING: Unable to shutdown socket for fd #"
-                               << sockfd << strerror(errno) << std::endl;
+                               << _sockfd << strerror(errno) << std::endl;
                 } else {
-                    dbglogfile << "The socket using fd #" << sockfd
+                    dbglogfile << "The socket using fd #" << _sockfd
                                << " has been shut down successfully." << std::endl;
                     return SUCCESS;
                 }
             }
 #endif 
-            if (close(sockfd) < 0) {
+            if (close(_sockfd) < 0) {
                 dbglogfile <<
                     "WARNING: Unable to close the socket for fd "
-                           <<	sockfd << strerror(errno) << std::endl;
+                           <<	_sockfd << strerror(errno) << std::endl;
                 sleep(1);
                 retries++;
             } else {
-                dbglogfile << "Closed the socket for "
-                           << serviceNameGet()
-                           << " on fd " << sockfd << std::endl;
+                // dbglogfile << "Closed the socket for "
+                //            << (_service->s_name
+                //            << " on fd " << _sockfd << std::endl;
                 return SUCCESS;
             }
         }
     }
-
   
     return ERROR;
-}
-
-void
-Tcpip::toggleDebug(bool val)
-{
-    // Turn on our own debugging
-    _debug = val;
-
-    // Turn on debugging for the utility methods
-    Tcputil::toggleDebug(true);
 }
 
 // Return true if there is data in the socket, otherwise return false.
@@ -887,96 +755,75 @@ Tcpip::readNet(std::vector<unsigned char> &buf)
     return buf;
 }
 
-// Write data to the socket. We first make sure the socket is ready for
-// data.
 int
-Tcpip::writeNet(const std::string &buffer)
-{
-    return writeNet(_sockfd, buffer.c_str(), buffer.size(), DEFAULTTIMEOUT);
+Tcpip::writeNet(const std::string &buffer) {
+    const unsigned char *raw = reinterpret_cast<const unsigned char *>(buffer.c_str()); 
+    std::vector<unsigned char> str(raw, raw + buffer.size());
+
+     return writeNet(str);
 }
 
 int
-Tcpip::writeNet(char const *buffer, int nbytes)
+Tcpip::writeNet(const std::vector<unsigned char> &buffer)
 {
-    return writeNet(_sockfd, buffer, nbytes,DEFAULTTIMEOUT );
-}
-
-int
-Tcpip::writeNet(int fd, char const *buffer)
-{
-    return writeNet(fd, buffer, strlen(buffer), DEFAULTTIMEOUT);
-}
-
-int
-Tcpip::writeNet(int fd, char const *buffer, int nbytes)
-{
-    return writeNet(fd, buffer, nbytes, DEFAULTTIMEOUT);
-}
-
-int
-Tcpip::writeNet(int fd, char const *buffer, int nbytes, int timeout)
-{
-    DEBUGLOG_REPORT_FUNCTION;
+     DEBUGLOG_REPORT_FUNCTION;
     fd_set              fdset;
     int                 ret = 0;
-    const char         *bufptr;
+    const unsigned char *bufptr;
     struct timeval      tval;
     int                 retries = 3;
   
-    bufptr = buffer;
+    bufptr = buffer.data();
+    int nbytes = buffer.size();
 
-    dbglogfile << "Writing to socket: \r\n\t" << buffer << std::endl;
+    dbglogfile << "Writing data to socket." << std::endl;
 
     while (retries-- > 1) {
         // Wait for the socket to be ready for writing
         if (_sockfd > 2) {
             FD_ZERO(&fdset);
-            FD_SET(fd, &fdset);
+            FD_SET(_sockfd, &fdset);
         } else {
             dbglogfile << "WARNING: Can't do anything with socket fd #!"
-                       << fd << std::endl;
+                       << _sockfd << std::endl;
             return -1;
         }
     
         // Reset the timeout value, since select modifies it on return
-        if (timeout) {
-            tval.tv_sec = timeout;
-        } else {
-            tval.tv_sec = DEFAULTTIMEOUT;
-        }
+        tval.tv_sec = DEFAULTTIMEOUT;
         tval.tv_usec = 100;
-        ret = select(fd+1, NULL, &fdset, NULL, &tval);
+        ret = select(_sockfd+1, NULL, &fdset, NULL, &tval);
     
         // If interupted by a system call, try again
         if (ret == -1 && errno == EINTR) {
             dbglogfile <<
-                "The socket for fd #" << fd << " we interupted by a system call!" << std::endl;
+                "The socket for fd #" << _sockfd << " we interupted by a system call!" << std::endl;
         }
     
         if (ret == -1) {
-            dbglogfile << "The socket for fd #" << fd
+            dbglogfile << "The socket for fd #" << _sockfd
                        << " never was available for writing!" << std::endl;
             continue;
         }
     
         if (ret == 0) {
             dbglogfile << "The socket for fd #"
-                       << fd << " timed out waiting to write!" << std::endl;
+                       << _sockfd << " timed out waiting to write!" << std::endl;
             continue;
         }
-        ret = write(fd, bufptr, nbytes);
+        ret = write(_sockfd, bufptr, nbytes);
         // Add a LF/CR to flush the buffer.
         // write(fd, "\r\n", 2);
     
     
         if (ret == 0) {
-            dbglogfile << "Couldn't write any bytes to fd #" << fd << std::endl;
+            dbglogfile << "Couldn't write any bytes to fd #" << _sockfd << std::endl;
             return ret;
         }
     
         if (ret < 0) {
             dbglogfile << "Couldn't write " << nbytes << " bytes to fd #"
-                       << fd << std::endl;
+                       << _sockfd << std::endl;
             return ret;
         }
     
@@ -984,17 +831,17 @@ Tcpip::writeNet(int fd, char const *buffer, int nbytes, int timeout)
             bufptr += ret;            
             if (ret != nbytes) {
                 dbglogfile << "wrote " << ret << " bytes to fd #"
-                           << fd << " expected " <<  nbytes << std::endl;
+                           << _sockfd << " expected " <<  nbytes << std::endl;
                 retries++;
             } else {
 #if 0
-                dbglogfile << "Wrote " << ret << " bytes to fd #" << fd << std::endl;
+                dbglogfile << "Wrote " << ret << " bytes to fd #" << _sockfd << std::endl;
 #endif
                 return ret;
             }
       
             if (ret == 0) {
-                dbglogfile << "Wrote 0 bytes to fd #" << fd << std::endl;
+                dbglogfile << "Wrote 0 bytes to fd #" << _sockfd << std::endl;
             }
         }
     }
@@ -1005,16 +852,13 @@ Tcpip::writeNet(int fd, char const *buffer, int nbytes, int timeout)
 Tcpip &
 Tcpip::operator = (Tcpip &tcp) 
 {
-#if 1
     _sockfd = _sockfd;
     _sockIOfd = _sockIOfd;
-    _ipaddr = _ipaddr;
+    //_ipaddr = _ipaddr;
     _hostname = _hostname;
     //memcpy(_client, tcp._client, sizeof(sockaddr_in);
     //_proto = strdup(_proto);
     _port = _port;
-    _debug = _debug;
-#endif
 }
 
 #if 0
