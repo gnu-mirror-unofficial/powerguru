@@ -108,11 +108,31 @@ public:
             runtest.fail("LIST command has correct child");
         }
         
-        //execCommand(xml, str);
-        
+        //execCommand(xml, str);        
         
         std::string testpoll = "<command><poll>bar</poll></command>";
+        if (!xml.parseMem(testpoll)) {
+            runtest.untested("XML::parseMem(poll command) failed!");
+        }
+        node = xml[0];
+        if (node->nameGet() == "poll") {
+            runtest.pass("parse POLL command");
+        } else {
+            runtest.fail("parse POLL command");
+        }
+        str.erase();
 
+        if (xml[0] != 0) {
+            runtest.pass("POLL command has children");
+        } else {
+            runtest.fail("POLL command has children");
+        }
+        
+        if (xml[0]->nameGet() == "poll" && xml[0]->valueGet() == "bar") {
+            runtest.pass("POLL command has correct child");
+        } else {
+            runtest.fail("POLL command has correct child");
+        }
     };
     
     ~Test() {};
