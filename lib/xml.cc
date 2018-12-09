@@ -90,19 +90,18 @@ XML::extractNode(xmlNodePtr node)
         name = reinterpret_cast<const char *>(node->name);
         xml->nameSet(name);
     }
-    // Sometimes the content is at the end of a line, so remove the carriage return
-    // and trailing garbage. It's a const, so return a substring instead of trying
-    // to change the value string.
-    if (node->children->content != 0) {
-        value = reinterpret_cast<char *>(node->children->content);
-        xml->valueSet(value.substr(0, value.find('\n')));
-    }
-
     if (node->children) {
-        //ptr = node->children->content;
-        ptr = xmlNodeGetContent(node->children);
+        // Sometimes the content is at the end of a line, so remove the
+        // carriage return and trailing garbage.
+        if (node->children->content != 0) {
+            value = reinterpret_cast<char *>(node->children->content);
+            xml->valueSet(value.substr(0, value.find('\n')));
+        }
+        
+        ptr = xmlNodeGetContent(node->children);        
         if (ptr != NULL) {
-            value = reinterpret_cast<const char *>(node->children->content);
+            //value = reinterpret_cast<const char *>(node->children->content);
+            value = reinterpret_cast<const char *>(ptr);
 #if 1
             dbglogfile << "\tChild node: " << name
                        << " has contents " << value << std::endl;
