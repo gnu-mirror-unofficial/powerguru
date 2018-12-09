@@ -35,32 +35,32 @@ public:
 
     enum state_e { UNSET, OPEN, RAW, CLOSED };
 
-    void Open (void);
-    void OpenInChannel (std::string channel);
-    void OpenInChannel (void);
-    void OpenOutChannel (std::string channel);
-    void OpenOutChannel (void);
-    void Close (void);
-    void Reset (void);
+    void openCon (void);
+    void openInChannel (std::string channel);
+    void openInChannel (void);
+    void openOutChannel (std::string channel);
+    void openOutChannel (void);
+    void closeCon (void);
+    void resetCon (void);
   
-    void SendEOL (void);
+    void sendEOL (void);
   
-    void MakeRaw (int);
-    void MakeRaw (void) { MakeRaw (fileno(inchannel.fhandle)); }
-    void MakeRaw (FILE * x) { MakeRaw (fileno(x)); }
+    void makeRaw (int);
+    void makeRaw (void) { makeRaw (fileno(inchannel.fhandle)); }
+    void makeRaw (FILE * x) { makeRaw (fileno(x)); }
 
     // get a byte from the console
-    int Getc (void) { return Getc (inchannel.fhandle); }
-    int Getc (FILE *x) { return getc(x); }
+    int getcCon (void) { return getcCon (inchannel.fhandle); }
+    int getcCon (FILE *x) { return getc(x); }
 
     // write a byte to the console
-    int Putc (int x) { return Putc (x, outchannel.fhandle); }
-    int Putc (int x, FILE *y)  { return putc(x, y); }
+    int putcCon (int x) { return putcCon (x, outchannel.fhandle); }
+    int putcCon (int x, FILE *y)  { return putc(x, y); }
 
     // write a string to the console
-    int Puts (std::string out) { return Puts (out.c_str(), outchannel.fhandle); }
-    int Puts (std::string out, FILE *y)  { return fputs(out.c_str(), y); }
-    int Puts (ErrCond &Err)  { return fputs(Err.GetMsg().c_str(), outchannel.fhandle); }
+    int putsCon (std::string out) { return putsCon (out.c_str(), outchannel.fhandle); }
+    int putsCon (std::string out, FILE *y)  { return fputs(out.c_str(), y); }
+    int putsCon (ErrCond &Err)  { return fputs(Err.GetMsg().c_str(), outchannel.fhandle); }
  
     // Accessors
 

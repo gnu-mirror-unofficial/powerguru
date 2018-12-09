@@ -43,27 +43,23 @@ Console::Console (void) {
 }
 
 Console::~Console (void) {
-    Close();
+    closeCon();
     inchannel.filespec.erase();
     outchannel.filespec.erase();
     state = Console::UNSET;
 }
 
 void
-Console::Open (void) {
+Console::openCon (void) {
     // Open a console for the end user to type at. We default to stdio (cin)
-    //  string str = "stdin";
+    openInChannel();
   
-    OpenInChannel();
-  
-    //  str = "stdout";
-
     // Open a the output channel for the console. We default to stdio (cout)
-    OpenOutChannel();
+    openOutChannel();
 }
 
 void
-Console::OpenInChannel (string channel) {
+Console::openInChannel (string channel) {
     if (channel == "stdin") {
         inchannel.fhandle = stdin;
         inchannel.filespec = "stdin";
@@ -91,7 +87,7 @@ Console::OpenInChannel (string channel) {
 }
 
 void
-Console::OpenInChannel (void) {
+Console::openInChannel (void) {
     inchannel.fhandle = stdin;
     inchannel.filespec = "stdin";
     state = Console::OPEN;
@@ -118,7 +114,7 @@ Console::OpenInChannel (void) {
 }
 
 void
-Console::OpenOutChannel (string channel) {
+Console::openOutChannel (string channel) {
     if (channel == "stdout") {
         outchannel.fhandle = stdout;
         outchannel.filespec = "stdout";
@@ -128,7 +124,7 @@ Console::OpenOutChannel (string channel) {
 }
 
 void
-Console::OpenOutChannel (void) {
+Console::openOutChannel (void) {
     outchannel.fhandle = stdout;
     outchannel.filespec = "stdout";
     state = Console::OPEN;
@@ -136,18 +132,18 @@ Console::OpenOutChannel (void) {
 
 // Reset the input channel to be where it was when we started
 void
-Console::Close (void) {
+Console::closeCon (void) {
     state = Console::CLOSED;
-    Reset();
+    resetCon();
 }
 
 void
-Console::Reset (void) {
+Console::resetCon (void) {
     tcsetattr(fileno(inchannel.fhandle), TCSANOW, &oldtty);
 }
 
 void
-Console::MakeRaw (int x) {
+Console::makeRaw (int x) {
     termios newtty;
     int flag;
 
@@ -165,9 +161,9 @@ Console::MakeRaw (int x) {
 }
 
 void
-Console::SendEOL (void) {
-    Putc('\r');
-    Putc('\n'); 
+Console::sendEOL (void) {
+    putcCon('\r');
+    putcCon('\n'); 
 }
 
 void
