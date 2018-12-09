@@ -61,6 +61,7 @@ public:
     // Accept a client connection for the current server.
     retcode_t newNetConnection(void);
     retcode_t newNetConnection(bool block);
+
     // Create a client connection to a tcp/ip server
     retcode_t createNetClient(void) {
         return createNetClient("localhost", DEFAULTPORT, DEFAULTPROTO);
@@ -119,6 +120,7 @@ public:
   
 protected:
     int                 _sockfd;
+    std::vector<int>    _connections;
     int                 _sockIOfd;
     //in_addr_t         _ipaddr;
     std::string         _hostname;

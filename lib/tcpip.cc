@@ -63,7 +63,14 @@ Tcpip::Tcpip(void)
 }
 
 Tcpip::~Tcpip(void)
-{    
+{
+    std::vector<int>::iterator it;
+//    for (it = _connection.begin(); it != _connections.end(); it++) {
+//        closeConnection(it);
+//    }
+
+    //next.join();
+    closeNet();
 }
 
 // Description: Create a tcp/ip network server. This creates a server
@@ -75,26 +82,14 @@ Tcpip::createNetServer(const std::string &service, const std::string &proto)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
-    const struct servent  *serv;
-
-    serv = lookupService(service);
-  
-    // See if we got a service data structure
-    if (serv == 0) {
-        dbglogfile << "ERROR: unable to get " << service
-                   << " service entry" << std::endl;
-        _port = 0;
-        return ERROR;
-    }
-
-    dbglogfile << "Port number is " << serv->s_port
-               << ", byte swapped is " << htons(serv->s_port) << std::endl;
+    dbglogfile << "Port number is " << _service->s_port
+               << ", byte swapped is " << htons(_service->s_port) << std::endl;
 
     // Store the port number
-    _port = serv->s_port;
+    _port = _service->s_port;
     //_proto = serv->s_proto;
   
-    return createNetServer(serv->s_port, proto);
+    return createNetServer(_service->s_port, proto);
 }
 
 retcode_t
@@ -219,9 +214,10 @@ Tcpip::createNetServer(short port, const std::string &protocol)
 #if 0
         dbglogfile << "Listening for net traffic on fd #\n" << _sockfd << std::endl;
 #endif
-    
+
         return SUCCESS;
     }
+
     return ERROR;
 }
 
@@ -308,13 +304,14 @@ Tcpip::newNetConnection(bool block)
     if (_sockfd < 0) {
         dbglogfile << "unable to accept : " << strerror(errno) << std::endl;
         return ERROR;
+    } else {
+        dbglogfile << "Accepting tcp/ip connection on fd #"
+                   << _sockfd << std::endl;
     }
-  
-    dbglogfile << "Accepting tcp/ip connection on fd #"
-               << _sockfd << std::endl;
 
-    memcpy(&_client, &fsin, sizeof(struct sockaddr));
+    std::memcpy(&_client, &fsin, sizeof(struct sockaddr));
   
+    _connections.push_back(_sockfd);
     return SUCCESS;
 }
 
@@ -334,27 +331,12 @@ Tcpip::createNetClient(const std::string &hostname, short port,
     DEBUGLOG_REPORT_FUNCTION;
     struct sockaddr_in	sock_in;
     int             	type;
-    char                thishostname[MAXHOSTNAMELEN];
     fd_set              fdset;
     struct timeval      tval;
     int                 ret;
     int                 retries;
   
     memset(&sock_in, 0, sizeof(struct sockaddr_in));
-    memset(&thishostname, 0, MAXHOSTNAMELEN);
-  
-    // If there is no supplied hostname, assume it's a local process
-    //  if ((hostname.size() == 0) || (hostname == "localhost")) {
-    if (hostname.size() == 0) {
-        if (gethostname(thishostname, MAXHOSTNAMELEN) == 0) {
-            dbglogfile << "The hostname for this machine is "
-                       << thishostname;
-        } else {
-            dbglogfile << "WARNING: Couldn't get the hostname for this machine!" << std::endl;
-        }
-    } else {
-        strcpy(thishostname, hostname.c_str());
-    }
   
     // const struct hostent *hent = hostByNameGet(thishostname);
     // memcpy(&sock_in.sin_addr, hent->h_addr, hent->h_length);
@@ -376,7 +358,7 @@ Tcpip::createNetClient(const std::string &hostname, short port,
         type = SOCK_STREAM;
     }
   
-    _sockfd = socket(PF_INET, type, _proto->p_proto);
+    _sockfd = socket(PF_INET, type, _addrinfo->ai_protocol);
   
     if (_sockfd < 0) {
         dbglogfile << "WARNING: unable to create socket: "
@@ -426,7 +408,7 @@ Tcpip::createNetClient(const std::string &hostname, short port,
                     reinterpret_cast<struct sockaddr *>(&sock_in),
                     sizeof(sock_in)) < 0) {
             dbglogfile << "unable to connect to "
-                       << thishostname
+                       << _hostname
                        << ", port " << port
                        << ": " << strerror(errno) << std::endl;
             close(_sockfd);
@@ -453,11 +435,9 @@ Tcpip::closeConnection(void)
     DEBUGLOG_REPORT_FUNCTION;
 
     if (_sockfd > 0) {
-        //closeConnection(_sockfd); FIXME:
-        //close(_sockIOfd);
-        //_sockIOfd = 0;
         close(_sockfd);
         _sockfd = 0;
+        return SUCCESS;
     }
   
     return ERROR;
@@ -706,6 +686,8 @@ Tcpip::readNet(std::vector<unsigned char> &buf)
     } else {
         dbglogfile << "WARNING: Can't do anything with socket fd #"
                    << _sockfd << std::endl;
+        buf.clear();
+        return buf;
     }
   
     tval.tv_sec = DEFAULTTIMEOUT;
