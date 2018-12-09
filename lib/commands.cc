@@ -30,12 +30,18 @@
 #include "xml.h"
 #include "log.h"
 #include "commands.h"
+#include <thread>
 
 extern LogFile dbglogfile;
 
 Commands::Commands()
 {
     DEBUGLOG_REPORT_FUNCTION;
+
+    _commands["nop"] = Commands::NOP;
+    _commands["list"] = Commands::LIST;
+    _commands["poll"] = Commands::POLL;
+    _commands["helo"] = Commands::HELO;
 }
 
 Commands::~Commands()
@@ -48,31 +54,55 @@ Commands::createCommand(cmd_t cmd, const std::string &args,
                         std::string &str)
 {
     DEBUGLOG_REPORT_FUNCTION;
+    
     str.clear();
     str = "<command>";
     switch (cmd) {
       case LIST:
-          dbglogfile << "LIST command" << std::endl;
+          dbglogfile << "create LIST command" << std::endl;
           str += "<list>" + args + "</list>";
           break;
       case POLL:
-          dbglogfile << "POLL command" << std::endl;  
+          dbglogfile << "create POLL command" << std::endl;  
           str += "<poll>" + args + "</poll>";
           break;
       case NOP:
-          dbglogfile << "NOP command" << std::endl;  
+          dbglogfile << "create NOP command" << std::endl;  
+          str += "<nop>" + args + "</nop>";
+          break;
+      case HELO:
+          dbglogfile << "create HELO command" << std::endl;
+          std::string data = "<hostname>";
+          size_t pos = args.find(' ');
+          if (pos == std::string::npos) {
+              data += args;
+          } else {
+              data += args.substr(0, pos);
+          }
+          data += "</hostname>";
+          if (pos != std::string::npos) {
+              data += "<user>";
+              data += args.substr(pos+1);
+              data += "</user>";
+          }
+          
+          str += "<helo>" + data + "</helo>";
           break;
     };
     
-    str += "</command>";
+    str += "</command>\n";
 
     return str;
 }
 
 std::string &
-parseCommand(XML &xml, std::string &str)
+Commands::execCommand(XML &xml, std::string &str)
 {
     DEBUGLOG_REPORT_FUNCTION;
+
+    std::string cmd = xml.nameGet();
+    
+    dbglogfile << "Executing remote command " << cmd << std::endl;
 
     return str;
 }

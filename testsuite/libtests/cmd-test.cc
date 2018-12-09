@@ -42,9 +42,38 @@ public:
         DEBUGLOG_REPORT_FUNCTION;
 
         // Test creating commands
+
+        if (convertAction("nop") == Commands::NOP) {
+            runtest.pass("convertAction(nop)");
+        } else {
+            runtest.fail("convertAction(nop)");
+        }
+        if (convertAction("list") == Commands::LIST) {
+            runtest.pass("convertAction(list)");
+        } else {
+            runtest.fail("convertAction(list)");
+        }
+        if (convertAction("poll") == Commands::POLL) {
+            runtest.pass("convertAction(poll)");
+        } else {
+            runtest.fail("convertAction(poll)");
+        }
+        if (convertAction("helo") == Commands::HELO) {
+            runtest.pass("convertAction(helo)");
+        } else {
+            runtest.fail("convertAction(helo)");
+        }
+        
         std::string str;
+        createCommand(Commands::HELO, "localhost enduser", str);
+        if (str == "<command><helo><hostname>localhost</hostname><user>enduser</user></helo></command>\n") {
+            runtest.pass("create HELO command");
+        } else {
+            runtest.fail("create HELO command");
+        }
+        str.erase();
         createCommand(Commands::NOP, "", str);
-        if (str == "<command></command>") {
+        if (str == "<command><nop></nop></command>\n") {
             runtest.pass("create NOP command");
         } else {
             runtest.fail("create NOP command");
@@ -52,14 +81,14 @@ public:
         str.erase();
         //
         createCommand(Commands::LIST, "foo", str);
-        if (str == "<command><list>foo</list></command>") {
+        if (str == "<command><list>foo</list></command>\n") {
             runtest.pass("create LIST command");
         } else {
             runtest.fail("create LIST command");
         }
         str.erase();
         createCommand(Commands::POLL, "bar", str);
-        if (str == "<command><poll>bar</poll></command>") {
+        if (str == "<command><poll>bar</poll></command>\n") {
             runtest.pass("create POLL command");
         } else {
             runtest.fail("create POLL command");
@@ -68,7 +97,7 @@ public:
 
         // Test oarsing XML commands
         XML xml;
-        std::string testnop = "<command></command>";
+        std::string testnop = "<command></command>\n";
         if (!xml.parseMem(testnop)) {
             runtest.untested("XML::parseMem(nop command) failed!");
         }
@@ -84,7 +113,7 @@ public:
         }
         str.erase();
 
-        std::string testlist = "<command><list>foo</list></command>"; 
+        std::string testlist = "<command><list>foo</list></command>\n";
         if (!xml.parseMem(testlist)) {
             runtest.untested("XML::parseMem(list command) failed!");
         }
@@ -110,7 +139,7 @@ public:
         
         //execCommand(xml, str);        
         
-        std::string testpoll = "<command><poll>bar</poll></command>";
+        std::string testpoll = "<command><poll>bar</poll></command>\n";
         if (!xml.parseMem(testpoll)) {
             runtest.untested("XML::parseMem(poll command) failed!");
         }
@@ -133,8 +162,28 @@ public:
         } else {
             runtest.fail("POLL command has correct child");
         }
+
+        std::string testhelo = "<command><helo><hostname>localhost</hostname><user>enduser</user></helo></command>\n";
+        if (!xml.parseMem(testhelo)) {
+            runtest.untested("XML::parseMem(helo command) failed!");
+        }
+        node = xml[0];
+        if (node->nameGet() == "helo") {
+            runtest.pass("parse helo command");
+        } else {
+            runtest.fail("parse helo command");
+        }
+        str.erase();
+        // This top level node has two children
+        if (node->childGet(0)->nameGet() == "hostname" && node->childGet(1)->nameGet() == "user") {
+            runtest.pass("POLL command has children");
+        } else {
+            runtest.fail("POLL command has children");
+        }
+        
+        
     };
-    
+
     ~Test() {};
 };
 

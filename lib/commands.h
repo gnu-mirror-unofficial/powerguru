@@ -32,14 +32,19 @@
 
 class Commands 
 {
- public:
-  typedef enum { NOP, LIST, POLL } cmd_t; 
-  Commands();
-  ~Commands();
-
-  std::string &createCommand(cmd_t cmd, const std::string &args,
-                                   std::string &str);
-  std::string &execCommand(XML &xml, std::string &str);
+public:
+    typedef enum { NOP, LIST, POLL, HELO } cmd_t; 
+    Commands();
+    ~Commands();
+    std::string &createCommand(cmd_t cmd, const std::string &args,
+                               std::string &str);
+    std::string &execCommand(XML &xml, std::string &str);
+    cmd_t &convertAction(const std::string &cmd) {
+        return _commands[cmd];
+    };
+    
+protected:
+    std::map<const std::string, cmd_t> _commands;
 };
 
 #endif	// __COMMANDS_H__
