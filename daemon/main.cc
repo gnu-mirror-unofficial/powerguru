@@ -52,6 +52,7 @@ include "xantrex-trace.h"
 #include "ownet.h"
 #endif
 #include "menuitem.h"
+#include "console.h"
 #include "database.h"
 #include "snmp.h"
 #include "rc.h"
@@ -71,7 +72,7 @@ alarm_handler2 (int sig);
 
 int curses = 0;
 
-extern void client_handler(void);
+extern void client_handler(Tcpip &net);
 extern void ownet_handler(pdev::Ownet &);
 extern void outback_handler(pdev::Ownet &);
 extern void xantrex_handler(pdev::Ownet &);
@@ -240,10 +241,12 @@ main(int argc, char *argv[])
 #endif
 
     dbglogfile << "PowerGuru - 1 Wire Mode" << std::endl;
-    pdev::Ownet ownet;
-    std::thread first (client_handler);
+    Tcpip net;
+    net.createNetServer(DEFAULTPORT);
+    std::thread first (client_handler, std::ref(net));
 #ifdef BUILD_OWNET
-    //std::thread second (ownet_handler, std::ref(ownet));
+    pdev::Ownet ownet;
+    std::thread second (ownet_handler, std::ref(ownet));
 #endif
 #ifdef BUILD_XANTREX
     std::thread third (xantrex_handler, std::ref(ownet));
@@ -322,12 +325,40 @@ main(int argc, char *argv[])
             messages.clear();
         }
     }
-    // con.Reset();
-    // con.Close();
+#endif
+
+#if 0
+    // Open a console for user input
+    Console con;
+    con.openCon();
+    con.makeRaw();
+    int ch = 0;
+    while ((ch = con.getcCon()) != 'q') {
+        if (ch > 0) {                // If we have something, process it
+            con.putcCon (ch);          // echo inputted character to screen
+            switch (ch) {
+              case 'Q':
+              case 'q':
+                  dbglogfile << "Qutting PowerGuru due to user input!" << std::endl;
+                  break;
+              case '?':
+                  con.putsCon("PowerGuru client\n");
+                  con.putsCon("\t? - help\r\n");
+                  con.putsCon("\tq - Quit\r\n");
+                  con.putsCon("\tQ - Quit\r\n");
+                  sleep(1);
+              default:
+                  break;
+            };
+        }
+    }
+
+    con.resetCon();
 #endif
     // synchronize threads:
+    dbglogfile << "Killing all threads..." << std::endl;
     first.join();                // pauses until first finishes
-#ifdef OWNET
+#ifdef BUILD_OWNET_XXX
     second.join();                // pauses until second finishes
 #endif
 #ifdef BUILD_OUTBACK

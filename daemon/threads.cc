@@ -52,57 +52,28 @@ extern LogFile dbglogfile;
 using namespace std::chrono_literals;
 
 void
-console_handler(Console &con)
-{
-    DEBUGLOG_REPORT_FUNCTION;
-    
-    // Open a console for user input
-    con.Open();
-    int ch = 0;
-    while ((ch = con.Getc()) != 'q') {
-        if (ch > 0) {                // If we have something, process it
-            con.Putc (ch);          // echo inputted character to screen
-            switch (ch) {
-              case 'Q':
-              case 'q':
-                  dbglogfile <<"Qutting PowerGuru due to user input!\n" << std::endl;
-                  con.Reset();
-                  exit(0);
-                  break;
-              case '?':
-                  con.Puts("PowerGuru client\n");
-                  con.Puts("\t? - help\r\n");
-                  con.Puts("\tq - Quit\r\n");
-                  con.Puts("\tQ - Quit\r\n");
-                  sleep(2);
-              default:
-                  break;
-            };
-        }
-    }
-}
-
-void
-client_handler(void)
+client_handler(Tcpip &net)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
     retcode_t ret;
-    Tcpip net;
-    int retries = 0;
+    //Tcpip net;
+    int retries = 10;
 
-    net.createNetServer(DEFAULTPORT);
-
-    while (retries-- < 10) {
+    while (retries-- <= 10) {
         net.newNetConnection(true);
 
         bool loop = true;
         std::vector<unsigned char> data;
         while (loop) {
+            data.clear();
             if (net.readNet(data).size() < 0) {
                 dbglogfile << "ERROR: Got error from socket " << std::endl;
                 loop = false;
             } else {
+                if (data.data() == 0) {
+                    continue;  
+                }
                 std::string buffer = (char *)data.data();
                 //if (buffer.size() == 1 && *data.data() == 0) {
                 if (data.size() == 1 && buffer[0] == 0) {
@@ -114,7 +85,15 @@ client_handler(void)
                     sleep(1);
                     continue;
                 }
-                buffer.erase(buffer.find('\n')-1);
+                size_t pos = buffer.find('\n')-1;
+                //std::cerr << "FOO: " << pos << " | " << std::string::npos << std::endl;
+                if (pos == 0 || pos == std::string::npos) {
+                    data.clear();
+                    buffer.clear();
+                    loop = false;
+                    continue;
+                }
+                buffer.erase(pos);
                 // if the first character is a <, assume it's in XML formst.
                 if (buffer[0] == '<') {
                     XML xml;
@@ -134,11 +113,13 @@ client_handler(void)
                 } else {
                     std::cerr << buffer << std::endl;
                 }
+                buffer.clear();
             }
         }
     }
 
-    net.closeNet();
+    //next.join();
+    net.closeConnection();
 }
 
 #ifdef BUILD_OWNET
