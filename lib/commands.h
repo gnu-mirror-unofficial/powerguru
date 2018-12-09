@@ -39,7 +39,7 @@ class Commands
 
   std::string &createCommand(cmd_t cmd, const std::string &args,
                                    std::string &str);
-  const std::string &execCommand(XML &xml);
+  std::string &execCommand(XML &xml, std::string &str);
 };
 
 #endif	// __COMMANDS_H__

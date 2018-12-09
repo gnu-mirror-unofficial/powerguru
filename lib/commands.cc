@@ -69,10 +69,12 @@ Commands::createCommand(cmd_t cmd, const std::string &args,
     return str;
 }
 
-const std::string &
-parseCommand(XML &xml)
+std::string &
+parseCommand(XML &xml, std::string &str)
 {
     DEBUGLOG_REPORT_FUNCTION;
+
+    return str;
 }
 
 // local Variables:

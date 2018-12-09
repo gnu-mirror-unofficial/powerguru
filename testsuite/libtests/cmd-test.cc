@@ -33,38 +33,88 @@ bool waitforgdb = false;
 
 TestState runtest;
 
+// Declare a class inherited from the base class so we can access the internal
+// protected data.
 class Test : public Commands
 {
 public:
     Test() {
         DEBUGLOG_REPORT_FUNCTION;
 
+        // Test creating commands
         std::string str;
-        std::cerr << createCommand(Commands::NOP, "", str) << std::endl;
+        createCommand(Commands::NOP, "", str);
         if (str == "<command></command>") {
-            runtest.pass("NOP command");
+            runtest.pass("create NOP command");
         } else {
-            runtest.fail("NOP command");
+            runtest.fail("create NOP command");
         }
         str.erase();
         //
-        std::cerr << createCommand(Commands::LIST, "foo", str) << std::endl;
+        createCommand(Commands::LIST, "foo", str);
         if (str == "<command><list>foo</list></command>") {
-            runtest.pass("LIST command");
+            runtest.pass("create LIST command");
         } else {
-            runtest.fail("LIST command");
+            runtest.fail("create LIST command");
         }
         str.erase();
-        std::cerr << createCommand(Commands::POLL, "bar", str) << std::endl;
+        createCommand(Commands::POLL, "bar", str);
         if (str == "<command><poll>bar</poll></command>") {
-            runtest.pass("POLL command");
+            runtest.pass("create POLL command");
         } else {
-            runtest.fail("POLL command");
+            runtest.fail("create POLL command");
         }
         str.erase();
 
+        // Test oarsing XML commands
+        XML xml;
+        std::string testnop = "<command></command>";
+        if (!xml.parseMem(testnop)) {
+            runtest.untested("XML::parseMem(nop command) failed!");
+        }
+        if (xml.nameGet() == "command") {
+            runtest.pass("parse NOP command");
+        } else {
+            runtest.fail("parse NOP command");
+        }
+        if (xml[0] == 0) {
+            runtest.pass("NOP command has no children");
+        } else {
+            runtest.fail("NOP command has no children");
+        }
+        str.erase();
+
+        std::string testlist = "<command><list>foo</list></command>"; 
+        if (!xml.parseMem(testlist)) {
+            runtest.untested("XML::parseMem(list command) failed!");
+        }
+        XMLNode *node = xml[0];
+        if (node->nameGet() == "list") {
+            runtest.pass("parse LIST command");
+        } else {
+            runtest.fail("parse LIST command");
+        }
+        str.erase();
+
+        if (xml[0] != 0) {
+            runtest.pass("LIST command has children");
+        } else {
+            runtest.fail("LIST command has children");
+        }
         
+        if (xml[0]->nameGet() == "list" && xml[0]->valueGet() == "foo") {
+            runtest.pass("LIST command has correct child");
+        } else {
+            runtest.fail("LIST command has correct child");
+        }
+        
+        //execCommand(xml, str);
+        
+        
+        std::string testpoll = "<command><poll>bar</poll></command>";
+
     };
+    
     ~Test() {};
 };
 
