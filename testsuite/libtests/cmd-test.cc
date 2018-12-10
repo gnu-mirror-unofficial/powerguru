@@ -175,13 +175,14 @@ public:
         }
         str.erase();
         // This top level node has two children
-        if (node->childGet(0)->nameGet() == "hostname" && node->childGet(1)->nameGet() == "user") {
-            runtest.pass("POLL command has children");
+        if (node->childGet(0)->nameGet() == "hostname"
+            && node->childGet(0)->valueGet() == "localhost"
+            && node->childGet(1)->valueGet() == "enduser"
+            && node->childGet(1)->nameGet() == "user") {
+            runtest.pass("HELO command has both children");
         } else {
-            runtest.fail("POLL command has children");
-        }
-        
-        
+            runtest.fail("HELO command has both children");
+        }  
     };
 
     ~Test() {};
