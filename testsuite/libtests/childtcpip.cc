@@ -1,5 +1,5 @@
 // 
-//   Copyright (C) 2005 Free Software Foundation, Inc.
+//   Copyright (C) 2005,2006-2018 Free Software Foundation, Inc.
 //
 //   This program is free software; you can redistribute it and/or modify
 //   it under the terms of the GNU General Public License as published by
@@ -33,18 +33,17 @@
 #include <sys/types.h>
 #include <cstdio>
 #include <iostream>
+#include <vector>
 
 #include "dejagnu.h"
 #include "tcpip.h"
-
-using namespace std;
 
 int verbosity;
 static void usage (void);
 bool waitforgdb = false;
 
-int proc_tests (string procname);
-int start_proc (string procname);
+int proc_tests (const std::string &procname);
+int start_proc (const std::string &procname);
 
 TestState runtest;
 
@@ -53,120 +52,48 @@ main(int argc, char *argv[])
 {
     int c;
     bool dump = false;
-    string filespec;
-    string procname, memname;
+    std::string filespec;
     
-    while ((c = getopt (argc, argv, "hdvsm:")) != -1) {
+    while ((c = getopt (argc, argv, "hdvs:")) != -1) {
         switch (c) {
           case 'h':
             usage ();
             break;
-            
           case 'd':
             dump = true;
             break;
-            
           case 's':
             waitforgdb = true;
             break;
-                                                                                
           case 'v':
             verbosity++;
             break;
-            
-          case 'm':
-            memname = optarg;
-            cerr << "Open " << memname << endl;
-            break;
-            
           default:
             usage ();
             break;
         }
     }
     
-    // get the file name from the command line
-    if (optind < argc) {
-        filespec = argv[optind];
-        cout << "Will use \"" << filespec << "\" for test " << endl;
-    }
-
-
     Tcpip tcpip;
-    const struct hostent  *host;
-    const struct servent  *service;
-    const struct in_addr  *addr;
+    retcode_t ts = tcpip.createNetClient(DEFAULTPORT);
 
-    char hostname[MAXHOSTNAMELEN];
-    gethostname(hostname, MAXHOSTNAMELEN);
-    
-    // See if we can do host lookups
-    host = tcpip.hostDataGet();
-    addr = (struct in_addr *)host->h_addr_list[0];
+    tcpip.writeNet("foo");
 
-    if (strcmp(host->h_name, hostname) == 0)
-        runtest.pass ("Tcpip::hostDataGet()");
-    else
-        runtest.fail ("Tcpip::hostDataGet()");
+    std::vector<unsigned char> data;
+    tcpip.readNet(data);
+    if (data.size() > 0) {
+        std::cout << "Child read " << data.size() <<" bytes from parent:" << std::endl;
+    }  
 
-    if (host->h_name == tcpip.hostNameGet())
-        runtest.pass ("Tcpip::hostNameGet()");
-    else
-        runtest.fail ("Tcpip::hostNameGet()");
-
-    if ((in_addr_t *)host->h_addr_list[0] == tcpip.hostIPGet())
-        runtest.pass ("Tcpip::hostIPGet()");
-    else
-        runtest.fail ("Tcpip::hostIPGet()");
-
-#if 0
-//    cerr << "Name is " << host->h_name << " IP is "
-//         << inet_ntoa(*(struct in_addr *)host->h_addr_list[0]) << endl;
-    
-    cerr << "childtcpip: Name is " << tcpip.hostNameGet() << " IP is " <<
-        tcpip.hostIPNameGet() << endl;  
-#endif
-    
-    // See if we can do service lookups
-    service = tcpip.lookupService("powerguru", "tcp");
-    if (strcmp(service->s_name, "powerguru") == 0 &&
-        strcmp(service->s_proto, "tcp") == 0 &&
-        ntohs(service->s_port) == 7654)
-        runtest.pass ("Tcpip::lookupService()");
-    else
-        runtest.fail ("Tcpip::lookupService()");
-    
-    retcode_t ts = tcpip.createNetClient(7654);
-    //    retcode_t ts = tcpip.createNetClient("powerguru");
-
-    char *buffer;
-
-    buffer = (char *)new char[300];
-    memset(buffer, 0, 300);
-
-// cerr << "Dump from child" << endl;
-//    ts->dump();
-    
-    //ts->writeNet("Hello World!\n");
-
-#if 1
-    int bytes;// = ts->readNet(buffer, 300);
-
-    if (bytes > 0)
-    {
-        cout << "Child read from parent:" << endl << buffer << endl;
-    }
-#endif
-    
     sleep(2);
 }
 
 static void
 usage (void)
 {
-    cerr << "This program tests the Global memory system." << endl;
-    cerr << "Usage: tglobal [h] filename" << endl;
-    cerr << "-h\tHelp" << endl;
-    cerr << "-d\tDump parsed data" << endl;
+    std::cerr << "This program tests the Global memory system." << std::endl;
+    std::cerr << "Usage: tglobal [h] filename" << std::endl;
+    std::cerr << "-h\tHelp" << std::endl;
+    std::cerr << "-d\tDump parsed data" << std::endl;
     exit (-1);
 }

@@ -1,5 +1,5 @@
 // 
-//   Copyright (C) 2005 Free Software Foundation, Inc.
+//   Copyright (C) 2005, 2006-2018 Free Software Foundation, Inc.
 //
 //   This program is free software; you can redistribute it and/or modify
 //   it under the terms of the GNU General Public License as published by
@@ -38,8 +38,6 @@
 #include "dejagnu.h"
 #include "tcpip.h"
 
-using namespace std;
-
 int verbosity;
 static void usage (void);
 bool waitforgdb = false;
@@ -47,20 +45,109 @@ static void cntrlc_handler (int);
 static void alarm_handler (int);
 static bool loop = true;
 
-int proc_tests (string procname);
-int start_proc (string procname);
+int
+start_proc (const std::string &procname);
 
 TestState runtest;
+class Test : public Tcpip
+{
+public:
+    Test(void) {
+        // Get some system information needed to test the classes.
+        std::memset(_thost, 0, MAXHOSTNAMELEN);
+        if (gethostname(_thost, MAXHOSTNAMELEN) != 0) {
+            std::cerr << "ERROR: gethostname() failed!" << std::endl;
+            exit(-1);
+        } 
+        if (_thost == 0) {
+            std::cerr << "ERROR: gethostbyname() failed!" << std::endl;
+            exit(-1);        
+        }
+        _tservice = getservbyname("git", NULL);
+        if (_tservice == 0) {
+            std::cerr << "ERROR: getservbyname() failed!" << std::endl;
+            exit(-1);        
+        }
+    };
+
+    ~Test(void) {
+    };
+
+    int test(void) {
+        // See if we can do service lookups
+        _tservice = lookupService("powerguru", "tcp");
+        if (_tservice != 0) {
+            if (strcmp(_tservice->s_name, "powerguru") == 0 &&
+                strcmp(_tservice->s_proto, "tcp") == 0 &&
+                _tservice->s_port == htons(7654))
+                runtest.pass ("lookupService(powerguru)");
+            else
+                runtest.fail ("lookupService(powerguru)");
+        } else {
+            runtest.fail ("lookupService(powerguru)");
+        }
+
+        createNetServer(7654);
+        int pid = start_proc("./childtcpip");
+
+        // sleep so the child process has time to run, and we have time
+        // to debug it. We setup a handler for ^C, so we can get out of
+        // this sleep when we're done.
+        if (waitforgdb) {
+            struct sigaction  act2;
+            act2.sa_handler = cntrlc_handler;
+            sigaction (SIGINT, &act2, NULL);
+            sleep(300);
+        } else {
+            sleep(1);
+        }
+
+        int retries = 3;
+        while (retries-- > 0) {
+            retcode_t ts = newNetConnection(true);
+            if (ts) {
+                break;
+            } else {
+                // Under purify, things are very slow, so wait before retries
+                sleep(10);
+            }
+        }
+        struct sigaction  act;
+        act.sa_handler = alarm_handler;
+        sigaction (SIGALRM, &act, NULL);
+        alarm(5);
+        std::cout << std::endl
+             << "Waiting 5 seconds for input from the child process..." << std::endl;
+
+        // Read data from the child process
+        std::vector<unsigned char> data;
+        readNet(data);
+
+        if (data.size() > 0) {
+            runtest.pass("Established netork connection");
+        } else {
+            runtest.fail("Established netork connection");
+        }
+
+        sleep(1);
+        closeNet();
+    };
+
+protected:
+    char                   _thost[MAXHOSTNAMELEN];
+    const struct servent  *_tservice;
+    const struct protoent *_tproto;
+    const in_addr_t       *_taddr;
+};
 
 int
 main(int argc, char *argv[])
 {
     int c;
     bool dump = false;
-    string filespec;
-    string procname, memname;
+    std::string filespec;
+    std::string procname, memname;
     char buffer[300];
-    int retries = 3;
 
     memset(buffer, 0, 300);
     
@@ -84,7 +171,7 @@ main(int argc, char *argv[])
             
           case 'm':
             memname = optarg;
-            cerr << "Open " << memname << endl;
+            std::cerr << "Open " << memname << std::endl;
             break;
             
           default:
@@ -96,140 +183,55 @@ main(int argc, char *argv[])
     // get the file name from the command line
     if (optind < argc) {
         filespec = argv[optind];
-        cout << "Will use \"" << filespec << "\" for test " << endl;
+        std::cout << "Will use \"" << filespec << "\" for test " << std::endl;
     }
 
-
-    Tcpip tcpip;
-    const struct hostent  *host;
-//    struct protoent *proto;
-    const struct servent  *service;
-    const struct protoent *proto;
-    const struct in_addr  *addr;
-
-    char hostname[MAXHOSTNAMELEN];
-    gethostname(hostname, MAXHOSTNAMELEN);
+    Test test;
+    test.test();
     
-    // See if we can do host lookups
-    host = tcpip.hostDataGet();
-    if (host == 0)
-    {
-        runtest.fail ("Tcpip::hostDataGet()");
-        cerr << "ERROR: no hostname! Tests can't continue" << endl;
-        exit(1);
-    }
-    
-    addr = (struct in_addr *)host->h_addr_list[0];
-
-#if 1
-//    cerr << "Name is " << host->h_name << " IP is "
-//         << inet_ntoa(*(struct in_addr *)host->h_addr_list[0]) << endl;
-    
-    cerr << "tcpip: Name is " << tcpip.hostNameGet() << " IP is " <<
-        tcpip.hostIPNameGet() << endl;  
-#endif
-    
-    if (strcmp(host->h_name, hostname) == 0)
-        runtest.pass ("Tcpip::hostDataGet()");
-    else
-        runtest.fail ("Tcpip::hostDataGet()");
-
-    if (host->h_name == tcpip.hostNameGet())
-        runtest.pass ("Tcpip::hostNameGet()");
-    else
-        runtest.fail ("Tcpip::hostNameGet()");
-
-    if ((in_addr_t *)host->h_addr_list[0] == tcpip.hostIPGet())
-        runtest.pass ("Tcpip::hostIPGet()");
-    else
-        runtest.fail ("Tcpip::hostIPGet()");
-    
+#if 0    
     // See if we can do service lookups
     service = tcpip.lookupService("powerguru", "tcp");
-    if (strcmp(service->s_name, "powerguru") == 0 &&
-        strcmp(service->s_proto, "tcp") == 0 &&
-        service->s_port == htons(7654))
-        runtest.pass ("Tcpip::lookupService(powerguru)");
-    else
+    if (service != 0) {
+        if (strcmp(service->s_name, "powerguru") == 0 &&
+            strcmp(service->s_proto, "tcp") == 0 &&
+            service->s_port == htons(7654))
+            runtest.pass ("Tcpip::lookupService(powerguru)");
+        else
+            runtest.fail ("Tcpip::lookupService(powerguru)");
+    } else {
         runtest.fail ("Tcpip::lookupService(powerguru)");
-
-//    tcpip.toggleDebug(true);
+    }
     
+//    tcpip.toggleDebug(true);
     // See if we can do protocol lookups
     proto = tcpip.protoDataGet();
-    if (strcmp(proto->p_name, "tcp") == 0 &&
-        proto->p_proto == 6)
-        runtest.pass ("Tcpip::protoDataGet()");
-    else
-        runtest.fail ("Tcpip::protoDataGet()");
-
-    if (tcpip.protoNameGet() == "tcp")
-        runtest.pass ("Tcpip::protoNameGet()");
-    else
-        runtest.fail ("Tcpip::protoNameGet()");
-
-    if (tcpip.protoNumGet() == 6)
-        runtest.pass ("Tcpip::protoNumGet()");
-    else
-        runtest.fail ("Tcpip::protoNumGet()");
-    
-    tcpip.createNetServer(7654);
-    //    tcpip.createNetServer("powerguru");
-    
-#if 1
-    int pid;
-    // Run the memory tests between two processes
-    if (procname.size() == 0)
-        pid = start_proc("./childtcpip");
-    else
-        pid = proc_tests (procname);
-    
-    // sleep so the child process has time to run, and we have time to debug it. We setup a
-    // handler for ^C, so we can get out of this sleep when we're done.
-    if (waitforgdb) {
-        struct sigaction  act2;
-        act2.sa_handler = cntrlc_handler;
-        sigaction (SIGINT, &act2, NULL);
-        sleep(300);
+    if (proto != 0) {
+        if (strcmp(proto->p_name, "tcp") == 0 &&
+            proto->p_proto == 6) {
+            runtest.pass ("Tcpip::protoDataGet()");
+        } else {
+            runtest.fail ("Tcpip::protoDataGet()");
+        }
     } else {
-        sleep(1);
+        runtest.fail ("Tcpip::protoDataGet()");    
+    }
+    if (tcpip.protoNameGet() == "tcp") {
+        runtest.pass ("Tcpip::protoNameGet()");
+    } else {
+        runtest.fail ("Tcpip::protoNameGet()");
+    }
+    if (tcpip.protoNumGet() == 6) {
+        runtest.pass ("Tcpip::protoNumGet()");
+    } else {
+        runtest.fail ("Tcpip::protoNumGet()");
     }
 #endif
-    while (retries-- > 0)
-    {
-        retcode_t ts = tcpip.newNetConnection(true);
-        if (ts)
-            break;
-        else
-          // Under purify, things are very slow, so wait before retries
-          sleep(10);
-    }
     
-    struct sigaction  act;
- 
-    act.sa_handler = alarm_handler;
-    sigaction (SIGALRM, &act, NULL);
-
-    alarm(5);
-
-    cout << endl
-         << "Waiting 5 seconds for input from the child process..." << endl;
-
-    
-    //    int bytes = ts->readNet((char *)&buffer, 300);
-    int bytes;
-    
-    if (bytes > 0)
-    {
-        cout << "Parent read  from child" << endl << buffer << endl;
-    }
-    //ts->writeNet("FoobyDo!");
-    sleep(1);
-    tcpip.closeNet();
 }
 // Run the tests between two processes
 int
-start_proc (string procname)
+start_proc (const std::string &procname)
 {
     struct stat procstats;
     char *cmd_line[5];
@@ -238,7 +240,7 @@ start_proc (string procname)
     
     // See if the file actually exists, otherwise we can't spawn it
     if (stat(procname.c_str(), &procstats) == -1) {
-        cerr << "Invalid filename \"" << procname << "\"" <<endl;
+        std::cerr << "Invalid filename \"" << procname << "\"" << std::endl;
         perror(procname.c_str());
         return -1;
     }
@@ -258,13 +260,12 @@ start_proc (string procname)
     
     // childpid is a positive integer, if we are the parent, and fork() worked
     if (childpid > 0) {
-        cerr << "Forked sucessfully, child process PID is " << childpid << endl;
+        std::cerr << "Forked sucessfully, child process PID is " << childpid << std::endl;
         return childpid;
     }
     
     // childpid is -1, if the fork failed, so print out an error message
     if (childpid == -1) {
-        /* fork() failed */
         perror(procname.c_str());
         return -1;
     }
@@ -272,41 +273,34 @@ start_proc (string procname)
     // If we are the child, exec the new process, then go away
     if (childpid == 0) {
         // Start the desired executable
-        cout << "Starting " << procname << " with " << cmd_line[0] << endl;
+        std::cout << "Starting " << procname << " with " << cmd_line[0] << std::endl;
         ret = execv(procname.c_str(), cmd_line);
         perror(procname.c_str());
         exit(0);
     }
     return 0;
 }
-
-// Run the memory tests between two processes
-int
-proc_tests (string procname)
-{
-    return start_proc(procname);
-}
  
 void
 cntrlc_handler (int sig)
 {
-  cerr << "Got a ^C !" << endl;
+    std::cerr << "Got a ^C !" << std::endl;
 }
 
 void
 alarm_handler (int sig)
 {
-  cerr << "Got an alarm signal !" << endl;
-  cerr << "This is OK, we use it to end this test case." << endl;
+  std::cerr << "Got an alarm signal !" << std::endl;
+  std::cerr << "This is OK, we use it to end this test case." << std::endl;
   loop = false;
 }
 
 static void
 usage (void)
 {
-    cerr << "This program tests the Global memory system." << endl;
-    cerr << "Usage: tglobal [h] filename" << endl;
-    cerr << "-h\tHelp" << endl;
-    cerr << "-d\tDump parsed data" << endl;
+    std::cerr << "This program tests the Global memory system." << std::endl;
+    std::cerr << "Usage: tglobal [h] filename" << std::endl;
+    std::cerr << "-h\tHelp" << std::endl;
+    std::cerr << "-d\tDump parsed data" << std::endl;
     exit (-1);
 }
