@@ -53,7 +53,7 @@ public:
     // Accessors
     short getPort(void) { return -1; }; // FIXME
     int getProtocol(void) { return _addrinfo->ai_protocol; };
-    std::string &getHostnamet(void) { return _hostname; };
+    std::string &getHostname(void) { return _hostname; };
     std::string &getIP(void) { return _ipaddr; };
     
 protected:
