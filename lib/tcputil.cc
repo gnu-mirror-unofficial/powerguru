@@ -44,7 +44,8 @@ extern LogFile dbglogfile;
 
 Tcputil::Tcputil(void)
     : _service(0),
-      _proto(0)
+      _proto(0),
+      _addrinfo(0)
 {
     // Get the hostname of this machine
     char hostname[MAXHOSTNAMELEN];
