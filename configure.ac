@@ -20,8 +20,8 @@ dnl  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59c)
-AC_INIT([snmp/POWERGURU-MIB.txt], [0.4dev])
-dnl AC_CANONICAL_SYSTEM
+AC_INIT([Powerguru], [0.5dev])
+AC_CANONICAL_SYSTEM
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS([config.h])
@@ -248,7 +248,7 @@ dnl GNU_PKG_FIND(libxml2, [libxml/xmlstring.h], [libxml2], xmlNewReference)
 dnl libpq. FIXME: add libpqcxx
 db=none
 LDFLAGS="${save_LDFLAGS} -lpq"
-headers="/usr/include/postgresql/9.6/server/libpq /usr/include/postgresql /usr/local/include/libpq /usr/local/include"
+headers="/usr/include/postgresql/9.6/server/libpq /usr/local/include/libpq /usr/local/include /usr/include/postgresql "
 for i in ${headers}; do
 if test ${sysroot}${i}/libpq-fe.h; then
    CPPFLAGS="-I${sysroot}${i}"
