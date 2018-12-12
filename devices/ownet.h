@@ -118,7 +118,7 @@ public:
 
     // get all the temperature fields for a device.
     temperature_t *getTemperature(const std::string &device) {
-        DEBUGLOG_REPORT_FUNCTION;
+        // DEBUGLOG_REPORT_FUNCTION;
 
         std::string family = getValue(device, "family");
         std::string id = getValue(device, "id");
@@ -126,13 +126,14 @@ public:
 
         temperature_t *temp = 0;
         if (family == "10") {
-            dbglogfile << device << " is a thermometer" << std::endl;
+            // dbglogfile << device << " is a thermometer" << std::endl;
             temp = new temperature_t[1];
             temp->temp = std::stof(getValue(device, "temperature"));
             temp->lowtemp =std::stof(getValue(device, "templow"));
             temp->hightemp = std::stof(getValue(device, "temphigh"));
             // Add data to the database
             std::string stamp;
+#ifdef HAVE_LIBPQ
             stamp = pdb.gettime(stamp);
             std::string query = family + ',';
             query += "\'" + id;
@@ -142,6 +143,7 @@ public:
             query += ", " + std::to_string(temp->lowtemp);
             query +=  ", " + std::to_string(temp->hightemp);
             pdb.queryInsert(query);
+#endif
 
             std::lock_guard<std::mutex> guard(_mutex);
             _temperatures[device] = temp;
@@ -151,7 +153,6 @@ public:
         return temp;
     }
 
-#if 1
     void dump(void) {
         DEBUGLOG_REPORT_FUNCTION;
 
@@ -169,9 +170,19 @@ public:
             std::cout << "\tHigh Temperature: " << tit->second->hightemp << std::endl;
         }
     }
-#else
-    void dump(void);
-#endif
+
+    std::vector<std::string> &
+    listDevices(std::vector<std::string> &list) {
+        DEBUGLOG_REPORT_FUNCTION;
+
+        std::map<std::string, ownet_t *>::iterator sit;
+        for (sit = _sensors.begin(); sit != _sensors.end(); sit++) {
+            std::string dev = sit->first.substr(sit->first.size()-1);
+            list.push_back(sit->first);
+        }
+        return list;
+    }
+
     Ownet(void) {
         DEBUGLOG_REPORT_FUNCTION;
 
@@ -243,6 +254,7 @@ public:
                 _temperatures[*it] = temp;
 
                 std::string stamp;
+#ifdef HAVE_LIBPQ
                 stamp = pdb.gettime(stamp);
                 std::string query = data->family + ',';
                 query += "\'" + data->id;
@@ -252,6 +264,7 @@ public:
                 query += ", " + std::to_string(temp->lowtemp);
                 query +=  ", " + std::to_string(temp->hightemp);
                 pdb.queryInsert(query);
+#endif
             } else {
                 dbglogfile << "Temperature sensor not found!" << std::endl;
             }
