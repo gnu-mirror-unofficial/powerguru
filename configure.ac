@@ -21,7 +21,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59c)
 AC_INIT([Powerguru], [0.5dev])
-AC_CANONICAL_SYSTEM
+dnl AC_CANONICAL_SYSTEM
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS([config.h])
@@ -78,7 +78,7 @@ devices=""
 BUILD_OWNET="yes"
 BUILD_OUTBgACK="no"
 BUILD_XANTREX="no"
-AC_ARG_WITH(devices, [  --with-device          the device(s) to build (ownet, outback, xantrex)],
+AC_ARG_WITH(devices, [  --with-devices          the device(s) to build (ownet, outback, xantrex)],
 [devices="`echo ${withval} | tr ',' ' '`"
 for i in ${devices}; do
     echo "FIXME: $i"
@@ -143,33 +143,43 @@ dnl     	CXXFLAGS="${CXXFLAGS} -march=armv6 -mfpu=vfp -mfloat-abi=hard"
      armv6z) ;;
      *) ;;
 esac
+gcc_sysroot=""
+if test `uname -m` != ${arch}; then
+  cross_compiling=yes
+  gcc_sysroot="`${CXX} -print-sysroot | sed -e 's:bin/../::'`"
+fi
 AC_MSG_NOTICE([Default compiler architecture is: ${arch}])
 
-sysroot="${sysroot:-`${CXX} -print-sysroot`}"
-dnl We don't need a sysroot for native builds
-if test x"${sysroot}" = x"/"; then
-   sysroot=""
-fi
-
+sysroot=""
 AC_ARG_WITH(sysroot,
-  AC_HELP_STRING([--with-sysroot], [system root directory for cross compiling]),
+  AC_HELP_STRING([--with-sysroot], [system rootfs directory for cross compiling]),
   sysroot=${withval};
-  cross_compiling=yes)
+  )
 
-with_top_level=""
+dnl Sanity check the sysroot for cross compiling to avoid other errors
 if test x"${cross_compiling}" = xyes; then
   AC_MSG_CHECKING([For a usable sysroot])
   dnl Check if /usr isn't part of the specified path
-  if test ! -d ${sysroot}/usr && ! -d ${sysroot}/usr/include; then
-      AC_MSG_ERROR([Specified sysroot \"${sysroot}\" doesn't exist!])
-  else
+  for i in ${gcc_sysroot} ${sysroot}; do
+    if test ! -d ${i}/usr && ! -d ${i}/usr/include; then
+      AC_MSG_ERROR([Specified sysroot \"${i}\" doesn't exist!])
+      AC_MSG_RESULT(["not found"])
+    else
+      AC_MSG_RESULT(["found"])
+    fi
+  done
+
+  dnl If the user specifies a sysroot that isn't the default, add it to
+  dnl the compilation
+  if test x"${gcc_sysroot}" != x"${sysroot}" -a x"${sysroot}" != x"/"; then
     CXXFLAGS+=" --sysroot=${sysroot}"
     CFLAGS+=" --sysroot=${sysroot}"
-    LDFLAGS+=" --sysroot=${sysroot}"
+    LDFLAGS+=" -Wl,-rpath=${sysroot}/usr/lib/${host_alias}"
+    LDFLAGS+=" -Wl,-rpath=${sysroot}/lib/${host_alias}"
   fi
-  AC_MSG_RESULT([${sysroot}])
   AC_SUBST(sysroot)
 fi
+AM_CONDITIONAL(BUILD_CROSS, [ test x"${cross_compiling}" == xyes ])
 
 dnl When cross compiling, limit the search directories cause otherwise
 dnl we may get the host headers or libraries by accident. These values
@@ -204,45 +214,41 @@ else
   RASPI_FLAGS="-march=armv6z -mtune=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard"
   AC_SUBST(RASPI_FLAGS)
 fi
-AM_CONDITIONAL(CROSS_COMPILING, [ test x$cross_compiling = xyes ])
+#AM_CONDITIONAL(CROSS_COMPILING, [ test x$cross_compiling = xyes ])
 
-dnl Add development files in /usr/local
-if test ${sysroot}/usr/local/include; then
-   CPPFLAGS="-I${sysroot}/usr/local/include"
-fi
 save_LDFLAGS="${LDFLAGS}"
 save_CXXFLAGS="${CXXFLAGS}"
 save_CPPFLAGS="${CPPFLAGS}"
 save_CFLAGS="${CFLAGS}"
 
+dnl Force warningto cause an error for compile tests
 CFLAGS="${save_CFLAGS} -Wall -Werror"
 
 # dnl libxml2's headers are sometimes in a libxml2 directory, but not always
-if test -d ${sysroot}/usr/local/include/libxml2; then
-   CPPFLAGS="-I${sysroot}/usr/local/include/libxml2"
-else
-   if test -d "${sysroot}/usr/include/libxml2"; then
-     CPPFLAGS="-I${sysroot}/usr/include/libxml2"
+headers="${sysroot:-${gcc_sysroot}}/usr ${sysroot:-${gcc_sysroot}}/usr/local"
+for i in ${headers}; do
+   if test -d "${i}/include/libxml2"; then
+     CPPFLAGS="-I${i}/include/libxml2"
    fi
-fi
+done
 
 AC_MSG_CHECKING([For libxml2 development files])
 AC_TRY_COMPILE([#include <libxml/xmlstring.h>], [
   xmlChar foo = 'x';
   foo += 'y';
   ],
-  has_libxml=true,
-  has_libxml=false
+  has_libxml=yes,
+  has_libxml=no
 )
 AC_MSG_RESULT([${has_libxml}])
-if test x"${has_libxml}" = x"true"; then
+if test x"${has_libxml}" = x"yes"; then
   AC_DEFINE([HAVE_LIBXML], [1], [Has libxml2 development files])
   LIBXML_LIBS="-lxml2"
   LIBXML_CPPFLAGS="${CPPFLAGS}"
   AC_SUBST(LIBXML_CPPFLAGS)
   AC_SUBST(LIBXML_LIBS)
 fi
-AM_CONDITIONAL(BUILD_LIBXML, [ test x${has_libxml} = xtrue ])
+AM_CONDITIONAL(BUILD_LIBXML, [ test x${has_libxml} = xyes ])
 dnl GNU_PKG_FIND(libxml2, [libxml/xmlstring.h], [libxml2], xmlNewReference)
 
 dnl libpq. FIXME: add libpqcxx
@@ -258,11 +264,11 @@ AC_MSG_CHECKING([For postgresql development files])
 AC_TRY_COMPILE([#include <libpq-fe.h>], [
   PQpass(0);
   ],
-  has_libpq=true,
-  has_libpq=false
+  has_libpq=yes,
+  has_libpq=no
 )
 AC_MSG_RESULT([${has_libpq}])
-if test x"${has_libpq}" = x"true"; then
+if test x"${has_libpq}" = x"yes"; then
   AC_DEFINE([HAVE_LIBPQ], [1], [Has postgresql development files])
   PQ_LIBS="-lpq"
   PQ_CPPFLAGS="${CPPFLAGS}"
@@ -270,7 +276,7 @@ if test x"${has_libpq}" = x"true"; then
   AC_SUBST(PQ_CPPFLAGS)
   AC_SUBST(PQ_LIBS)
 fi
-AM_CONDITIONAL(BUILD_POSTGRESQL, [ test x${has_libpq} = xtrue ])
+AM_CONDITIONAL(BUILD_POSTGRESQL, [ test x${has_libpq} = xyes ])
 
 dnl Net-SNMP
 dnl net-snmp's headers require these two config options or you get
@@ -278,6 +284,9 @@ dnl an error. FIXME: this need to be real tests!
 AC_DEFINE([HAVE_STRCASESTR], [1], [ Has strcasestr defined ])
 AC_DEFINE([HAVE_IN_ADDR_T], [1], [ Has typedef in_addr_t])
 
+dnl Custom build sysroots often have manually compiled projects in
+dnl /usr/local to keep them separate from system installed ones.
+CPPFLAGS=" -I${sysroot:-${gcc_sysroot}}/usr/local/include"
 CFLAGS="${save_CFLAGS} -Wall"
 LDFLAGS="${save_LDFLAGS} -lnetsnmp -lnetsnmpagent"
 AC_MSG_CHECKING([For Net SNMP development files])
@@ -285,18 +294,18 @@ AC_TRY_COMPILE([#include <net-snmp/net-snmp-config.h>
 #include <net-snmp/types.h>], [
   netsnmp_pid_t foo;
   ],
-  has_snmp=true,
-  has_snmp=false
+  has_snmp=yes,
+  has_snmp=yes
 )
 AC_MSG_RESULT([${has_snmp}])
-if test x"${has_snmp}" = x"true"; then
+if test x"${has_snmp}" = x"yes"; then
   AC_DEFINE([HAVE_SNMP], [1], [Has Net SNMP development files])
   SNMP_LIBS="-lnetsnmp -lnetsnmpagent"
   SNMP_CPPFLAGS="${CPPFLAGS}"
   AC_SUBST(SNMP_LIBS)
   AC_SUBST(SNMP_CPPFLAGS)
 fi
-AM_CONDITIONAL(BUILD_SNMP, [ test x${has_snmp} = xtrue ])
+AM_CONDITIONAL(BUILD_SNMP, [ test x${has_snmp} = xyes ])
 
 dnl dnl OWFS
 LDFLAGS="${save_LDFLAGS} -l"
