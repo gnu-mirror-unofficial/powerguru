@@ -1,5 +1,5 @@
 # 
-# Copyright (C) 2005, 2006, 2007, 2008,	2009, 2010, 2011
+# Copyright (C) 2005, 2006-2018
 #	Free Software Foundation, Inc.
 # 
 # This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 AUTOMAKE_OPTIONS = # dejagnu
 
 pgd_CPPFLAGS = -Wall -I$(top_srcdir)/lib -I$(top_srcdir)/devices
-pgd_LDADD = ../devices/libpdev.la ../lib/libpguru.la -lpthread
+pgd_LDADD = ../devices/libpdev.la ../lib/libpguru.la -lpthread -lresolv
 
 if BUILD_LIBXML
 pgd_CPPFLAGS += $(LIBXML_CPPFLAGS)
