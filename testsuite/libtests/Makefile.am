@@ -1,5 +1,6 @@
 # 
-#   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+#   Copyright (C) 2005, 2006-2018
+#   Free Software Foundation, Inc.
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,27 +22,30 @@ AUTOMAKE_OPTIONS = dejagnu subdir-objects
 
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/lib $(LIBXML_CPPFLAGS) $(PQ_CPPFLAGS) -DSRCDIR=\"$(srcdir)\"
 
-noinst_PROGRAMS =  tcpip tutil childtcpip
+check_PROGRAMS =  tcpip tutil childtcpip
+TESTS = $(check_PROGRAMS)
 
 if BUILD_LIBXML
-noinst_PROGRAMS +=  xml-test
+check_PROGRAMS +=  xml-test cmd-test
 endif
 
 LOG = ../../lib/log.lo
 
 if BUILD_LIBXML
+cmd_test_SOURCES = cmd-test.cc ../../lib/commands.cc ../../lib/xml.cc
+cmd_test_LDADD = $(LIBXML_LIBS) $(LOG)
 xml_test_SOURCES = xml-test.cc ../../lib/xml.cc
 xml_test_LDADD = $(LIBXML_LIBS) $(LOG)
 endif
 
 tcpip_SOURCES = tcpip-test.cc
-tcpip_LDADD =  ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
-tcpip_DEPENDENCIES = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
+tcpip_LDADD =  ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG)
+tcpip_DEPENDENCIES = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG)
 
 tutil_SOURCES = tcputil-test.cc
-tutil_LDADD = ../../lib/tcputil.lo  $(LOG) # ../../lib/libpguru.la
-tutil_DEPENDENCIES = ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
+tutil_LDADD = ../../lib/tcputil.lo  $(LOG)
+tutil_DEPENDENCIES = ../../lib/tcputil.lo $(LOG)
 
 childtcpip_SOURCES = childtcpip.cc
-childtcpip_LDADD = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
-childtcpip_DEPENDENCIES = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG) # ../../lib/libpguru.la
+childtcpip_LDADD = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG)
+childtcpip_DEPENDENCIES = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG)
