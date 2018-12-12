@@ -32,6 +32,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <chrono>
+#include <queue>
 
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
@@ -46,10 +47,15 @@ extern char *optarg;
 #include "database.h"
 #include "tcpip.h"
 #include "xml.h"
+#include "commands.h"
 
 extern LogFile dbglogfile;
 
 using namespace std::chrono_literals;
+
+extern std::mutex queue_lock;
+extern std::queue <XML> tqueue;
+extern std::condition_variable queue_cond;
 
 void
 client_handler(Tcpip &net)
@@ -57,8 +63,10 @@ client_handler(Tcpip &net)
     DEBUGLOG_REPORT_FUNCTION;
 
     retcode_t ret;
-    //Tcpip net;
+    Commands cmd;
     int retries = 10;
+    std::string hostname;
+    std::string user;
 
     while (retries-- <= 10) {
         net.newNetConnection(true);
@@ -67,15 +75,15 @@ client_handler(Tcpip &net)
         std::vector<unsigned char> data;
         while (loop) {
             data.clear();
-            if (net.readNet(data).size() < 0) {
+            size_t pos = net.readNet(data).size();
+            if (pos < 0) {
                 dbglogfile << "ERROR: Got error from socket " << std::endl;
-                loop = false;
+                //loop = false;
             } else {
                 if (data.data() == 0) {
                     continue;  
                 }
                 std::string buffer = (char *)data.data();
-                //if (buffer.size() == 1 && *data.data() == 0) {
                 if (data.size() == 1 && buffer[0] == 0) {
                     net.closeConnection();
                     // loop = false;
@@ -85,8 +93,9 @@ client_handler(Tcpip &net)
                     sleep(1);
                     continue;
                 }
-                size_t pos = buffer.find('\n')-1;
-                //std::cerr << "FOO: " << pos << " | " << std::string::npos << std::endl;
+                // this assumes all packets from the client are terminated
+                // with a newline, which text input from the console is.
+                size_t pos = buffer.find('\n');
                 if (pos == 0 || pos == std::string::npos) {
                     data.clear();
                     buffer.clear();
@@ -94,31 +103,28 @@ client_handler(Tcpip &net)
                     continue;
                 }
                 buffer.erase(pos);
+                std::string str;
                 // if the first character is a <, assume it's in XML formst.
+                XML xml;
                 if (buffer[0] == '<') {
-                    XML xml;
                     xml.parseMem(buffer);
-                    dbglogfile << "FIXME:: \"" << xml.nameGet() << "\"" << std::endl;
-                    if (xml.nameGet() == "command") {
-                        std::cerr << "FIXME: Command: " << xml.valueGet() << std::endl;
-                        if (xml.valueGet() == "help") {
-                            net.writeNet("Hello World!\n");
-                        }
-                        
-                    } else if (xml.nameGet() == "data") {
-                        std::cerr << "FIXME: DATA: " << xml.valueGet() << std::endl;
+                    if (xml[0]->nameGet() == "helo") {
+                        hostname = xml[0]->childGet(0)->valueGet();
+                        user =  xml[0]->childGet(1)->valueGet();
+                        dbglogfile << "Incoming connection from user " << user
+                                   << " on host " << hostname << std::endl;
                     } else {
-                        std::cerr << "FIXME: JUNK: " << xml.valueGet() << std::endl;
+                        cmd.execCommand(xml, str);
+                        std::lock_guard<std::mutex> guard(queue_lock);
+                        tqueue.push(xml);
+                        queue_cond.notify_one();
                     }
-                } else {
-                    std::cerr << buffer << std::endl;
                 }
                 buffer.clear();
             }
         }
     }
 
-    //next.join();
     net.closeConnection();
 }
 
@@ -143,7 +149,7 @@ ownet_handler(pdev::Ownet &ownet)
                 ownet.getTemperature(it->first.c_str());
             }
         }
-        ownet.dump();
+        //ownet.dump();
         
         // Don't eat up all the cpu cycles!
         std::this_thread::sleep_for(std::chrono::seconds(ownet.getPollSleep()));

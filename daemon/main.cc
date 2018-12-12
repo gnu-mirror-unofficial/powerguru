@@ -31,6 +31,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <queue>
 
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
@@ -59,6 +60,7 @@ include "xantrex-trace.h"
 #include "tcpip.h"
 #include "xml.h"
 #include "serial.h"
+#include "commands.h"
 
 using namespace std;
 using namespace rcinit;
@@ -76,6 +78,10 @@ extern void client_handler(Tcpip &net);
 extern void ownet_handler(pdev::Ownet &);
 extern void outback_handler(pdev::Ownet &);
 extern void xantrex_handler(pdev::Ownet &);
+
+std::mutex queue_lock;
+std::queue <XML> tqueue;
+std::condition_variable queue_cond;
 
 int
 main(int argc, char *argv[])
@@ -223,15 +229,6 @@ main(int argc, char *argv[])
         }
     }
 
-//     // Open the network connection to the database.
-// #if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
-//     if (use_db) {
-//         if (!pdb.openDB()) {
-//             dbglogfile << "ERROR: Couldn't open database!" << endl;
-//             exit(1);
-//         }
-//     }
-// #endif
     // Start the SNMP daemon support.
 #ifdef USE_SNMP
     if (snmp) {
@@ -253,13 +250,11 @@ main(int argc, char *argv[])
 #endif
 #ifdef BUILD_OUTBACK
     std::thread fourth(outback_handler, std::ref(ownet));
-#endif
-//    std::thread forth (console_handler, std::ref(con));
 //    std::thread forth (msg_handler, std::ref(pdb));
+#endif
     
 #ifdef BUILD_OUTBACK
-
-// Network daemon/client mode. Normally we're a network daemon that
+    // Network daemon/client mode. Normally we're a network daemon that
     // responses to requests by a remote client. Many house networks
     // are behind a firewall, so the daemon can also connect to a
     // publically accessible host to establish the connection the
@@ -290,9 +285,7 @@ main(int argc, char *argv[])
         XML xml;
         unsigned int i;
 
-        vector<const xmlChar *> messages;
-        //const xmlChar *messages[200];
-        
+        vector<const xmlChar *> messages;        
         bool loop = true;
         while (loop) {
             ret = msg.anydata(messages);
@@ -355,10 +348,28 @@ main(int argc, char *argv[])
 
     con.resetCon();
 #endif
+
+    // Commands from the client via the client_handler get processed here
+    // so messages can be passed between threads.
+    while (true) {
+        std::unique_lock<std::mutex> guard(queue_lock);
+        queue_cond.wait(guard, [] { return !tqueue.empty(); });
+        XML xml = tqueue.front();
+        tqueue.pop();
+        // if (xml[0]->nameGet() == "list") {
+            std::vector<std::string> devs;
+            ownet.listDevices(devs);
+            std::vector<std::string>::iterator sit;
+            for (sit = devs.begin(); sit != devs.end(); sit++) {
+                std::cerr << "FIXME: " << *sit <<std::endl;
+            }
+                    //}
+    }
+
     // synchronize threads:
     dbglogfile << "Killing all threads..." << std::endl;
     first.join();                // pauses until first finishes
-#ifdef BUILD_OWNET_XXX
+#ifdef BUILD_OWNET
     second.join();                // pauses until second finishes
 #endif
 #ifdef BUILD_OUTBACK
