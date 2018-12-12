@@ -23,8 +23,8 @@ bin_PROGRAMS = pguru
 
 pguru_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_srcdir)/devices
 
-pguru_SOURCES = cmd.cc
-pguru_LDADD = ../lib/libpguru.la -ldl
+pguru_SOURCES = cmd.cc threads.cc
+pguru_LDADD = ../lib/libpguru.la -lpthread -ldl
 
 if BUILD_LIBXML
 pguru_CPPFLAGS += $(LIBXML_CPPFLAGS)
