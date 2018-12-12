@@ -1,5 +1,6 @@
 // 
-//   Copyright (C) 2005 Free Software Foundation, Inc.
+//   Copyright (C) 2005, 2006-2018
+//   Free Software Foundation, Inc.
 //
 //   This program is free software; you can redistribute it and/or modify
 //   it under the terms of the GNU General Public License as published by
@@ -33,6 +34,7 @@
 #include <sys/types.h>
 #include <cstdio>
 #include <iostream>
+#include <netdb.h>
 #include <sys/utsname.h>
 
 #include "dejagnu.h"
@@ -46,6 +48,72 @@ int verbosity;
 static void usage (void);
 
 TestState runtest;
+const short DEFAULTPORT  = 7654;
+
+class Test : public Tcputil
+{
+public:    
+    Test(void) {
+        // Get some system information needed to test the classes.
+        std::memset(_thost, 0, MAXHOSTNAMELEN);
+        if (gethostname(_thost, MAXHOSTNAMELEN) != 0) {
+            std::cerr << "ERROR: gethostname() failed!" << std::endl;
+            exit(-1);
+        }
+        
+        if (_thost == 0) {
+            std::cerr << "ERROR: gethostbyname() failed!" << std::endl;
+            exit(-1);        
+        }
+        
+        _tservice = getservbyname("git", NULL);
+        if (_tservice == 0) {
+            std::cerr << "ERROR: getservbyname() failed!" << std::endl;
+            exit(-1);        
+        }
+    };
+    
+    int test(void) {
+        if (numberOfInterfaces() >= 2) {
+            runtest.pass ("Tcputil::numberOfInterfaces()");
+        } else {
+            runtest.fail ("Tcputil::numberOfInterfaces()");  
+        }
+
+        // Check the defaults
+        if (_hostname == _thost) {
+            runtest.pass ("Hostname is correct");
+        } else {
+            runtest.fail ("Hostname is not correct");
+        }
+
+        if (_service == 0) {
+            runtest.pass ("Service is correctly empty");
+        } else {
+            runtest.unresolved ("Service is not correctly empty");
+        }
+        
+        // See if we can do service lookups
+        struct servent *serv = lookupService("ftp", "tcp");
+        
+        if (strcmp(serv->s_name, "ftp") == 0 &&
+            strcmp(serv->s_proto, "tcp") == 0 &&
+            serv->s_port == ntohs(21)) {
+            runtest.pass ("Tcputil::lookupService(ftp)");
+        } else {
+            runtest.fail ("Tcputil::lookupService(ftp)");
+        }
+    };
+    
+    ~Test(void) {
+    };
+    
+protected:
+    char                   _thost[MAXHOSTNAMELEN];
+    const struct servent  *_tservice;
+    const struct protoent *_tproto;
+    const in_addr_t       *_taddr;
+};
 
 int
 main(int argc, char *argv[])
@@ -81,111 +149,8 @@ main(int argc, char *argv[])
         cout << "Will use \"" << filespec << "\" for test " << endl;
     }
 
-    Tcputil tcputil;
-    const struct hostent  *host;
-    const struct servent  *service;
-    const struct protoent *proto;
-    const in_addr_t             *addr;
-
-    char hostname[MAXHOSTNAMELEN];
-    gethostname(hostname, MAXHOSTNAMELEN);
-
-
-    tcputil.toggleDebug(true);
-
-    if (tcputil.numberOfInterfaces() >= 2)
-        runtest.pass ("Tcputil::numberOfInterfaces()");
-    else
-        runtest.fail ("Tcputil::numberOfInterfaces()");
-    
-    // See if we can do host lookups
-    host = tcputil.hostDataGet();
-    addr = (in_addr_t *)host->h_addr_list[0];
-
-#if 0
-//    cerr << "Name is " << host->h_name << " IP is "
-//         << inet_ntoa(*(struct in_addr *)host->h_addr_list[0]) << endl;
-    
-    cerr << "tcputil: Name is " << tcputil.hostNameGet() << " IP is " <<
-        tcputil.hostIPNameGet() << endl;  
-#endif
-    
-    if (strcmp(host->h_name, hostname) == 0)
-        runtest.pass ("Tcputil::hostDataGet()");
-    else
-        runtest.fail ("Tcputil::hostData(Get)");
-
-    if (host->h_name == tcputil.hostNameGet())
-        runtest.pass ("Tcputil::hostNameGet()");
-    else
-        runtest.fail ("Tcputil::hostNameGet()");
-
-    if ((in_addr_t *)host->h_addr_list[0] == tcputil.hostIPGet())
-        runtest.pass ("Tcputil::hostIPGet()");
-    else
-        runtest.fail ("Tcputil::hostIPGet()");
-
-
-    // See if we can do service lookups
-    service = tcputil.lookupService("ftp", "tcp");
-
-    if (strcmp(service->s_name, "ftp") == 0 &&
-        strcmp(service->s_proto, "tcp") == 0 &&
-        service->s_port == ntohs(21))
-        runtest.pass ("Tcputil::lookupService(ftp)");
-    else
-        runtest.fail ("Tcputil::lookupService(ftp)");
-
-    // See if we can do protocol lookups
-    proto = tcputil.protoDataGet();
-    if (strcmp(proto->p_name, "tcp") == 0 &&
-        proto->p_proto == 6)
-        runtest.pass ("Tcputil::protoDataGet()");
-    else
-        runtest.fail ("Tcputil::protoDataGet()");
-
-    if (tcputil.protoNameGet() == "tcp")
-        runtest.pass ("Tcputil::protoNameGet()");
-    else
-        runtest.fail ("Tcputil::protoNameGet()");
-
-    if (tcputil.protoNumGet() == 6)
-        runtest.pass ("Tcputil::protoNumGet()");
-    else
-        runtest.fail ("Tcputil::protoNumGet()");
-
-    if (tcputil.hostByAddrGet() == tcputil.hostNameGet())
-        runtest.pass ("Tcputil::hostByAddrGet()");
-    else
-        runtest.fail ("Tcputil::hostByAddrGet()");
-
-    // If we are using IP aliasing, test them all
-    if (tcputil.numberOfInterfaces() > 2) {
-      // Get the IP number, increment it, and then get the new name
-      in_addr_t       nodeaddr, netaddr;
-      struct in_addr  newaddr;
-      nodeaddr = inet_lnaof(*(struct in_addr *)tcputil.hostIPGet());
-      netaddr = inet_netof(*(struct in_addr *)tcputil.hostIPGet());
-      nodeaddr++;
-      newaddr = inet_makeaddr(netaddr, nodeaddr);
-      string newname = inet_ntoa(newaddr);
-      
-      // Get the node name part of the default hostname and add a 1 to it.
-      char *ptr = strchr(hostname, '.');
-      *ptr++ = '1';
-      *ptr++ = 0;
-      
-      // Get the new name, and strip off the domain part
-      string nodename = tcputil.hostByAddrGet(newname).substr(0, strlen(hostname));
-      
-      // the new node name should match the construct one. except on
-      // machines in the ATC lab, which don't have multiple IP number
-      // aliases.
-      if ((nodename == hostname) || (nodename.substr(0, 3) == "atc"))
-        runtest.pass ("Tcputil::hostByAddrGet(std::string)");
-      else
-        runtest.unresolved ("Tcputil::hostByAddrGet(std::string)");
-    }
+    Test test;
+    test.test();    
 }
 
 static void
