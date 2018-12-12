@@ -76,7 +76,7 @@ fi
 
 devices=""
 BUILD_OWNET="yes"
-BUILD_OUTBACK="no"
+BUILD_OUTBgACK="no"
 BUILD_XANTREX="no"
 AC_ARG_WITH(devices, [  --with-device          the device(s) to build (ownet, outback, xantrex)],
 [devices="`echo ${withval} | tr ',' ' '`"
@@ -90,9 +90,9 @@ for i in ${devices}; do
      esac
 done
 ])
-AC_SUBST(BUILD_OWNET)
-AC_SUBST(BUILD_OUTBACK)
-AC_SUBST(BUILD_XANTREX)
+dnl AC_SUBST(BUILD_OWNET)
+dnl AC_SUBST(BUILD_OUTBACK)
+dnl AC_SUBST(BUILD_XANTREX)
 
 AM_CONDITIONAL(BUILD_OWNET, [ test x${BUILD_OWNET} = xyes ])
 if test x${BUILD_OWNET} = xyes; then
@@ -122,6 +122,7 @@ AC_CANONICAL_HOST
 
 AC_ISC_POSIX
 AC_PROG_CXX
+
 AM_PROG_CC_STDC
 AC_HEADER_STDC
 dnl AC_PROG_AR
@@ -129,6 +130,20 @@ AC_CHECK_TOOL(AR, ar)
 AC_PATH_PROG(DEJAGNU, runtest)
 AC_PATH_PROG(DOXYGEN, doxygen)
 AM_CONDITIONAL(ENABLE_DOXYGEN, [ test x"$DOXYGEN" != x ])
+
+dnl The Raspberry PI is currently an ARMv6, whereas the cross compiler packages
+dnl one can download usually default to the ARMV7. If so, tweak the compiler
+dnl flags to generate an executable for the ARMv6.
+arch="`${CC} -v |& grep -o -- "--with-arch[[0-9\-]]*=[[a-z0-9\-]]*" | head -1 | cut -d '=' -f 2`"
+case ${arch} in
+     armv5te|armv7-a)
+dnl     	CXXFLAGS="${CXXFLAGS} -march=armv6 -mfpu=vfp -mfloat-abi=hard"
+        CXXFLAGS="${CXXFLAGS} -marm -mfpu=vfp -mfloat-abi=hard"
+	;;
+     armv6z) ;;
+     *) ;;
+esac
+AC_MSG_NOTICE([Default compiler architecture is: ${arch}])
 
 sysroot="${sysroot:-`${CXX} -print-sysroot`}"
 dnl We don't need a sysroot for native builds
@@ -148,9 +163,9 @@ if test x"${cross_compiling}" = xyes; then
   if test ! -d ${sysroot}/usr && ! -d ${sysroot}/usr/include; then
       AC_MSG_ERROR([Specified sysroot \"${sysroot}\" doesn't exist!])
   else
-    CXXFLAGS="--sysroot=${sysroot}"
-    CFLAGS="--sysroot=${sysroot}"
-    LDFLAGS="--sysroot=${sysroot}"
+    CXXFLAGS+=" --sysroot=${sysroot}"
+    CFLAGS+=" --sysroot=${sysroot}"
+    LDFLAGS+=" --sysroot=${sysroot}"
   fi
   AC_MSG_RESULT([${sysroot}])
   AC_SUBST(sysroot)
@@ -191,6 +206,10 @@ else
 fi
 AM_CONDITIONAL(CROSS_COMPILING, [ test x$cross_compiling = xyes ])
 
+dnl Add development files in /usr/local
+if test ${sysroot}/usr/local/include; then
+   CPPFLAGS="-I${sysroot}/usr/local/include"
+fi
 save_LDFLAGS="${LDFLAGS}"
 save_CXXFLAGS="${CXXFLAGS}"
 save_CPPFLAGS="${CPPFLAGS}"
@@ -229,12 +248,12 @@ dnl GNU_PKG_FIND(libxml2, [libxml/xmlstring.h], [libxml2], xmlNewReference)
 dnl libpq. FIXME: add libpqcxx
 db=none
 LDFLAGS="${save_LDFLAGS} -lpq"
-if test ${sysroot}/usr/include/postgresql/9.6/server/libpq; then
-   CPPFLAGS="-I${sysroot}/usr/include/postgresql/9.6/server/libpq"
+headers="/usr/include/postgresql/9.6/server/libpq /usr/include/postgresql /usr/local/include/libpq /usr/local/include"
+for i in ${headers}; do
+if test ${sysroot}${i}/libpq-fe.h; then
+   CPPFLAGS="-I${sysroot}${i}"
 fi
-if test ${sysroot}/usr/include/postgresql; then
-   CPPFLAGS="-I${sysroot}/usr/include/postgresql"
-fi
+done
 AC_MSG_CHECKING([For postgresql development files])
 AC_TRY_COMPILE([#include <libpq-fe.h>], [
   PQpass(0);
@@ -273,15 +292,17 @@ AC_MSG_RESULT([${has_snmp}])
 if test x"${has_snmp}" = x"true"; then
   AC_DEFINE([HAVE_SNMP], [1], [Has Net SNMP development files])
   SNMP_LIBS="-lnetsnmp -lnetsnmpagent"
+  SNMP_CPPFLAGS="${CPPFLAGS}"
   AC_SUBST(SNMP_LIBS)
+  AC_SUBST(SNMP_CPPFLAGS)
 fi
 AM_CONDITIONAL(BUILD_SNMP, [ test x${has_snmp} = xtrue ])
 
 dnl dnl OWFS
 LDFLAGS="${save_LDFLAGS} -l"
 AC_MSG_CHECKING([For libownet development files])
-AC_TRY_COMPILE([#include <ownetapi.h>], [
-  OWNET_HANDLE foo;
+AC_TRY_COMPILE([#include <owcapi.h>], [
+ int foo = OWFS_VERSION;
   ],
   has_ownet=true,
   has_ownet=false
