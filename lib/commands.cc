@@ -53,7 +53,7 @@ std::string &
 Commands::createCommand(cmd_t cmd, const std::string &args,
                         std::string &str)
 {
-    DEBUGLOG_REPORT_FUNCTION;
+    //DEBUGLOG_REPORT_FUNCTION;
     
     str.clear();
     str = "<command>";
@@ -71,6 +71,8 @@ Commands::createCommand(cmd_t cmd, const std::string &args,
           str += "<nop>" + args + "</nop>";
           break;
       case HELO:
+          // This takes two optional arguments, the first one
+          // is the hostname, the second the user name.
           dbglogfile << "create HELO command" << std::endl;
           std::string data = "<hostname>";
           size_t pos = args.find(' ');
@@ -103,6 +105,13 @@ Commands::execCommand(XML &xml, std::string &str)
     std::string cmd = xml.nameGet();
     
     dbglogfile << "Executing remote command " << cmd << std::endl;
+
+    // The first child node is the top level command
+    if (xml[0]->nameGet() == "list") {
+        if (xml[0]->valueGet() == "devices") {
+            // FIXME:
+        }
+    }
 
     return str;
 }
