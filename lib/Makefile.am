@@ -25,7 +25,7 @@ AM_CXXFLAGS = -g -D__USLC__
 
 noinst_LTLIBRARIES = libpguru.la
 
-# The list of tty's to use by default
+# The list of tty's to ugse by default
 TTYS=@TTYS@
 
 # These headers get installed
@@ -51,7 +51,7 @@ libpguru_la_SOURCES += msgs.cc msgs.h
 endif
 
 if BUILD_LIBXML
-libpguru_la_SOURCES += xml.cc xml.h
+libpguru_la_SOURCES += xml.cc xml.h commands.h commands.cc
 libpguru_la_CPPFLAGS += $(LIBXML_CPPFLAGS)
 libpguru_la_LIBDADD += $(LIBXML_LIBS)
 endif
