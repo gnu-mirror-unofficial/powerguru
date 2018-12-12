@@ -22,7 +22,7 @@ AUTOMAKE_OPTIONS = dejagnu
 ACLOCAL_AMFLAGS = -I macros
 
 # these have to be built first
-SUBDIRS = lib # doc
+SUBDIRS = lib testsuite # doc
 
 # this is an optional build directory
 if BUILD_SNMP
