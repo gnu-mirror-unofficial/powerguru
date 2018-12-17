@@ -171,7 +171,7 @@ if test x"${cross_compiling}" = xyes; then
 
   dnl If the user specifies a sysroot that isn't the default, add it to
   dnl the compilation
-  if test x"${gcc_sysroot}" != x"${sysroot}" -a x"${sysroot}" != x"/"; then
+  if test x"${gcc_sysroot}" != x"${sysroot}" -a x"${sysroot}" != x; then
     CXXFLAGS+=" --sysroot=${sysroot}"
     CFLAGS+=" --sysroot=${sysroot}"
     LDFLAGS+=" -Wl,-rpath=${sysroot}/usr/lib/${host_alias}"
@@ -422,13 +422,13 @@ dnl
 dnl Often warning messages get lost in the output from configure, so
 dnl redisplay the few critical ones so they don't get ignored.
 dnl
-if test x"${has_libxml}" != x"true"; then
+if test x"${has_libxml}" != x"yes"; then
   echo "        To use XML, install the libxml2 development package for your system"
 else
   echo "        Found libxml2, will configure XML support"
 fi
 
-if test x"${has_snmp}" != x"true"; then
+if test x"${has_snmp}" != x"yes"; then
   echo "        To use SNMP. install the net-snmp development package for your system"
 else
   echo "        Found net-snmp. will configure SNMP support"
