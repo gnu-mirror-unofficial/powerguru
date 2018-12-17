@@ -323,9 +323,25 @@ if test x"${has_ownet}" = x"true"; then
   AC_SUBST(OWNET_LIBS)
 fi
 AM_CONDITIONAL(BUILD_OWNET, [ test x${has_ownet} = xtrue ])
+dnl ow-shell is a collection off shell utilities
+AC_CHECK_PROG([owshell], [owdir], [yes], [no], [/usr/bin])
+if test x"${owshell}" = x"no"; then
+   AC_MSG_WARNING([You should install the 'ow-shell' package])
+fi
 
 dnl mariadb development files
 dnl FIXME
+dnl FIXME: add tests for libboost, libownet-dev, dejagnu
+
+AC_MSG_CHECKING([For Boost development files])
+AC_TRY_COMPILE([#include <boost/algorithm/string.hpp>], [
+  std::vector<std::string> results;
+  char *buf;
+  boost::split(results, buf, boost::is_any_of(","));
+  ],
+  has_boost=yes,
+  has_boost=yes
+)
 
 dnl FIXME: Force this definition as there is a type conflict between the net-snmp
 dnl defintion and tje sys/types,h one.
