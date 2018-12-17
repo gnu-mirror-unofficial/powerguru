@@ -74,6 +74,8 @@ else
    AC_DOCBOOK_STYLES
 fi
 
+optional=""
+missing=""
 devices=""
 BUILD_OWNET="yes"
 BUILD_OUTBgACK="no"
@@ -295,7 +297,7 @@ AC_TRY_COMPILE([#include <net-snmp/net-snmp-config.h>
   netsnmp_pid_t foo;
   ],
   has_snmp=yes,
-  has_snmp=yes
+  has_snmp=no
 )
 AC_MSG_RESULT([${has_snmp}])
 if test x"${has_snmp}" = x"yes"; then
@@ -313,26 +315,29 @@ AC_MSG_CHECKING([For libownet development files])
 AC_TRY_COMPILE([#include <owcapi.h>], [
  int foo = OWFS_VERSION;
   ],
-  has_ownet=true,
-  has_ownet=false
+  has_ownet=yes
+  has_ownet=no
 )
 AC_MSG_RESULT([${has_ownet}])
-if test x"${has_ownet}" = x"true"; then
+if test x"${has_ownet}" = x"yes"; then
   AC_DEFINE([HAVE_OWNET], [1], [Has ownet development files])
   OWNET_LIBS="-lownet -lowcapi"
   AC_SUBST(OWNET_LIBS)
 fi
-AM_CONDITIONAL(BUILD_OWNET, [ test x${has_ownet} = xtrue ])
+AM_CONDITIONAL(BUILD_OWNET, [ test x${has_ownet} = xyes ])
 dnl ow-shell is a collection off shell utilities
 AC_CHECK_PROG([owshell], [owdir], [yes], [no], [/usr/bin])
 if test x"${owshell}" = x"no"; then
-   AC_MSG_WARNING([You should install the 'ow-shell' package])
+   AC_MSG_WARN([You should install the 'ow-shell' package])
+   optional="${optional} owshell"
 fi
 
 dnl mariadb development files
 dnl FIXME
-dnl FIXME: add tests for libboost, libownet-dev, dejagnu
+dnl FIXME: add tests for libownet-dev
 
+save_CC="${CC}"
+CC="${CXX}"
 AC_MSG_CHECKING([For Boost development files])
 AC_TRY_COMPILE([#include <boost/algorithm/string.hpp>], [
   std::vector<std::string> results;
@@ -340,8 +345,23 @@ AC_TRY_COMPILE([#include <boost/algorithm/string.hpp>], [
   boost::split(results, buf, boost::is_any_of(","));
   ],
   has_boost=yes,
-  has_boost=yes
+  has_boost=no
 )
+if test x"${has_boost}" = x"no"; then
+   AC_MSG_WARN([You should install the 'libboost-dev' package])
+   optional="${optional} libboost-dev"
+fi
+AC_MSG_RESULT([${has_boost}])
+
+AC_MSG_CHECKING([For DejaGnu])
+AC_TRY_COMPILE([#include <dejagnu.h>], [
+   TestState test;
+  ],
+  has_dejagnu=yes,
+  has_dejagnu=no
+)
+AC_MSG_RESULT([${has_dejagnu}])
+CC="${save_CC}"
 
 dnl FIXME: Force this definition as there is a type conflict between the net-snmp
 dnl defintion and tje sys/types,h one.
