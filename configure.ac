@@ -313,9 +313,10 @@ dnl dnl OWFS
 LDFLAGS="${save_LDFLAGS} -l"
 AC_MSG_CHECKING([For libownet development files])
 AC_TRY_COMPILE([#include <owcapi.h>], [
- int foo = OWFS_VERSION;
+   char *foo = OWFS_VERSION;
+   foo += 1;
   ],
-  has_ownet=yes
+  has_ownet=yes,
   has_ownet=no
 )
 AC_MSG_RESULT([${has_ownet}])
@@ -336,6 +337,7 @@ dnl mariadb development files
 dnl FIXME
 dnl FIXME: add tests for libownet-dev
 
+dnl These tests use the C++ compiler
 save_CC="${CC}"
 CC="${CXX}"
 AC_MSG_CHECKING([For Boost development files])
@@ -364,7 +366,7 @@ AC_MSG_RESULT([${has_dejagnu}])
 CC="${save_CC}"
 
 dnl FIXME: Force this definition as there is a type conflict between the net-snmp
-dnl defintion and tje sys/types,h one.
+dnl defintion and the sys/types,h one.
 AC_DEFINE([HAVE_SSIZE_T], [1], [Has ssize_t defined])
 AC_DEFINE([HAVE_STRTOULL], [1], [Has strtoull defined])
 
