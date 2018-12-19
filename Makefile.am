@@ -78,6 +78,11 @@ EXTRA_DIST = \
 # 	  done \
 # 	fi
 
+# Install executables into qemu, which we do a lot when experimenting with
+# toolchains and cross compiing something that actually works.
+install-bin:
+	rsync -avrp -e "ssh -p 5022" client/pguru daemon/pgd localhost:/tmp/
+
 # Build an RPM package
 rpm redhat: dist-gzip $(srcdir)/rpm/powerguru.spec
 	cp -f $(srcdir)/rpm/powerguru.spec /usr/src/redhat/SPECS/
@@ -121,4 +126,12 @@ if BUILD_XANTREX
 endif
 if BUILD_OWNET
 	@echo "	Building with 1-Wire support"
+endif
+if BUILD_CROSS
+	@echo "	Dumping compiler data for ${CXX}"
+	@echo "	Default search dirs:"
+	@${CXX} -print-search-dirs
+	@echo "	Default sysroot: `${CXX} -print-sysroot`"
+	@echo "	User supplied sysroot: $(sysroot)"
+	@echo "	Libc.so is from here: `${CXX} -print-file-name=libc.so`"
 endif
