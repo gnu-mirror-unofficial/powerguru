@@ -120,7 +120,7 @@ daemon_handler(Tcpip &net)
                 }
                 // Store the pointer to the data to make the code easier to read.
                 std::string buffer = (char *)data.data();
-                // Check to see if the sock was closed, so the read failed.
+                // Check to see if the socket was closed, so the read failed.
                 if (buffer[0] == 255) {
                     std::cerr << "Done!!!!" << std::endl;
                     loop = false;
@@ -137,7 +137,14 @@ daemon_handler(Tcpip &net)
                     sleep(1);
                     continue;
                 }
-                buffer.erase(buffer.find('\n')-1);
+                size_t pos = buffer.find('\n');
+                if (pos == 0 || pos == std::string::npos) {
+                    data.clear();
+                    buffer.clear();
+                    loop = false;
+                    continue;
+                }
+                buffer.erase(pos);
                 // if the first character is a <, assume it's in XML formst.
                 if (buffer[0] == '<') {
                     XML xml;
