@@ -139,10 +139,9 @@ dnl flags to generate an executable for the ARMv6.
 arch="`${CC} -v |& grep -o -- "--with-arch[[0-9\-]]*=[[a-z0-9\-]]*" | head -1 | cut -d '=' -f 2`"
 case ${arch} in
      armv5te|armv7-a)
-dnl     	CXXFLAGS="${CXXFLAGS} -march=armv6 -mfpu=vfp -mfloat-abi=hard"
-        CXXFLAGS="${CXXFLAGS} -marm -mfpu=vfp -mfloat-abi=hard"
-	;;
-     armv6z) ;;
+        CXXFLAGS="${CXXFLAGS} -marm -mfpu=vfp -mfloat-abi=hard -pipe" ;;
+     armv6*)
+        CXXFLAGS="${CXXFLAGS} -pipe" ;;
      *) ;;
 esac
 gcc_sysroot=""
@@ -165,9 +164,9 @@ if test x"${cross_compiling}" = xyes; then
   for i in ${gcc_sysroot} ${sysroot}; do
     if test ! -d ${i}/usr && ! -d ${i}/usr/include; then
       AC_MSG_ERROR([Specified sysroot \"${i}\" doesn't exist!])
-      AC_MSG_RESULT(["not found"])
+      AC_MSG_RESULT([not found])
     else
-      AC_MSG_RESULT(["found"])
+      AC_MSG_RESULT([found])
     fi
   done
 
