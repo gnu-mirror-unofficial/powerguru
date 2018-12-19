@@ -35,8 +35,6 @@
 
 extern LogFile dbglogfile;
 
-namespace pdev {
-
 struct ownet {
     std::string family;
     std::string id;
@@ -62,6 +60,10 @@ private:
     Database pdb;
 #endif
 public:
+    Ownet(void);
+    ~Ownet(void) {
+        OW_finish();
+    };
     //
     // Thread have a polling frequency to avoid eating up all the cpu cycles
     // by polling to quickly.
@@ -125,7 +127,7 @@ public:
         std::string type = getValue(device, "type");
 
         temperature_t *temp = 0;
-        if (family == "10") {
+        if (family == "10" | family == "28") {
             // dbglogfile << device << " is a thermometer" << std::endl;
             temp = new temperature_t[1];
             temp->temp = std::stof(getValue(device, "temperature"));
@@ -153,7 +155,9 @@ public:
         return temp;
     }
 
-    void dump(void) {
+    void dump(void);
+#if 0
+        {
         DEBUGLOG_REPORT_FUNCTION;
 
         std::map<std::string, ownet_t *>::iterator sit;
@@ -170,7 +174,8 @@ public:
             std::cout << "\tHigh Temperature: " << tit->second->hightemp << std::endl;
         }
     }
-
+#endif
+    
     std::vector<std::string> &
     listDevices(std::vector<std::string> &list) {
         DEBUGLOG_REPORT_FUNCTION;
@@ -183,106 +188,7 @@ public:
         return list;
     }
 
-    Ownet(void) {
-        DEBUGLOG_REPORT_FUNCTION;
-
-        dbglogfile << "Trying to connect to the owserver" << std::endl;
-        char *buf = 0;
-        size_t s  = 0;
-
-        //OW_init("/dev/ttyS0");
-        int count = 5;
-        while (count-- > 0) {
-            if (OW_init("localhost:4304") < 0) {
-                dbglogfile << "WARNING: Couldn't connect to owserver!" << std::endl;
-                //return;
-            } else {
-                dbglogfile << "Connected to owserver." << std::endl;
-                _owserver = true;
-                break;
-            }
-        }
-        // 0=mixed  output,  1=syslog, 2=console.
-        OW_set_error_print("1");
-        // (0=default, 1=err_connect, 2=err_call, 3=err_data, 4=err_detail,
-        // 5=err_debug, 6=err_beyond)
-        OW_set_error_level("4");
-        OW_get("/", &buf, &s);
-        // buf looks like:
-        // 10.67C6697351FF/,05.4AEC29CDBAAB/,bus.0/,uncached/,settings/,system/,statistics/,structure/,simultaneous/,alarm/
-        //
-        //if (s <= 0) {
-        //    dbglogfile << "S: " << (int)s << std::endl;
-            // return;
-        //}
-
-        std::vector<std::string> results;
-        if (buf != 0) {
-            boost::split(results, buf, boost::is_any_of(","));
-            free(buf);
-            s = 0;
-            if( results.size() <= 0) {
-                return;
-            }
-        }
-
-#ifdef HAVE_LIBPQ
-        if (!pdb.openDB()) {
-            dbglogfile << "ERROR: Couldn't open database!" << std::endl;
-            exit(1);
-        }
-#endif
-
-        int i = 0;
-        std::vector<std::string>::iterator it;
-        for(it = results.begin(); it != results.end(); it++,i++ ) {
-            ownet_t *data = new ownet_t[1];
-            data->family = getValue(it->c_str(), "family");
-            data->type = getValue(it->c_str(), "type");
-            data->id = getValue(it->c_str(), "id");
-            if (data->type.length() == 0 || data->id.length() == 0) {
-                break;
-            }
-            std::string dev = *it + "temperature";
-            if (OW_present(dev.c_str()) == 0) {
-                dbglogfile << "Temperature sensor found: " << *it << std::endl;
-                temperature_t *temp = new temperature_t[1];
-                memset(temp, 0, sizeof(temperature_t));
-                temp->temp = std::stof(getValue(*it, "temperature"));
-                temp->lowtemp = std::stof(getValue(*it, "templow"));
-                temp->hightemp = std::stof(getValue(*it, "temphigh"));
-                _temperatures[*it] = temp;
-
-                std::string stamp;
-#ifdef HAVE_LIBPQ
-                stamp = pdb.gettime(stamp);
-                std::string query = data->family + ',';
-                query += "\'" + data->id;
-                query += "\', \'" + data->type;
-                query += "\', \'" + stamp;
-                query += "\', " + std::to_string(temp->temp);
-                query += ", " + std::to_string(temp->lowtemp);
-                query +=  ", " + std::to_string(temp->hightemp);
-                pdb.queryInsert(query);
-#endif
-            } else {
-                dbglogfile << "Temperature sensor not found!" << std::endl;
-            }
-            std::lock_guard<std::mutex> guard(_mutex);
-            _sensors[*it] = data;
-        }
-    }
-
-//    ~Ownet(void);
-
-    ~Ownet(void) {
-        OW_finish();
-    };
-
 };
-
-// end of namespace pdev
-}
 
 // __OWNET_H__
 #endif
