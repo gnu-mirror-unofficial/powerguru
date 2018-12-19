@@ -130,7 +130,7 @@ client_handler(Tcpip &net)
 
 #ifdef BUILD_OWNET
 void
-ownet_handler(pdev::Ownet &ownet)
+ownet_handler(Ownet &ownet)
 {
     DEBUGLOG_REPORT_FUNCTION;
     dbglogfile << "PowerGuru - 1 Wire Mode" << std::endl;
@@ -141,15 +141,15 @@ ownet_handler(pdev::Ownet &ownet)
     query += "";
     query += ");";
 
-    std::map<std::string, pdev::ownet_t *> sensors = ownet.getSensors();
-    std::map<std::string, pdev::ownet_t *>::iterator it;
+    std::map<std::string, ownet_t *> sensors = ownet.getSensors();
+    std::map<std::string, ownet_t *>::iterator it;
     while (ownet.getPollSleep() != 0) {
         for (it = sensors.begin(); it != sensors.end(); it++) {
             if (it->second->family == "10") {
                 ownet.getTemperature(it->first.c_str());
             }
         }
-        //ownet.dump();
+        ownet.dump();
         
         // Don't eat up all the cpu cycles!
         std::this_thread::sleep_for(std::chrono::seconds(ownet.getPollSleep()));
@@ -159,7 +159,7 @@ ownet_handler(pdev::Ownet &ownet)
 
 #ifdef BUILD_OUTBACK
 void
-outback_handler(pdev::Ownet &ownet)
+outback_handler(Ownet &ownet)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
@@ -171,7 +171,7 @@ outback_handler(pdev::Ownet &ownet)
 
 #ifdef BUILD_XANTREX
 void
-xantrex_handler(pdev::Ownet &ownet)
+xantrex_handler(Ownet &ownet)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
