@@ -58,12 +58,13 @@ extern LogFile dbglogfile;
 Tcpip::Tcpip(void)
 
 {
-    // Get the low level host data for this machine
-    //hostDataGet();
+    DEBUGLOG_REPORT_FUNCTION;
 }
 
 Tcpip::~Tcpip(void)
 {
+    DEBUGLOG_REPORT_FUNCTION;
+
     std::vector<int>::iterator it;
 //    for (it = _connection.begin(); it != _connections.end(); it++) {
 //        closeConnection(it);
@@ -100,126 +101,47 @@ Tcpip::createNetServer(short port, const std::string &protocol)
     struct protoent *ppe = 0;
     struct sockaddr_in sock_in;
     int             on, type;
-    int             retries = 0;
     const struct hostent  *host;
     struct in_addr  *thisaddr = 0, newaddr;
     in_addr_t       nodeaddr, netaddr;
   
-    struct addrinfo *addr = getAddrInfo("localhost", port);
-    // host = hostDataGet("localhost");
-    // thisaddr = reinterpret_cast<struct in_addr *>(_addrinfo->ai_addr->h_addr_list[0]);
-    //thisaddr = addr->sin_addr;
-    //in_addr_t = ipaddr = thisaddr->s_addr;
-    std::memset(&sock_in, 0, sizeof(sock_in));
-  
-    //  sock_in.sin_addr.s_addr = thisaddr->s_addr;
-    sock_in.sin_addr.s_addr = INADDR_ANY;
-  
-    // ipaddr = sock_in.sin_addr.s_addr;
-    sock_in.sin_family = AF_INET;
-    sock_in.sin_port = htons(port);
-  
-  
-    //    dbglogfile << "Trying to make a server for service "
-    //               <<
-    //      srvname << " at port " <<  ntohs(sock_in.sin_port) << nedl;
-  
-    if ((ppe = getprotobyname(protocol.c_str())) == 0) {
-        // error, wasn't able to get a protocol entry
-        dbglogfile << "WARNING: unable to get " << protocol
-                   << " protocol entry" << std::endl;
-        return ERROR;
-    }
-  
-    // set protocol type
-    if (protocol == "udp") {
-        type = SOCK_DGRAM;
-    } else {
-        type = SOCK_STREAM;
-    }
-  
-    // Get a file descriptor for this socket connection
-    _sockIOfd = socket(PF_INET, type, ppe->p_proto);
-  
-    // error, wasn't able to create a socket
-    if (_sockIOfd < 0) {
-        dbglogfile << "unable to create socket: " << strerror(errno) << std::endl;
-        return SUCCESS;
-    }
-
-    on = 1;
-    if (setsockopt(_sockIOfd, SOL_SOCKET, SO_REUSEADDR,
-                   (char *)&on, sizeof(on)) < 0) {
-        dbglogfile << "setsockopt SO_REUSEADDR failed" << std::endl;
-        return ERROR;
-    }
-
-    retries = 0;
-  
-    nodeaddr = inet_lnaof(*thisaddr);
-    while (retries < 5) {
-        if (bind(_sockIOfd, reinterpret_cast<struct sockaddr *>(&sock_in),
-                 sizeof(sock_in)) == -1) {
-            dbglogfile << "WARNING: unable to bind to"
-                       << inet_ntoa(sock_in.sin_addr)
-                       << " port!" << strerror(errno) << std::endl;
-      
-            // If there is something already bound to this IP number,
-            // then we increment the number to be the next one in the
-            // range. This lets multiple tcp/ip servers operate on the
-            // same machine using the same tcp/ip port.
-            if (errno == EADDRINUSE) {
-                //            nodeaddr = inet_lnaof(*thisaddr);
-                netaddr = inet_netof(*thisaddr);
-                nodeaddr++;
-                newaddr = inet_makeaddr(netaddr, nodeaddr);
-                sock_in.sin_addr.s_addr = newaddr.s_addr;
-                // There are always two interfaces on any machine, the loopback
-                // device, and the default ethernet port. With IP aliasing, there
-                // will be more devices, but if not, we have an error, and can't
-                // continue.
-                if (numberOfInterfaces() - 2 > retries) {
-                    retries++;
-                    continue;
-                } else {
-                    dbglogfile <<
-                        "ERROR: There is another process already bound to this port!" << std::endl;
-                    return ERROR;
-                }
-            }
-            retries++;
-        }
-    
-        // _hostname = hostByAddrGet(inet_ntoa(sock_in.sin_addr));
-    
-#if 0
-        char                ascip[32];
-        inet_ntop(AF_INET, &_ipaddr, ascip, INET_ADDRSTRLEN);
-        dbglogfile << "Host Name is " << host->h_name << " IP is " <<
-            ascip << std::endl;
-#endif
-    
-        dbglogfile << "Server bound to service "
-                   << " on port: " << ntohs(sock_in.sin_port)
-                   << " on IP " << inet_ntoa(sock_in.sin_addr)
-                   << " using fd #" << _sockIOfd << std::endl;
-    
-        if (type == SOCK_STREAM && listen(_sockIOfd, 5) < 0) {
-            dbglogfile << "ERROR: unable to listen on port: "
-                       << port << ": " <<  strerror(errno) << std::endl; 
+    struct addrinfo *addr = getAddrInfo("", port);
+    if (addr) {
+        // Get a file descriptor for this socket connection
+        _sockIOfd = ::socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
+        if (_sockIOfd < 0) {
+            std::cerr << "ERROR: unable to create socket: " << strerror(errno) << std::endl;
             return ERROR;
         }
-
-        _port = port;
-    
-#if 0
-        dbglogfile << "Listening for net traffic on fd #\n" << _sockfd << std::endl;
-#endif
-
-        return SUCCESS;
+    } else {
+        std::cerr << "ERROR: unable to get address! " << gai_strerror(errno) << std::endl;
+        return ERROR;
     }
+    
+    if (bind(_sockIOfd, addr->ai_addr, addr->ai_addrlen) == -1) {
+        dbglogfile << "WARNING: unable to bind to"
+                   << inet_ntoa(sock_in.sin_addr)
+                   << " port!" << strerror(errno) << std::endl;
+        if (errno == EADDRINUSE) {
+            std::cerr << "ERROR: There is another process already bound to this port!"
+                      << std::endl;
+            return ERROR;
+        }
+    }
+    
+    dbglogfile << "Server bound to port: " << port
+               << " on IP " << inet_ntoa(((struct sockaddr_in *)addr->ai_addr)->sin_addr)
+                   << " using fd #" << _sockIOfd << std::endl;
+    
+    if (listen(_sockIOfd, 5) < 0) {
+        dbglogfile << "ERROR: unable to listen on port: "
+                   << port << ": " <<  strerror(errno) << std::endl; 
+        return ERROR;
+    }
+    
+    dbglogfile << "Listening for net traffic on fd #" << _sockIOfd << std::endl;
 
-    return ERROR;
+    return SUCCESS;
 }
 
 // Description: Accept a new network connection for the port we have
@@ -236,42 +158,35 @@ retcode_t
 Tcpip::newNetConnection(bool block)
 {
     DEBUGLOG_REPORT_FUNCTION;
-    struct sockaddr	fsin;
-    socklen_t		alen;
-    int			ret;
-    struct timeval        tval;
-    fd_set                fdset;
-    int                   retries = 3;
-  
-    alen = sizeof(struct sockaddr_in);
-  
-#ifdef NET_DEBUG
-    dbglogfile << "Trying to accept net traffic on fd #" << _sockfd << std::endl;
-#endif
+    struct sockaddr fsin;
+    int		    ret;
+    socklen_t	    alen = 0;
+    struct timeval  tval;
+    fd_set          fdset;
+    int             retries = 3;
+
+    dbglogfile << "Trying to accept net traffic on fd #" << _sockIOfd << std::endl;
   
     if (_sockIOfd <= 2) {
         return ERROR;
     }
-  
+
+#if 0
     while (retries--) {
         // We use select to wait for the read file descriptor to be
         // active, which means there is a client waiting to connect.
         FD_ZERO(&fdset);
-        // also return on any input from stdin
-        if (_console) {
-            FD_SET(fileno(stdin), &fdset);
-        }
         FD_SET(_sockIOfd, &fdset);
     
         // Reset the timeout value, since select modifies it on return. To
         // block, set the timeout to zero.
-        tval.tv_sec = 1;
+        tval.tv_sec = 10;
         tval.tv_usec = 0;
     
         if (block) {
             ret = select(_sockIOfd+1, &fdset, NULL, NULL, NULL);
         } else {
-            ret = select(_sockIOfd+1, &fdset, NULL, NULL, &tval);
+            ret = ::select(_sockIOfd+1, &fdset, NULL, NULL, &tval);
         }
     
         if (FD_ISSET(0, &fdset)) {
@@ -297,17 +212,21 @@ Tcpip::newNetConnection(bool block)
                 "ERROR: The accept() socket for fd #%d timed out waiting to write!"
                        << _sockIOfd << std::endl;
         }
+        if (ret >= 1) {
+            dbglogfile << "The accept() socket got something!" << std::endl;
+        }
     }
+#endif
 
-    fcntl(_sockIOfd, F_SETFL, O_NONBLOCK); // Don't let accept() block
-    _sockfd = accept(_sockIOfd, &fsin, &alen);
+    ::memset(&fsin, 0,  sizeof(struct sockaddr_in));
+    //::fcntl(_sockIOfd, F_SETFL, O_NONBLOCK); // Don't let accept() block
+    _sockfd = ::accept(_sockIOfd, &fsin, &alen);
   
     if (_sockfd < 0) {
-        dbglogfile << "unable to accept : " << strerror(errno) << std::endl;
+        dbglogfile << "ERROR: unable to accept : " << strerror(errno) << std::endl;
         return ERROR;
     } else {
-        dbglogfile << "Accepting tcp/ip connection on fd #"
-                   << _sockfd << std::endl;
+        dbglogfile << "Accepting tcp/ip connection on fd #" << _sockfd << std::endl;
     }
 
     std::memcpy(&_client, &fsin, sizeof(struct sockaddr));
