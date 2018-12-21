@@ -105,9 +105,10 @@ Tcpip::createNetServer(short port, const std::string &protocol)
     struct in_addr  *thisaddr = 0, newaddr;
     in_addr_t       nodeaddr, netaddr;
   
+    struct addrinfo *addr = getAddrInfo("localhost", port);
     // host = hostDataGet("localhost");
     // thisaddr = reinterpret_cast<struct in_addr *>(_addrinfo->ai_addr->h_addr_list[0]);
-    thisaddr = &((struct sockaddr_in *)_addrinfo->ai_addr)->sin_addr;
+    //thisaddr = addr->sin_addr;
     //in_addr_t = ipaddr = thisaddr->s_addr;
     std::memset(&sock_in, 0, sizeof(sock_in));
   
@@ -329,101 +330,87 @@ Tcpip::createNetClient(const std::string &hostname, short port,
                        const std::string &protocol)
 {
     DEBUGLOG_REPORT_FUNCTION;
-    struct sockaddr_in	sock_in;
-    int             	type;
     fd_set              fdset;
     struct timeval      tval;
     int                 ret;
     int                 retries;
-  
-    memset(&sock_in, 0, sizeof(struct sockaddr_in));
-  
-    // const struct hostent *hent = hostByNameGet(thishostname);
-    // memcpy(&sock_in.sin_addr, hent->h_addr, hent->h_length);
-  
-    sock_in.sin_family = AF_INET;
-  
-#if 0
-    char                ascip[32];
-    inet_ntop(AF_INET, &sock_in.sin_addr.s_addr, ascip, INET_ADDRSTRLEN);
-    dbglogfile << "The IP address for this client socket is " << ascip << std::endl;
-#endif
-  
-    sock_in.sin_port = htons(port);
-  
-    // Set the protocol type
-    if (protocol == "udp") {
-        type = SOCK_DGRAM;
-    } else {
-        type = SOCK_STREAM;
-    }
-  
-    _sockfd = socket(PF_INET, type, _addrinfo->ai_protocol);
-  
-    if (_sockfd < 0) {
-        dbglogfile << "WARNING: unable to create socket: "
-                   << strerror(errno) << std::endl;
-        return ERROR;
-    }
+    std::string         portstr = std::to_string(port);
+    addrinfo            req;
 
-    if (connect(_sockfd, reinterpret_cast<struct sockaddr *>(&sock_in),
-                sizeof(sock_in)) < 0) {
-        retries = 1;
-        while (retries-- > 0) {
-            // We use select to wait for the read file descriptor to be
-            // active, which means there is a client waiting to connect.
-            FD_ZERO(&fdset);
-            FD_SET(_sockfd, &fdset);
-      
-            // Reset the timeout value, since select modifies it on return. To
-            // block, set the timeout to zero.
-            tval.tv_sec = 5;
-            tval.tv_usec = 0;
-      
-            ret = select(_sockfd+1, &fdset, NULL, NULL, &tval);
-      
-            // If interupted by a system call, try again
-            if (ret == -1 && errno == EINTR) {
-                dbglogfile <<
-                    "The connect() socket for fd #%d was interupted by a system call!"
-                           << _sockfd << std::endl;
-            }
-      
-            if (ret == -1) {
-                dbglogfile <<
-                    "The connect() socket for fd #%d never was available for writing!"
-                           << _sockfd << std::endl;
-                shutdown(_sockfd, SHUT_RDWR);
-                return ERROR;
-            }
-      
-            if (ret == 0) {
-                dbglogfile <<
-                    "WARNING: The connect() socket for fd #%d timed out waiting to write!"
-                           << _sockfd << std::endl;
-            }
-        }
-    
-        if (connect(_sockfd,
-                    reinterpret_cast<struct sockaddr *>(&sock_in),
-                    sizeof(sock_in)) < 0) {
-            dbglogfile << "unable to connect to "
-                       << _hostname
-                       << ", port " << port
-                       << ": " << strerror(errno) << std::endl;
-            close(_sockfd);
+    // Get the address data for this host
+    struct addrinfo *addr = getAddrInfo(hostname, port);
+    if (addr) {
+        _sockfd = ::socket(addr->ai_family, addr->ai_socktype, _proto->p_proto);
+        if (_sockfd < 0) {
+            dbglogfile << "WARNING: unable to create socket: "
+                       << ::strerror(errno) << std::endl;
             return ERROR;
         }
+
+        dbglogfile << "Trying to connect to: " << hostname << ":" << port << std::endl;
+        if (::connect(_sockfd, addr->ai_addr, addr->ai_addrlen) < 0) {
+            dbglogfile << "ERROR: Couldn't connect to: " << hostname << " "
+                       << strerror(errno) << std::endl;
+            retries = 1;
+            while (retries-- > 0) {
+                // We use select to wait for the read file descriptor to be
+                // active, which means there is a client waiting to connect.
+                FD_ZERO(&fdset);
+                FD_SET(_sockfd, &fdset);
+                // Reset the timeout value, since select modifies it on return. To
+                // block, set the timeout to zero.
+                tval.tv_sec = 5;
+                tval.tv_usec = 0;
+                ret = ::select(_sockfd+1, &fdset, NULL, NULL, &tval);
+                // If interupted by a system call, try again
+                if (ret == -1 && errno == EINTR) {
+                    dbglogfile <<
+                        "The connect() socket for fd #%d was interupted by a system call!"
+                               << _sockfd << std::endl;
+                }
+                if (ret == -1) {
+                    dbglogfile <<
+                        "The connect() socket for fd #%d never was available for writing!"
+                               << _sockfd << std::endl;
+                    shutdown(_sockfd, SHUT_RDWR);
+                    return ERROR;
+                }
+                if (ret == 0) {
+                    dbglogfile <<
+                        "WARNING: The connect() socket for fd #%d timed out waiting to write!"
+                               << _sockfd << std::endl;
+                }
+            }
+            ret = ::connect(_sockfd, addr->ai_addr, addr->ai_addrlen);
+            if (ret <= 0) {
+                dbglogfile << "unable to connect to "
+                           << hostname
+                           << ", port " << port
+                           << ": " << strerror(errno) << std::endl;
+                close(_sockfd);
+                return ERROR;
+            }
+            if (ret <= 0) {
+                dbglogfile << "unable to connect to "
+                           << hostname
+                           << ", port " << port
+                           << ": " << strerror(errno) << std::endl;
+                close(_sockfd);
+                return ERROR;
+            }
+        }
     }
 
+    _hostname = hostname;
+    char ascip[INET_ADDRSTRLEN];
+    std::memset(ascip, 0, INET_ADDRSTRLEN);
+    //inet_ntop(AF_INET, &_ipaddr, ascip, INET_ADDRSTRLEN);
     dbglogfile << "Client connected to service at port " << port
-               << " at IP " << inet_ntoa(sock_in.sin_addr)
+               << " at IP " << ascip
                << " using fd #" << _sockfd << std::endl;
   
     // For a client, the IO file descriptor is the same as the default one
     _sockIOfd = _sockfd;
-
-    memcpy(&_client, &sock_in, sizeof(struct sockaddr));
 
     return SUCCESS;
 }
@@ -687,6 +674,7 @@ Tcpip::readNet(std::vector<unsigned char> &buf)
         dbglogfile << "WARNING: Can't do anything with socket fd #"
                    << _sockfd << std::endl;
         buf.clear();
+        buf.push_back(255);
         return buf;
     }
   
@@ -842,22 +830,6 @@ Tcpip::operator = (Tcpip &tcp)
     //_proto = strdup(_proto);
     _port = _port;
 }
-
-#if 0
-// Description: Get the hostname of this machine.
-const string
-Tcpip::netNameGet(void)
-{
-    char hostname[MAXHOSTNAMELEN];
-
-    if (_hostname.size() == 0) {
-        gethostname(hostname, MAXHOSTNAMELEN);
-        _hostname = hostname;
-    }
-    
-    return _hostname;
-}
-#endif
 
 // local Variables:
 // mode: C++

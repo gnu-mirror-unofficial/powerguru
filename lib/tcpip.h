@@ -108,10 +108,13 @@ public:
     const std::string &remoteIP(struct in_addr addr);
     const std::string &remoteName(void);
     const std::string &remoteName(struct in_addr addr);
+    const std::string &hostname(void) { return _hostname; };
 
     Tcpip &operator = (Tcpip &tcp);
 
     void checkConsole(void) { _console = true; };
+    // Get the number of bytes in the incoming data TCP/IP packet.
+    // This is used to have more efficient memory allocation.
     int checkBytes() {
         int bytes = 0;
         ioctl(_sockfd, FIONREAD, &bytes);
