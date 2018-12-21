@@ -24,6 +24,7 @@
 # include "config.h"
 #endif
 
+#include <ifaddrs.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/param.h>
@@ -32,13 +33,25 @@
 #include <netdb.h>
 #include <cstring>
 #include <vector>
+#include <map>
 
 #include "log.h"
 #include "err.h"
 
+extern const std::string DEFAULTPROTO;
+extern const short DEFAULTPORT;
+
 class Tcputil {
 public:
+    // The interface name is the index field for an array of this data
+    struct ipNode {
+        std::string ipstr;
+        struct saddr;
+    };
+
     Tcputil();
+    Tcputil(const std::string &host);
+    Tcputil(const std::string &host, short port);
     ~Tcputil();
     
     // This gets the servent data that contains the port
@@ -49,19 +62,44 @@ public:
     };
     struct servent *lookupService(const std::string &name,
                                   const std::string &protocol);
-    int numberOfInterfaces(void);
-    // Accessors
-    short getPort(void) { return -1; }; // FIXME
-    int getProtocol(void) { return _addrinfo->ai_protocol; };
-    std::string &getHostname(void) { return _hostname; };
-    std::string &getIP(void) { return _ipaddr; };
+    struct addrinfo *getAddrInfo(void) {
+        return getAddrInfo("localhost", DEFAULTPORT);
+    };
+    struct addrinfo *getAddrInfo(const std::string& hostname) {
+        return getAddrInfo(hostname, DEFAULTPORT);
+    };
+    struct addrinfo *getAddrInfo(const std::string& hostname, std::uint16_t port);
+
+    const std::string &printIP(struct addrinfo *addr, std::string &str) {
+        char address[INET6_ADDRSTRLEN];
+        std::memset(address, 0, INET6_ADDRSTRLEN);
+        inet_ntop(AF_INET, &((struct sockaddr_in *)addr->ai_addr)->sin_addr,
+                  address, INET6_ADDRSTRLEN);
+        str = address;
+        return str;
+    };
+
+    void getInterfaces(void);
+    
+    int numberOfInterfaces(void) {
+        if (_nics.size() == 0) {
+            getInterfaces();
+        }
+        return _nics.size();
+    };
+
+    std::string getHostname() {
+        return _hostname;
+    };
+    
+    void dump(void);
     
 protected:
-    std::string        _hostname;
-    std::string        _ipaddr;
-    struct servent     *_service;
-    struct protoent    *_proto;
-    struct addrinfo    *_addrinfo;
+    std::string                    _hostname;
+    struct servent *               _service;
+    struct protoent *              _proto;
+    std::vector<struct addrinfo *> _addrinfo;
+    std::map<std::string, struct ipNode *> _nics;
 };
 
 // EOF __TCPUTIL_H__

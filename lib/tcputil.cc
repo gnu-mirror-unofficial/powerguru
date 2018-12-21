@@ -34,7 +34,7 @@
 #ifndef SIOCGIFCONF
 #include <sys/sockio.h>
 #endif
-
+#include <map>
 #include "tcputil.h"
 #include "tcpip.h"
 #include "log.h"
@@ -42,135 +42,191 @@
 
 extern LogFile dbglogfile;
 
-Tcputil::Tcputil(void)
-    : _service(0),
-      _proto(0),
-      _addrinfo(0)
+Tcputil::Tcputil(void) : Tcputil("localhost", DEFAULTPORT)
 {
-    // Get the hostname of this machine
-    char hostname[MAXHOSTNAMELEN];
-    std::memset(hostname, 0, MAXHOSTNAMELEN);
-    if (gethostname(hostname, MAXHOSTNAMELEN) == 0) {
-        _hostname = hostname;
-        dbglogfile << "The hostname for this machine is " << hostname << std::endl;
-    } else {
-        dbglogfile << "WARNING: Couldn't get the hostname for this machine!" << std::endl;
-    }
+    DEBUGLOG_REPORT_FUNCTION;
+}
 
-    dbglogfile << "Has " << numberOfInterfaces() << " interfaces, using default one" << std::endl;
+Tcputil::Tcputil(const std::string &host) : Tcputil(host, DEFAULTPORT)
+{
+    DEBUGLOG_REPORT_FUNCTION;
+}
 
-    // Get the IP numbers for this machine
-    if (getaddrinfo(hostname, NULL, NULL, &_addrinfo) == 0) {
-        char _address[INET6_ADDRSTRLEN];
-        struct addrinfo *addr = _addrinfo;
-        while (addr->ai_next != 0) {
-            if (addr->ai_socktype == SOCK_DGRAM) {
-                std::memset(_address, 0, INET6_ADDRSTRLEN);
-                _ipaddr = inet_ntop(AF_INET,
-                                    &((struct sockaddr_in *)addr->ai_addr)->sin_addr,
-                                    _address, INET6_ADDRSTRLEN);
-                dbglogfile << "The IP number for this machine is " << _ipaddr << std::endl;
-            }
-            addr = addr->ai_next;
-        }
-    } else {
-        dbglogfile << "WARNING: Couldn't get the host entry for this machine!" << std::endl;
-    }
+Tcputil::Tcputil(const std::string &host, short port)
+    :_service(0),
+     _proto(0),
+     _hostname("localhost")
+{
+    DEBUGLOG_REPORT_FUNCTION;
+    std::string portstr = std::to_string(port);
+    _hostname = host;
+
+#if 0
+    dbglogfile << "Has " << numberOfInterfaces()
+               << " interfaces, using default one" << std::endl;
+#endif
+    //_proto = getprotobyname("tcp");
+    _proto = getprotobynumber(IPPROTO_IP);
+
+//    if (!getAddrInfo(host, port)) {
+//        dbglogfile << "WARNING: Couldn't get address info for this machine!" << std::endl;
+//    }
     
-    _service = getservbyport(DEFAULTPORT, "tcp");
+    _service = getservbyport(htons(port), _proto->p_name);
     if (_service) {
         dbglogfile <<  "Found service file entry for " << _service->s_name << std::endl;
-        _proto = getprotobyname(_service->s_proto);
-        if (_proto) {
-            dbglogfile << "The proto number for " << _proto->p_name
-                       << " is " << _proto->p_proto << std::endl;
-        } else {
-            dbglogfile << "WARNING: Couldn't get the host entry for this machine!" << std::endl;
-        }
     } else {
-        dbglogfile << "Services file entry for port " << DEFAULTPORT << " was not found!" << std::endl;
+        dbglogfile << "Services file entry for port " << DEFAULTPORT << " was not found, using defaults" << std::endl;
+    }
+}
+
+struct addrinfo *
+Tcputil::getAddrInfo(const std::string& hostname, std::uint16_t port)
+{
+    DEBUGLOG_REPORT_FUNCTION;
+
+    struct addrinfo hints, *ans = nullptr;
+    ::memset(&hints, 0, sizeof(struct addrinfo));
+
+    //hints.ai_family = AF_UNSPEC;    // Allow IPv4 or IPv6
+    hints.ai_family = AF_INET;  // Allow IPv4 only for now
+    hints.ai_flags = 0;
+    //hints.ai_flags = AI_PASSIVE;
+    hints.ai_protocol = _proto->p_proto;
+    //hints.ai_protocol = 0; // any protocol
+    //hints.ai_socktype = SOCK_DGRAM; // UDP
+    hints.ai_socktype = SOCK_STREAM; // TCP
+
+    _hostname = hostname;
+    std::string portstr = std::to_string(port);
+    int ret = ::getaddrinfo(hostname.c_str(), portstr.c_str(), &hints, &ans);
+    if (ret != 0) {
+        std::cerr << "ERROR: getaddrinfo(" << hostname << ") failed! "
+                  << gai_strerror(ret) << std::endl;
+        return nullptr;
     }
 
+    // convert the linked list to an array to make it easier to access.
+    struct addrinfo *addr = ans;
+    if (addr->ai_next == 0) {
+        _addrinfo.push_back(addr);
+    }
+    while (addr->ai_next != 0) {
+        std::string str;
+        dbglogfile << "The IP number for this connection is " << printIP(addr, str) << std::endl;
+        _addrinfo.push_back(addr);
+        addr = addr->ai_next;
+    }
+
+    return ans;
 }
+
+void
+Tcputil::getInterfaces(void) {
+    // DEBUGLOG_REPORT_FUNCTION;
+
+    struct ifaddrs *addrs,*tmp;
+    char address[INET6_ADDRSTRLEN];
+    std::string str;
+
+    getifaddrs(&addrs);
+    tmp = addrs;
+    while (tmp) {
+        if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_PACKET) {
+            struct ipNode *ip = new ipNode;
+            std::memset(address, 0, INET6_ADDRSTRLEN);
+            struct sockaddr_in *sa = reinterpret_cast<struct sockaddr_in *>(tmp->ifa_addr);
+            inet_ntop(AF_INET, &sa->sin_addr, address, INET6_ADDRSTRLEN);
+            ip->ipstr = address;
+            //std::memcpy((void *)&ip->saddr, (void *)tmp->ifa_addr, sizeof(struct sockaddr));
+            _nics[tmp->ifa_name] = ip;
+        }
+        tmp = tmp->ifa_next;
+    }
+    freeifaddrs(addrs);
+};
 
 Tcputil::~Tcputil(void)
 {
-    freeaddrinfo(_addrinfo);
+    DEBUGLOG_REPORT_FUNCTION;
+
+    std::map<std::string, struct addrinfo *>::iterator it;
+//    for (it = _addrinfo.begin(); it != _addrinfo.end(); it++) {
+//        freeaddrinfo(*it);
+//    }
 }
 
 struct servent *
 Tcputil::lookupService(const std::string &name, const std::string &protocol)
 {
-    // Get the service entry from  /etc/services for this 
-    _service = getservbyname(name.c_str(), protocol.c_str());
+    DEBUGLOG_REPORT_FUNCTION;
 
-    if (_service) {
+    // Get the service entry from  /etc/services for this 
+    struct servent *serv = getservbyname(name.c_str(), protocol.c_str());
+
+    if (serv) {
         dbglogfile <<  "Found service file entry for " << name << std::endl;
     } else {
         dbglogfile << "Services file entry " << name << " was not found!" << std::endl;
     }
 
-    return _service;
+    return serv;
 }
 
-// Description: Get the number of ethernet interfaces on this machine. Some
-//              operating systems, like Solaris, support a ioctl()
-//              specifically for discovering the number of interfaces,
-//              so it exists, use that instead of SIOCGIFCONF.
-int
-Tcputil::numberOfInterfaces(void)
+void
+Tcputil::dump(void)
 {
-    int fd, count = 0;
-#ifdef SIOCGLIFNUM
-    struct lifnum ln;
-#else
-    char   buf[150], *cp, *cplim;
-    struct ifconf ifc;
-    struct ifreq *ifr;
-#endif
-    if (0 > (fd = socket(AF_INET, SOCK_DGRAM,0))) {
-        dbglogfile << "WARNING: Couldn't get file descriptor for AF_INET socket!" << std::endl;
-        return -1;
-    }
-#ifdef SIOCGLIFNUM
-    // use AF_INET for IPv4 only or AF_INET6 for IPv6 only
-    // note: if using AF_UNSPEC, some interface names may appear twice,
-    //       once for IPv4 and once for IPv6
-    ln.lifn_family = AF_UNSPEC;
-    ln.lifn_flags = ln.lifn_count=0;
+    DEBUGLOG_REPORT_FUNCTION;
 
+    std::cerr << "Hostname for this connection is: " << _hostname << std::endl;
 
-    if(ioctl(fd,SIOCGLIFNUM,&ln) == -1) {
-        dbglogfile << "Couldn't get ethernet interface data!: %s\n"
-                   << strerror(errno) << std::endl;
-        return -1;
+    std::map<std::string, struct ipNode *>::iterator nit;
+    for (nit = _nics.begin(); nit != _nics.end(); nit++) {
+        std::cerr << "\tInterface: " << nit->first << " @ " << nit->second->ipstr << std::endl;
     }
 
-    dbglogfile << "There are " <<  << ln.lifn_count " ethernet interfaces." << std::endl;
-
-    return ln.lifn_count;
-#else
-    ifc.ifc_len = sizeof(buf);
-    ifc.ifc_req = (struct ifreq *)buf;
-    
-    if(ioctl(fd, SIOCGIFCONF, &ifc) == -1) {
-        dbglogfile << "Couldn't get ethernet interface data!: %s"
-                   << strerror(errno) << std::endl;
-        return -1;
+    // dump servent data
+    if (_service) {
+        std::cerr << "Service data:" << std::endl;
+        //std::cerr << "\t" << _service->s_name << std::endl;
+        //char **s_aliases;
+        std::cerr << "\t" << _service->s_port << std::endl;
+        std::cerr << "\t" << _service->s_proto << std::endl;
     }
     
-    ifr = ifc.ifc_req;
-    cplim = buf + ifc.ifc_len;
-    for (cp = buf; cp < cplim; cp += sizeof(ifr->ifr_name) + sizeof(ifr->ifr_addr)) {
-        ifr = (struct ifreq *) cp;
-#ifdef NET_DEBUG
-        dbglogfile << "interface name is: " << ifr->ifr_name << std::endl;
-#endif
-        count++;
+    if (_proto) {
+        std::cerr << "Proto data:" << std::endl;
+        // dump protoent data
+        //char **p_aliases;
+        std::cerr << "\tNumber: " << (_proto->p_proto ? _proto->p_proto : 0)
+                  <<  " (" << (_proto->p_name ? _proto->p_name : "none") << ")"
+                  << std::endl;
     }
-#endif
 
-    return count;
+    // Dump addrinfo data
+    const std::string st[] = { "UNSPEC", "SOCK_STREAM", "SOCK_DGRAM", "SOCK_RAW" };
+    const std::string ft[] = { "AF_UNSPEC", "AF_LOCAL", "AF_INET", "AF_AX25",
+                               "AF_IPX", "AF_APPLETALK", "AF_NETROM",
+                               "AF_BRIDGE", "AF_ATMPVC", "AF+X25", "AF_INET6" };
+    // We only care about these two values
+    char *pt[18];
+    pt[getprotobyname("tcp")->p_proto] = "tcp";
+    pt[getprotobyname("udp")->p_proto] = "udp";
+
+    std::cerr << "Addrinfo data has: " << _addrinfo.size() << " entries" << std::endl;
+    std::vector<struct addrinfo *>::iterator ait;
+    for (ait = _addrinfo.begin(); ait != _addrinfo.end(); ait++) {
+        if ((*ait)->ai_canonname != 0) {
+            std::cerr << "\Hostname: " << (*ait)->ai_canonname << std::endl;
+        }
+        std::cerr << "\tFlags: " << (*ait)->ai_flags << std::endl;
+        std::cerr << "\tFamily: " << ft[(*ait)->ai_family] << std::endl;
+        std::cerr << "\tsocktype: " << st[(*ait)->ai_socktype] << std::endl;
+        std::cerr << "\tprotocol: " << pt[(*ait)->ai_protocol]<< std::endl;
+        //socklen_t _addrinfo->ai_addrlen;
+        //sockaddr _addrinfo->ai_addr;
+        //std::cerr << *ait->ai_canonname << std::endl;
+    }
 }
 
 // local Variables:
