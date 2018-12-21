@@ -75,9 +75,9 @@ alarm_handler2 (int sig);
 int curses = 0;
 
 extern void client_handler(Tcpip &net);
-extern void ownet_handler(pdev::Ownet &);
-extern void outback_handler(pdev::Ownet &);
-extern void xantrex_handler(pdev::Ownet &);
+extern void ownet_handler(Ownet &);
+extern void outback_handler(Ownet &);
+extern void xantrex_handler(Ownet &);
 
 std::mutex queue_lock;
 std::queue <XML> tqueue;
@@ -239,17 +239,21 @@ main(int argc, char *argv[])
 
     dbglogfile << "PowerGuru - 1 Wire Mode" << std::endl;
     Tcpip net;
-    net.createNetServer(DEFAULTPORT);
-    std::thread first (client_handler, std::ref(net));
+    if (net.createNetServer(DEFAULTPORT) == ERROR) {
+        std::cerr << "ERROR: Couldn't create a network server!" << std::endl;
+        exit(-1);
+    }
+
+    std::thread client_thread (client_handler, std::ref(net));
 #ifdef BUILD_OWNET
-    pdev::Ownet ownet;
-    std::thread second (ownet_handler, std::ref(ownet));
+    Ownet ownet("localhost:4303");
+    std::thread ownet_thread (ownet_handler, std::ref(ownet));
 #endif
 #ifdef BUILD_XANTREX
-    std::thread third (xantrex_handler, std::ref(ownet));
+    std::thread xantrex_tread (xantrex_handler, std::ref(ownet));
 #endif
 #ifdef BUILD_OUTBACK
-    std::thread fourth(outback_handler, std::ref(ownet));
+    std::thread outback_thread (outback_handler, std::ref(ownet));
 //    std::thread forth (msg_handler, std::ref(pdb));
 #endif
     
@@ -368,15 +372,15 @@ main(int argc, char *argv[])
 
     // synchronize threads:
     dbglogfile << "Killing all threads..." << std::endl;
-    first.join();                // pauses until first finishes
+    client_thread.join();                // pauses until first finishes
 #ifdef BUILD_OWNET
-    second.join();                // pauses until second finishes
-#endif
-#ifdef BUILD_OUTBACK
-    fourth.join();               // pauses until second finishes
+    ownet_thread.join();                // pauses until second finishes
 #endif
 #ifdef BUILD_XANTREX
-    third.join();               // pauses until third finishes
+    xantrex_thread.join();               // pauses until third finishes
+#endif
+#ifdef BUILD_OUTBACK
+    outback_thread.join();               // pauses until second finishes
 #endif
 
     exit(0);
