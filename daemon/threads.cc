@@ -48,6 +48,7 @@ extern char *optarg;
 #include "tcpip.h"
 #include "xml.h"
 #include "commands.h"
+#include "ownet.h"
 
 extern LogFile dbglogfile;
 
@@ -69,7 +70,10 @@ client_handler(Tcpip &net)
     std::string user;
 
     while (retries-- <= 10) {
-        net.newNetConnection(true);
+        if (net.newNetConnection(true) == ERROR) {
+            std::cerr << "ERROR: new connection failed!" << std::endl;
+            return;
+        }
 
         bool loop = true;
         std::vector<unsigned char> data;
