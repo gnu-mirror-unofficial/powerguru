@@ -36,7 +36,7 @@ extern LogFile dbglogfile;
 
 Commands::Commands()
 {
-    DEBUGLOG_REPORT_FUNCTION;
+//    DEBUGLOG_REPORT_FUNCTION;
 
     _commands["nop"] = Commands::NOP;
     _commands["list"] = Commands::LIST;
@@ -46,7 +46,7 @@ Commands::Commands()
 
 Commands::~Commands()
 {
-    DEBUGLOG_REPORT_FUNCTION;
+//    DEBUGLOG_REPORT_FUNCTION;
 }
 
 std::string &
