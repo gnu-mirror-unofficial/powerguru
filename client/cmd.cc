@@ -54,7 +54,8 @@ int
 main(int argc, char *argv[])
 {
     int         c;
-    std::string      hostname = "localhost";
+    std::string dbhost = "localhost";
+    std::string pserver = "localhost:" + DEFAULTPORT;
     retcode_t   ret;
 
     // scan for the two main standard GNU options
@@ -69,7 +70,7 @@ main(int argc, char *argv[])
         }
     }
     
-    while ((c = getopt (argc, argv, "hvm:u:p:V")) != -1) {
+    while ((c = getopt (argc, argv, "hvVd:p:")) != -1) {
         switch (c) {
           case 'h':
               usage (argv[0]);
@@ -79,10 +80,14 @@ main(int argc, char *argv[])
               dbglogfile.set_verbosity();
               break;
         
-          case 'm':
-              hostname = strdup(optarg);
+          case 'd':
+              dbhost = strdup(optarg);
               break;
         
+          case 'p':
+              pserver = strdup(optarg);
+              break;
+
           case 'V':
               std::cerr << "PowerGuru version " << VERSION << std::endl;
               exit (0);
@@ -94,13 +99,9 @@ main(int argc, char *argv[])
         }
     }
 
-    Tcpip net;
-    net.createNetClient(DEFAULTPORT);
-    std::thread first (daemon_handler, std::ref(net));
-
-#ifdef BUILD_OWNET_XXXXX
+#ifdef BUILD_OWNET_XXX
     // Talk directly to the OW daemon
-    pdev::Ownet ownet;
+    Ownet ownet(pserver + ":4303");
     if (ownet.isConnected()) {
         if (ownet.hasSensors()) {
             dbglogfile << "and has sensors attached" << std::endl;
@@ -110,7 +111,13 @@ main(int argc, char *argv[])
         }
     }
 #endif
+    Tcpip net;
+    if (net.createNetClient(pserver) == ERROR) {
+        std::cerr << "ERROR: Can't connect to Powerguru daemon!" << std::endl;
+        exit(-1);
+    }
 
+    std::thread first (daemon_handler, std::ref(net));
     std::thread second (console_handler, std::ref(net));
 
     first.join();                // pauses until second finishes
@@ -129,7 +136,8 @@ usage (const char *prog)
     std::cerr << "Usage: pguru: [h] filename" << std::endl;
     std::cerr << "-h\tHelp" << std::endl;
     std::cerr << "-v\tVerbose output" << std::endl;
-    std::cerr << "-m\tDatabase Host(localhost)" << std::endl;
+    std::cerr << "-d\tDatabase Host(localhost)" << std::endl;
+    std::cerr << "-p\tPowerguru Host(localhost)" << std::endl;
     exit (-1);
 }
 
