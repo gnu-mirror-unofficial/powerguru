@@ -44,12 +44,12 @@ extern LogFile dbglogfile;
 
 Tcputil::Tcputil(void) : Tcputil("localhost", DEFAULTPORT)
 {
-    DEBUGLOG_REPORT_FUNCTION;
+//    DEBUGLOG_REPORT_FUNCTION;
 }
 
 Tcputil::Tcputil(const std::string &host) : Tcputil(host, DEFAULTPORT)
 {
-    DEBUGLOG_REPORT_FUNCTION;
+//    DEBUGLOG_REPORT_FUNCTION;
 }
 
 Tcputil::Tcputil(const std::string &host, short port)
@@ -57,49 +57,52 @@ Tcputil::Tcputil(const std::string &host, short port)
      _proto(0),
      _hostname("localhost")
 {
-    DEBUGLOG_REPORT_FUNCTION;
+//    DEBUGLOG_REPORT_FUNCTION;
     std::string portstr = std::to_string(port);
     _hostname = host;
 
-#if 0
-    dbglogfile << "Has " << numberOfInterfaces()
-               << " interfaces, using default one" << std::endl;
-#endif
-    //_proto = getprotobyname("tcp");
-    _proto = getprotobynumber(IPPROTO_IP);
+    _proto = getprotobyname("tcp");
+    _proto = getprotobynumber(IPPROTO_TCP);
 
-//    if (!getAddrInfo(host, port)) {
-//        dbglogfile << "WARNING: Couldn't get address info for this machine!" << std::endl;
-//    }
-    
+#if 0
+    // Chances are we don't have an entry in the /etc/services file.
     _service = getservbyport(htons(port), _proto->p_name);
     if (_service) {
         dbglogfile <<  "Found service file entry for " << _service->s_name << std::endl;
     } else {
         dbglogfile << "Services file entry for port " << DEFAULTPORT << " was not found, using defaults" << std::endl;
     }
+#endif
 }
 
 struct addrinfo *
 Tcputil::getAddrInfo(const std::string& hostname, std::uint16_t port)
 {
-    DEBUGLOG_REPORT_FUNCTION;
+//    DEBUGLOG_REPORT_FUNCTION;
 
     struct addrinfo hints, *ans = nullptr;
     ::memset(&hints, 0, sizeof(struct addrinfo));
 
-    //hints.ai_family = AF_UNSPEC;    // Allow IPv4 or IPv6
-    hints.ai_family = AF_INET;  // Allow IPv4 only for now
-    hints.ai_flags = 0;
-    //hints.ai_flags = AI_PASSIVE;
+    // 
+    if (hostname.empty()) {
+        hints.ai_family = AF_UNSPEC;    // Allow IPv4 or IPv6
+        hints.ai_flags = AI_PASSIVE;
+        //hints.ai_protocol = IPPROTO_TCP; // any protocol
+    } else {
+        hints.ai_family = AF_INET;  // Allow IPv4 only for now
+        hints.ai_flags = 0;
+        _hostname = hostname;
+    }
     hints.ai_protocol = _proto->p_proto;
-    //hints.ai_protocol = 0; // any protocol
-    //hints.ai_socktype = SOCK_DGRAM; // UDP
     hints.ai_socktype = SOCK_STREAM; // TCP
 
-    _hostname = hostname;
     std::string portstr = std::to_string(port);
-    int ret = ::getaddrinfo(hostname.c_str(), portstr.c_str(), &hints, &ans);
+    int ret = 0;
+    if (hostname.empty()) {
+        ret = ::getaddrinfo(nullptr, portstr.c_str(), &hints, &ans);
+    } else {
+        ret = ::getaddrinfo(hostname.c_str(), portstr.c_str(), &hints, &ans);
+    }
     if (ret != 0) {
         std::cerr << "ERROR: getaddrinfo(" << hostname << ") failed! "
                   << gai_strerror(ret) << std::endl;
