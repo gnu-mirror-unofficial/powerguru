@@ -61,6 +61,7 @@ private:
 #endif
 public:
     Ownet(void);
+    Ownet(const std::string &host);
     ~Ownet(void) {
         OW_finish();
     };

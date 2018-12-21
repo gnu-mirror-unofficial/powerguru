@@ -27,8 +27,9 @@
 
 extern LogFile dbglogfile;
 
-Ownet::Ownet(void) {
-    DEBUGLOG_REPORT_FUNCTION;
+Ownet::Ownet(const std::string &host)
+{
+//    DEBUGLOG_REPORT_FUNCTION;
 
     dbglogfile << "Trying to connect to the owserver" << std::endl;
     char *buf = 0;
@@ -117,8 +118,9 @@ Ownet::Ownet(void) {
     }
 }
 
-void Ownet::dump(void) {
-    DEBUGLOG_REPORT_FUNCTION;
+void Ownet::dump(void)
+{
+//    DEBUGLOG_REPORT_FUNCTION;
 
     std::map<std::string, ownet_t *>::iterator sit;
     for (sit = _sensors.begin(); sit != _sensors.end(); sit++) {
