@@ -139,6 +139,13 @@ ownet_handler(Ownet &ownet)
     DEBUGLOG_REPORT_FUNCTION;
     dbglogfile << "PowerGuru - 1 Wire Mode" << std::endl;
     bool poll = true;
+#ifdef HAVE_LIBPQ
+    Database pdb;
+    if (!pdb.openDB()) {
+        dbglogfile << "ERROR: Couldn't open database!" << std::endl;
+        exit(1);
+    }
+#endif
 
     // Open the network connection to the database.
     std::string query = "INSERT INTO onewire VALUES(";
@@ -147,16 +154,30 @@ ownet_handler(Ownet &ownet)
 
     std::map<std::string, ownet_t *> sensors = ownet.getSensors();
     std::map<std::string, ownet_t *>::iterator it;
-    while (ownet.getPollSleep() != 0) {
+    while (ownet.getPollSleep() > 0) {
         for (it = sensors.begin(); it != sensors.end(); it++) {
-            if (it->second->family == "10") {
-                ownet.getTemperature(it->first.c_str());
+            if (it->second->family == "10" | it->second->family == "28") {
+                boost::shared_ptr<temperature_t> temp = ownet.getTemperature(it->first.c_str());
+#ifdef HAVE_LIBPQ
+                std::string stamp;
+                stamp = pdb.gettime(stamp);
+                std::string query = temp->family;
+                query += ",\'" + temp->id + "\'";
+                query += ", \'" + temp->type + "\'";
+                query += ", \'" + stamp + "\'";
+                query += ", " + std::to_string(temp->lowtemp);
+                query +=  ", " + std::to_string(temp->hightemp);
+                query += ", " + std::to_string(temp->temp) + ", \'";
+                query += temp->scale;
+                query += "\'";
+                pdb.queryInsert(query);
+#endif
+                //ownet.dump();
             }
-        }
-        ownet.dump();
         
-        // Don't eat up all the cpu cycles!
-        std::this_thread::sleep_for(std::chrono::seconds(ownet.getPollSleep()));
+            // Don't eat up all the cpu cycles!
+            std::this_thread::sleep_for(std::chrono::seconds(ownet.getPollSleep()));
+        }
     }
 }
 #endif
