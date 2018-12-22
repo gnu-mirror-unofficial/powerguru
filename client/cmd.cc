@@ -101,7 +101,7 @@ main(int argc, char *argv[])
 
 #ifdef BUILD_OWNET_XXX
     // Talk directly to the OW daemon
-    Ownet ownet(pserver + ":4303");
+    Ownet ownet(pserver + ":4304");
     if (ownet.isConnected()) {
         if (ownet.hasSensors()) {
             dbglogfile << "and has sensors attached" << std::endl;
