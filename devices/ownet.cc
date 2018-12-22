@@ -27,6 +27,9 @@
 
 extern LogFile dbglogfile;
 
+//const char DEFAULT_ARGV[] = "--fake 28 --fake 10";
+const char DEFAULT_ARGV[] = "-s 192.168.0.50:4304";
+
 Ownet::Ownet(const std::string &host)
 {
 //    DEBUGLOG_REPORT_FUNCTION;
@@ -37,8 +40,11 @@ Ownet::Ownet(const std::string &host)
 
     //OW_init("/dev/ttyS0");
     int count = 5;
+    std::string hostname = "-s " + host;
+    const char *argv = hostname.c_str();
+
     while (count-- > 0) {
-        if (OW_init("192.168.0.50:4304") < 0) {
+        if (OW_init(argv) < 0) {
             dbglogfile << "WARNING: Couldn't connect to owserver!" << std::endl;
             //return;
         } else {
@@ -51,7 +57,7 @@ Ownet::Ownet(const std::string &host)
     OW_set_error_print("2");
     // (0=default, 1=err_connect, 2=err_call, 3=err_data, 4=err_detail,
     // 5=err_debug, 6=err_beyond)
-    OW_set_error_level("4");
+    OW_set_error_level("0");
     OW_get("/", &buf, &s);
     // buf looks like:
     // 10.67C6697351FF/,05.4AEC29CDBAAB/,bus.0/,uncached/,settings/,system/,statistics/,structure/,simultaneous/,alarm/
@@ -60,6 +66,8 @@ Ownet::Ownet(const std::string &host)
     //    dbglogfile << "S: " << (int)s << std::endl;
     // return;
     //}
+
+    OW_put("/settings/units/temperature_scale", &_scale, 1);
 
     std::vector<std::string> results;
     if (buf != 0) {
@@ -70,13 +78,6 @@ Ownet::Ownet(const std::string &host)
             return;
         }
     }
-
-#ifdef HAVE_LIBPQ
-    if (!pdb.openDB()) {
-        dbglogfile << "ERROR: Couldn't open database!" << std::endl;
-        exit(1);
-    }
-#endif
 
     int i = 0;
     std::vector<std::string>::iterator it;
@@ -91,25 +92,6 @@ Ownet::Ownet(const std::string &host)
         std::string dev = *it + "temperature";
         if (OW_present(dev.c_str()) == 0) {
             dbglogfile << "Temperature sensor found: " << *it << std::endl;
-            temperature_t *temp = new temperature_t[1];
-            memset(temp, 0, sizeof(temperature_t));
-            temp->temp = std::stof(getValue(*it, "temperature"));
-            temp->lowtemp = std::stof(getValue(*it, "templow"));
-            temp->hightemp = std::stof(getValue(*it, "temphigh"));
-            _temperatures[*it] = temp;
-
-            std::string stamp;
-#ifdef HAVE_LIBPQ
-            stamp = pdb.gettime(stamp);
-            std::string query = data->family + ',';
-            query += "\'" + data->id;
-            query += "\', \'" + data->type;
-            query += "\', \'" + stamp;
-            query += "\', " + std::to_string(temp->temp);
-            query += ", " + std::to_string(temp->lowtemp);
-            query +=  ", " + std::to_string(temp->hightemp);
-            pdb.queryInsert(query);
-#endif
         } else {
             dbglogfile << "Temperature sensor not found!" << std::endl;
         }
@@ -129,12 +111,12 @@ void Ownet::dump(void)
         std::cout << "\ttype: " << sit->second->type << std::endl;
         std::cout << "\tid: " << sit->second->id << std::endl;
     }
-    std::map<std::string, temperature_t *>::iterator tit;
-    for (tit = _temperatures.begin(); tit != _temperatures.end(); tit++) {
-        std::cout << "\tCurrent temperature: " << tit->second->temp << std::endl;
-        std::cout << "\tLow temperture: " << tit->second->lowtemp << std::endl;
-        std::cout << "\tHigh Temperature: " << tit->second->hightemp << std::endl;
-    }
+    // std::map<std::string, temperature_t *>::iterator tit;
+    // for (tit = _temperatures.begin(); tit != _temperatures.end(); tit++) {
+    //     std::cout << "\tCurrent temperature: " << tit->second->temp << std::endl;
+    //     std::cout << "\tLow temperture: " << tit->second->lowtemp << std::endl;
+    //     std::cout << "\tHigh Temperature: " << tit->second->hightemp << std::endl;
+    // }
 }
 
 // local Variables:

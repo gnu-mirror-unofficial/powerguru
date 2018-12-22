@@ -31,6 +31,7 @@
 #include <log.h>
 #include <owcapi.h>
 #include <boost/algorithm/string.hpp>
+#include <boost/shared_ptr.hpp>
 #include "database.h"
 
 extern LogFile dbglogfile;
@@ -43,9 +44,13 @@ struct ownet {
 } typedef ownet_t;
 
 struct temperature {
+    std::string family;
+    std::string id;
+    std::string type;
     float temp;
     float lowtemp;
     float hightemp;
+    char scale;
 } typedef temperature_t;
 
 class Ownet {
@@ -53,19 +58,19 @@ private:
     enum family_t {CONTROL = 05, THERMOMETER = 10, THERMOMETER2 = 28};
     std::map<std::string, ownet_t *> _sensors;
     bool _owserver = false;
-    std::map<std::string, temperature_t *> _temperatures;
+    //std::map<std::string, temperature_t *> _temperatures;
     std::mutex _mutex;
-    int poll_sleep = 2;
-#ifdef HAVE_LIBPQ
-    Database pdb;
-#endif
+    int poll_sleep = 60;
+    char _scale = 'F';
 public:
     Ownet(void);
     Ownet(const std::string &host);
     ~Ownet(void) {
         OW_finish();
     };
-    //
+
+    char setScale(char scale) { OW_put("/settings/units/temperature_scale", &_scale, 1); };
+
     // Thread have a polling frequency to avoid eating up all the cpu cycles
     // by polling to quickly.
     int getPollSleep(void) {
@@ -120,39 +125,31 @@ public:
     }
 
     // get all the temperature fields for a device.
-    temperature_t *getTemperature(const std::string &device) {
+    boost::shared_ptr<temperature_t> getTemperature(const std::string &device) {
         // DEBUGLOG_REPORT_FUNCTION;
 
         std::string family = getValue(device, "family");
         std::string id = getValue(device, "id");
         std::string type = getValue(device, "type");
 
-        temperature_t *temp = 0;
         if (family == "10" | family == "28") {
             // dbglogfile << device << " is a thermometer" << std::endl;
-            temp = new temperature_t[1];
+            boost::shared_ptr<temperature_t> temp(new temperature_t);
+            temp->family = getValue(device, "family");
+            temp->id = getValue(device, "id");
+            temp->type = getValue(device, "type");
             temp->temp = std::stof(getValue(device, "temperature"));
             temp->lowtemp =std::stof(getValue(device, "templow"));
             temp->hightemp = std::stof(getValue(device, "temphigh"));
-            // Add data to the database
-            std::string stamp;
-#ifdef HAVE_LIBPQ
-            stamp = pdb.gettime(stamp);
-            std::string query = family + ',';
-            query += "\'" + id;
-            query += "\', \'" + type;
-            query += "\', \'" + stamp;
-            query += "\', " + std::to_string(temp->temp);
-            query += ", " + std::to_string(temp->lowtemp);
-            query +=  ", " + std::to_string(temp->hightemp);
-            pdb.queryInsert(query);
-#endif
-
-            std::lock_guard<std::mutex> guard(_mutex);
-            _temperatures[device] = temp;
+            char *buffer;
+            size_t blen;
+            OW_get("/settings/units/temperature_scale", &buffer, &blen);
+            temp->scale = buffer[0];
+            return temp;
         } else {
             dbglogfile << device << " is not a thermometer" << std::endl;
         }
+        boost::shared_ptr<temperature_t> temp;
         return temp;
     }
 
