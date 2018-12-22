@@ -1,0 +1,3 @@
+[submodule "OneWire"]
+	path = OneWire
+	url = https://github.com/PaulStoffregen/OneWire.git
