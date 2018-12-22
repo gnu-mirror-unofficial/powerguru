@@ -122,16 +122,19 @@ Database::closeDB (void)
 bool
 Database::queryInsert(const std::string &query)
 {
-    DEBUGLOG_REPORT_FUNCTION;
+    //DEBUGLOG_REPORT_FUNCTION;
 
     int retries, result;
     std::string str = "INSERT INTO onewire VALUES(";
     str += query + ");";
+
+    //dbglogfile << "Query is: " << query << endl;
     
-    PQexec(_connection, str.c_str());
-    dbglogfile << "Query is: " << str << endl;
+    if (PQexec(_connection, str.c_str()) == nullptr) {
+        std::cerr << "Lost connection to the database server, shutting down..." << endl;
+        std::cerr << PQerrorMessage(_connection) << std::endl;
+    }
     
-    dbglogfile << "Lost connection to the database server, shutting down..." << endl;
     return false;
 }
 

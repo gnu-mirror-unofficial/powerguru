@@ -1,5 +1,5 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006-2018 Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -83,14 +83,17 @@ std::mutex queue_lock;
 std::queue <XML> tqueue;
 std::condition_variable queue_cond;
 
+const char DEFAULT_ARGV[] = "-s 192.168.0.50:4304";
+
 int
 main(int argc, char *argv[])
 {
     int c, i;
-    string item, str;
+    std::string item, str;
     const char *filespec;
     MenuItem ti;
-    string hostname;
+    std::string hostname;
+    std::string owserver;
     bool poll;
     bool use_db;
     bool snmp;
@@ -153,7 +156,7 @@ main(int argc, char *argv[])
     
     filespec = DEFAULT_UART;
     // Process the command line arguments.
-    while ((c = getopt (argc, argv, "d:ahvm:cexnob:pu:w:rj")) != -1) {
+    while ((c = getopt (argc, argv, "d:ahvw:s:")) != -1) {
         switch (c) {
           case 'p':
               poll = true;
@@ -168,13 +171,23 @@ main(int argc, char *argv[])
               usage (argv[0]);
               break;
 
+          case 'w':
+              owserver = strdup(optarg);
+              break;
+#if 0
+          case 'c':
+              client = true;
+              daemon = false;
+              break;
+
           case 'o':
-              //outbackmode = true;
+              outbackmode = true;
               break;
 
           case 'r':
-              //background = true;
+              background = true;
               break;
+#endif
 
 #ifdef USE_SNMP
           case 'j':
@@ -183,40 +196,13 @@ main(int argc, char *argv[])
               client = false;
               break;
 #endif
-          case 'e':
-              echo = true;
-              break;
-        
-              // Don't use the database. The default is to use the database.
-          case 'n':
-              use_db = false;
-              break;
-
               // Specify database host machine.
 #if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
           case 'm':
               pdb.dbHostSet(optarg);
               break;
               // Specify database name.
-          case 'b':
-              pdb.dbNameSet(optarg);
-              break;
-        
-              // Specify database user name.
-          case 'u':
-              pdb.dbUserSet(optarg);
-              break;
-        
-              // Specify database user password.
-          case 'w':
-              pdb.dbPasswdSet(optarg);
-              break;
 #endif
-          case 'c':
-              client = true;
-              daemon = false;
-              break;
-
           case 'v':
               // verbosity++;
               dbglogfile.set_verbosity();
@@ -246,7 +232,7 @@ main(int argc, char *argv[])
 
     std::thread client_thread (client_handler, std::ref(net));
 #ifdef BUILD_OWNET
-    Ownet ownet("localhost:4303");
+    Ownet ownet(DEFAULT_ARGV);
     std::thread ownet_thread (ownet_handler, std::ref(ownet));
 #endif
 #ifdef BUILD_XANTREX
@@ -322,35 +308,6 @@ main(int argc, char *argv[])
             messages.clear();
         }
     }
-#endif
-
-#if 0
-    // Open a console for user input
-    Console con;
-    con.openCon();
-    con.makeRaw();
-    int ch = 0;
-    while ((ch = con.getcCon()) != 'q') {
-        if (ch > 0) {                // If we have something, process it
-            con.putcCon (ch);          // echo inputted character to screen
-            switch (ch) {
-              case 'Q':
-              case 'q':
-                  dbglogfile << "Qutting PowerGuru due to user input!" << std::endl;
-                  break;
-              case '?':
-                  con.putsCon("PowerGuru client\n");
-                  con.putsCon("\t? - help\r\n");
-                  con.putsCon("\tq - Quit\r\n");
-                  con.putsCon("\tQ - Quit\r\n");
-                  sleep(1);
-              default:
-                  break;
-            };
-        }
-    }
-
-    con.resetCon();
 #endif
 
     // Commands from the client via the client_handler get processed here
@@ -431,11 +388,11 @@ usage (const char *prog)
     cerr << "for an inverter or charge controller" << endl;
     cerr << "Usage: " << prog << " [sglvphmdcx]" << endl;
 
+#if 0
     // enable SNMP daemon mode
     cerr << "SNMP Mode:" << endl;
     cerr << "\t-j\t\t\t\tEnable SNMP agent mode" << endl;
     cerr << "\t-r\t\t\t\trun in the background as a daemon." << endl;
-#if 0
     // Display the End User options
     cerr << "User Options:" << endl;
     // cerr << "\t-s [heading:item or name]\tSet Item value" << endl;
@@ -459,9 +416,6 @@ usage (const char *prog)
     // Display the Database options
     cerr << "Database Options:" << endl;
     cerr << "\t-m hostname\t\t\tSpecify Database hostname or IP" << endl;
-    cerr << "\t-u username\t\t\tSpecify User Name" << endl;
-    cerr << "\t-b dbname\t\t\tSpecify the Database" << endl;
-    cerr << "\t-w password\t\t\tSpecify the password" << endl;
 
     exit (-1);
 }
