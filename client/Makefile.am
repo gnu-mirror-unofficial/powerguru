@@ -24,7 +24,7 @@ bin_PROGRAMS = pguru
 pguru_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_srcdir)/devices
 
 pguru_SOURCES = cmd.cc threads.cc
-pguru_LDADD = ../lib/libpguru.la -lpthread -ldl
+pguru_LDADD = ../lib/libpguru.la -lboost_filesystem -lboost_system -lboost_regex -lpthread -ldl
 # Use a GCC specs file to add our configured sysroot path before the
 # one specified by GCC to work around a problem when trying to
 # link executables fot the Raspberry PI using the normal cross gcc
