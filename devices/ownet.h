@@ -33,6 +33,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/shared_ptr.hpp>
 #include "database.h"
+#include "onewire.h"
 
 extern LogFile dbglogfile;
 
@@ -42,16 +43,6 @@ struct ownet {
     std::string type;
     std::string device;
 } typedef ownet_t;
-
-struct temperature {
-    std::string family;
-    std::string id;
-    std::string type;
-    float temp;
-    float lowtemp;
-    float hightemp;
-    char scale;
-} typedef temperature_t;
 
 class Ownet {
 private:
@@ -76,6 +67,7 @@ public:
     int getPollSleep(void) {
         return poll_sleep;
     }
+
     void setPollSleep(int x) {
         poll_sleep = x;
     }
