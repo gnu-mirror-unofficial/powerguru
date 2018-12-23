@@ -32,10 +32,9 @@ TTYS=@TTYS@
 # include_HEADERS = log.h err.h proc.h serial.h xantrex.h outback.h
 
 libpdev_la_CPPFLAGS = -I$(top_srcdir)/lib -I..
+libpdev_la_LIBDADD = -lboost_filesystem
 
-libpdev_la_LIBDADD =
-
-libpdev_la_SOURCES =
+libpdev_la_SOURCES = onewire.cc
 if BUILD_XANTREX
 libpdev_la_SOURCES += xantrex-trace.cc xantrex-trace.h xanbus.cc xanbus.h
 endif
@@ -63,7 +62,8 @@ include_HEADERS = \
 	xantrex-trace.h \
 	outbackpower.h \
 	xanbus.h \
-	ownet.h
+	ownet.h \
+	onewire.h
 
 #libpdev_la_LDFLAGS = -module -avoid-version -no-undefined
 
