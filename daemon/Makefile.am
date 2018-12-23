@@ -21,7 +21,8 @@
 AUTOMAKE_OPTIONS = # dejagnu
 
 pgd_CPPFLAGS = -Wall -I$(top_srcdir)/lib -I$(top_srcdir)/devices
-pgd_LDADD = ../devices/libpdev.la ../lib/libpguru.la -lpthread -lresolv
+pgd_LDADD = ../devices/libpdev.la ../lib/libpguru.la -lboost_filesystem \
+	 -lboost_regex -lboost_system -lpthread -lresolv
 
 if BUILD_LIBXML
 pgd_CPPFLAGS += $(LIBXML_CPPFLAGS)
