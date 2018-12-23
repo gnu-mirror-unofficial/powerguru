@@ -33,7 +33,7 @@
 #include <mutex>
 #include <chrono>
 #include <queue>
-
+#include <boost/shared_ptr.hpp>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #else
@@ -57,6 +57,52 @@ using namespace std::chrono_literals;
 extern std::mutex queue_lock;
 extern std::queue <XML> tqueue;
 extern std::condition_variable queue_cond;
+
+void
+onewire_handler(Onewire &onewire)
+{
+    DEBUGLOG_REPORT_FUNCTION;
+    dbglogfile << "PowerGuru - 1 Wire Mode" << std::endl;
+    bool poll = true;
+#ifdef HAVE_LIBPQ
+    Database pdb;
+    if (!pdb.openDB()) {
+        dbglogfile << "ERROR: Couldn't open database!" << std::endl;
+        exit(1);
+    }
+#endif
+
+    // Open the network connection to the database.
+    std::string query = "INSERT INTO onewire VALUES(";
+    query += "";
+    query += ");";
+
+    std::map<std::string, boost::shared_ptr<temperature_t>> temps = onewire.getTemperatures();
+    std::map<std::string, boost::shared_ptr<temperature_t>>::iterator it;
+    while (onewire.getPollSleep() > 0) {
+        for (it = temps.begin(); it != temps.end(); it++) {
+            if ((it->second->family == "10") | (it->second->family == "28")) {
+#ifdef HAVE_LIBPQ
+                std::string stamp;
+                stamp = pdb.gettime(stamp);
+                std::string query = it->second->family;
+                query += ",\'" + it->second->id + "\'";
+                query += ", \'" + it->second->type + "\'";
+                query += ", \'" + stamp + "\'";
+                query += ", " + std::to_string(it->second->lowtemp);
+                query +=  ", " + std::to_string(it->second->hightemp);
+                query += ", " + std::to_string(it->second->temp) + ", \'";
+                query += it->second->scale;
+                query += "\'";
+                pdb.queryInsert(query);
+#endif
+                //ownet.dump();
+            }
+            // Don't eat up all the cpu cycles!
+            std::this_thread::sleep_for(std::chrono::seconds(onewire.getPollSleep()));
+        }
+    }
+}
 
 void
 client_handler(Tcpip &net)
@@ -156,7 +202,7 @@ ownet_handler(Ownet &ownet)
     std::map<std::string, ownet_t *>::iterator it;
     while (ownet.getPollSleep() > 0) {
         for (it = sensors.begin(); it != sensors.end(); it++) {
-            if (it->second->family == "10" | it->second->family == "28") {
+            if ((it->second->family == "10") | (it->second->family == "28")) {
                 boost::shared_ptr<temperature_t> temp = ownet.getTemperature(it->first.c_str());
 #ifdef HAVE_LIBPQ
                 std::string stamp;

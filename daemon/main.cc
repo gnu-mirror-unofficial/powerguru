@@ -61,6 +61,7 @@ include "xantrex-trace.h"
 #include "xml.h"
 #include "serial.h"
 #include "commands.h"
+#include "onewire.h"
 
 using namespace std;
 using namespace rcinit;
@@ -74,6 +75,7 @@ alarm_handler2 (int sig);
 
 int curses = 0;
 
+extern void onewire_handler(Onewire &ow);
 extern void client_handler(Tcpip &net);
 extern void ownet_handler(Ownet &);
 extern void outback_handler(Ownet &);
@@ -230,6 +232,9 @@ main(int argc, char *argv[])
         exit(-1);
     }
 
+    Onewire ow;
+    std::thread onewire_thread (onewire_handler, std::ref(ow));
+
     std::thread client_thread (client_handler, std::ref(net));
 #ifdef BUILD_OWNET
     Ownet ownet(DEFAULT_ARGV);
@@ -329,15 +334,16 @@ main(int argc, char *argv[])
 
     // synchronize threads:
     dbglogfile << "Killing all threads..." << std::endl;
-    client_thread.join();                // pauses until first finishes
+    onewire_thread.join();      // pauses until first finishes
+    client_thread.join();       // pauses until first finishes
 #ifdef BUILD_OWNET
-    ownet_thread.join();                // pauses until second finishes
+    ownet_thread.join();        // pauses until second finishes
 #endif
 #ifdef BUILD_XANTREX
-    xantrex_thread.join();               // pauses until third finishes
+    xantrex_thread.join();      // pauses until third finishes
 #endif
 #ifdef BUILD_OUTBACK
-    outback_thread.join();               // pauses until second finishes
+    outback_thread.join();      // pauses until second finishes
 #endif
 
     exit(0);
