@@ -354,6 +354,40 @@ if test x"${has_boost}" = x"no"; then
 fi
 AC_MSG_RESULT([${has_boost}])
 
+AC_MSG_CHECKING([For Boost filesystem development files])
+AC_TRY_COMPILE([#include <boost/filesystem.hpp>], [
+  boost::filesystem::path p("/tmp");
+  ],
+  has_boost_filesystem=yes,
+  has_boost_filesystem=no
+)
+AC_MSG_RESULT([${has_boost_filesystem}])
+
+AC_MSG_CHECKING([For Boost regex development files])
+AC_TRY_COMPILE([#include <boost/regex.hpp>], [
+  boost::regex re;
+  ],
+  has_boost_regex=yes,
+  has_boost_regex=no
+)
+AC_MSG_RESULT([${has_boost_regex}])
+
+AC_MSG_CHECKING([For Boost system development files])
+AC_TRY_COMPILE([#include <boost/system/error_code.hpp>], [
+  boost::system::error_code be;
+  ],
+  has_boost_system=yes,
+  has_boost_system=no
+)
+AC_MSG_RESULT([${has_boost_system}])
+
+dnl We need all of these boost libraries
+if (test x"${has_boost_filesystem}" = x"no" \
+   -o x"${has_boost_regex}" = x"no" -o x"${has_boost_system}" = x"np"); then
+  AC_MSG_ERROR([You need all the boost libraries!])
+fi
+LIBS="-lboost_filesystem -lboost_system -lboost_regex"
+
 AC_MSG_CHECKING([For DejaGnu])
 AC_TRY_COMPILE([#include <dejagnu.h>], [
    TestState test;
