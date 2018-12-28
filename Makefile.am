@@ -103,6 +103,16 @@ mudflap:
 apidoc:
 	$(MAKE) -C doc $@
 
+# Google's C++ utility https://github.com/myint/cppclean
+cppclean:
+	@-cppclean --include-path=. --include-path=$(top_srcdir)/lib $(top_srcdir)/devices >& /tmp/cppclean.tmp
+	@echo ""
+	@echo "Static data, be careful in threads"
+	@grep "static data" /tmp/cppclean.tmp
+	@echo ""
+	@echo "Other issues found by cppclean"
+	@grep -v "static data" /tmp/cppclean.tmp
+
 dump:
 	@echo "Dumping configure options"
 if BUILD_SNMP
