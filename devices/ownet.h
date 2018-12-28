@@ -80,20 +80,20 @@ public:
     std::string getValue(const std::string &device, std::string file);
 
     // return a handle to all the sensors
-    boost::shared_ptr<ownet_t> &getSensor(const std::string &device) {
+    const boost::shared_ptr<ownet_t> &getSensor(const std::string &device) {
         return _sensors[device];
     };
 
-    std::map<std::string, boost::shared_ptr<ownet_t>> &getSensors(void) {
+    const std::map<std::string, boost::shared_ptr<ownet_t>> getSensors(void) {
         return _sensors;
     };
     
     // get all the temperature fields for a device.
-    boost::shared_ptr<temperature_t> &getTemperature(const std::string &device);
+    const boost::shared_ptr<temperature_t> getTemperature(const std::string &device);
     
     void dump(void);
     
-    std::vector<std::string> &
+    const std::vector<std::string>
     listDevices(std::vector<std::string> &list);
 };
 

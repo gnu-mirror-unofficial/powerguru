@@ -1,6 +1,5 @@
-# 
-# Copyright (C) 2005, 2006, 2007, 2008,	2009, 2010, 2011
-#	Free Software Foundation, Inc.
+#
+# Copyright (C) 2018, 2019 Free Software Foundation, Inc.
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,7 +30,7 @@ TTYS=@TTYS@
 # These headers get installed
 # include_HEADERS = log.h err.h proc.h serial.h xantrex.h outback.h
 
-libpdev_la_CPPFLAGS = -I$(top_srcdir)/lib -I..
+libpdev_la_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/lib -I..
 libpdev_la_LIBDADD = -lboost_filesystem
 
 libpdev_la_SOURCES = onewire.cc

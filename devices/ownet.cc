@@ -37,6 +37,7 @@ Ownet::Ownet(void)
 }
 
 Ownet::Ownet(std::string &host)
+    : Ownet()
 {
     DEBUGLOG_REPORT_FUNCTION;
 
@@ -46,7 +47,7 @@ Ownet::Ownet(std::string &host)
     }
     dbglogfile << "Trying to connect to the owserver on " << host << std::endl;
 
-    // OW_init() takes what looks like a stadard command line
+    // OW_init() takes what looks like a standard command line
     std::string argv = "-s " + host;
 
     // On my machine, it never seems to connect on the first attempt,
@@ -84,7 +85,7 @@ Ownet::Ownet(std::string &host)
         }
     }
 
-    // Iterate through all the directorys in the root dir
+    // Iterate through all the directories in the root dir
     int i = 0;
     std::vector<std::string>::iterator it;
     for(it = results.begin(); it != results.end(); it++,i++ ) {
@@ -106,7 +107,7 @@ Ownet::Ownet(std::string &host)
     }
 }
 
-boost::shared_ptr<temperature_t> &
+const boost::shared_ptr<temperature_t>
 Ownet::getTemperature(const std::string &device)
 {
     // DEBUGLOG_REPORT_FUNCTION;
@@ -137,7 +138,7 @@ Ownet::getTemperature(const std::string &device)
     return temp;
 }
 
-std::vector<std::string> &
+const std::vector<std::string>
 Ownet::listDevices(std::vector<std::string> &list)
 {
     DEBUGLOG_REPORT_FUNCTION;

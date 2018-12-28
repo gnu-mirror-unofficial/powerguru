@@ -1,6 +1,5 @@
 // 
-// Copyright (C) 2018
-//      Free Software Foundation, Inc.
+// Copyright (C) 2018 Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,26 +15,24 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
-#include "log.h"
-#include "onewire.h"
 #include <string>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
-#include<iostream>
-#include<fstream>
+#include <iostream>
+#include <cstdio>
+#include "onewire.h"
 
 extern LogFile dbglogfile;
 
 Onewire::Onewire(void)
+    : _scale('F'),
+      _poll_sleep(300),
+    _mounted(false),
+    _rootdir("/mnt/1wire")
 {
     DEBUGLOG_REPORT_FUNCTION;
 
-    _rootdir = "/mnt/1wire";
     boost::filesystem::path p(_rootdir);
     try {
         if (boost::filesystem::exists(p) & boost::filesystem::is_directory(p)) {
@@ -53,6 +50,7 @@ Onewire::Onewire(void)
             }
         } else {
             std::cerr << "ERROR: " << _rootdir << " doesn't exist" << std::endl;
+            _mounted = false;
         }
     } catch (const boost::filesystem::filesystem_error& ex) {
         std::cout << ex.what() << std::endl;
@@ -67,6 +65,11 @@ Onewire::setValue(const std::string &device, const std::string &file,
                   const std::string &value)
 {
     DEBUGLOG_REPORT_FUNCTION;
+
+    // Don't try to do anything if the owfs isn't mounted and we somehow got here anyway.
+    if (!_mounted) {
+        return;
+    }
 
     std::string filespec;
     if (!device.empty()) {
@@ -87,6 +90,11 @@ Onewire::getValue(const std::string &device, std::string file, std::string &resu
 {
 //    DEBUGLOG_REPORT_FUNCTION;
 
+    // Don't try to do anything if the owfs isn't mounted and we somehow got here anyway.
+    if (!_mounted) {
+        return result;
+    }
+
     std::string filespec;
     if (!device.empty()) {
         filespec = device +"/";
@@ -94,20 +102,25 @@ Onewire::getValue(const std::string &device, std::string file, std::string &resu
         filespec = _rootdir; 
     }
     filespec += file;
-    std::ifstream entry(filespec);
-    entry >> result;
-    entry.close();
-    std::cerr << "Getting " << filespec << ", value: " << result<< std::endl;
-
+    try {
+        std::ifstream entry(filespec);
+        entry.rdbuf()->pubsetbuf(0, 0);
+        entry >> result;
+        entry.close();
+    } catch (const std::exception& e) {
+        dbglogfile << "Warning: iostream failure! " << e.what() << std::endl;
+    }
+    //std::cerr << "Getting " << filespec << ", value: " << result<< std::endl;
     return result;
 }
 
 std::map<std::string, boost::shared_ptr<temperature_t>> &
 Onewire::getTemperatures(void)
 {
-    DEBUGLOG_REPORT_FUNCTION;
+    //DEBUGLOG_REPORT_FUNCTION;
 
     _temps.clear();
+
     std::map<std::string, boost::shared_ptr<onewire_t>>::iterator sit;
     for (sit = _sensors.begin(); sit != _sensors.end(); sit++) {
         boost::shared_ptr<temperature_t> temp(new temperature_t);
