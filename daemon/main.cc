@@ -63,29 +63,26 @@ include "xantrex-trace.h"
 #include "commands.h"
 #include "onewire.h"
 
-using namespace std;
 using namespace rcinit;
 
-static void usage (const char *);
 extern LogFile dbglogfile;
-const int INBUFSIZE = 1024;
 
-void
-alarm_handler2 (int sig);
+static void usage (const char *);
 
-int curses = 0;
-
+// Protoypes for the threads entry point
 extern void onewire_handler(Onewire &ow);
 extern void client_handler(Tcpip &net);
 extern void ownet_handler(Ownet &);
 extern void outback_handler(Ownet &);
 extern void xantrex_handler(Ownet &);
 
+// This queue is used to pass data between the threads.
 std::mutex queue_lock;
 std::queue <XML> tqueue;
 std::condition_variable queue_cond;
 
-const char DEFAULT_ARGV[] = "-s 192.168.0.50:4304";
+// Note that an entry for 'pi' needs to be in /etc/hosts.
+const char DEFAULT_ARGV[] = "-s pi:4304";
 
 int
 main(int argc, char *argv[])
@@ -93,61 +90,31 @@ main(int argc, char *argv[])
     int c, i;
     std::string item, str;
     const char *filespec;
-    MenuItem ti;
     std::string hostname;
     std::string owserver;
-    bool poll;
-    bool use_db;
     bool snmp;
     bool daemon;
     bool client;
-    bool echo;
-#if 0
-    bool setitem;
-    bool getitem;
-    bool monitor;
-    bool outbackmode;
-    bool xantrexmode;
-    bool background;
-#endif
     retcode_t   ret;
     std::condition_variable alldone;
-#if defined(HAVE_MARIADB) || defined(HAVE_POSTGRESQL)
-    Database pdb;
-#endif
-    if (argc == 1) {
-        //usage(argv[0]);
-    }
 
     // scan for the two main standard GNU options
-    for (c=0; c<argc; c++) {
+    for (c = 0; c < argc; c++) {
         if (strcmp("--help", argv[c]) == 0) {
             usage(argv[0]);
             exit(0);
         }
         if (strcmp("--version", argv[c]) == 0) {
-            cerr << "PowerGuru version: " << VERSION << endl;
+            std::cerr << "PowerGuru version: " << VERSION << std::endl;
             exit(0);
         }
     }
 
     // Set the option flags to default values. We do it this way to
     // shut up GCC complaining they're not used.
-    poll = false;
     daemon = true;
     client = false;
-    echo = false;
-    use_db = true;
     snmp = false;
-#if 0
-    setitem = false;
-    getitem = false;
-    monitor = false;
-    outbackmode = false;
-    xantrexmode = false;
-    background = false;
-    hostname = "localhost";
-#endif
     // Load the database config variable so they can be overridden by
     // the command line arguments.
     RCinitFile config;
@@ -160,11 +127,6 @@ main(int argc, char *argv[])
     // Process the command line arguments.
     while ((c = getopt (argc, argv, "d:ahvw:s:")) != -1) {
         switch (c) {
-          case 'p':
-              poll = true;
-              //xantrexmode = true;     // FIXME: force xantrex mode for now
-              break;
-
           case 'd':
               filespec = strdup(optarg);
               break;
@@ -208,7 +170,7 @@ main(int argc, char *argv[])
           case 'v':
               // verbosity++;
               dbglogfile.set_verbosity();
-              dbglogfile << "Verbose output turned on" << endl;
+              dbglogfile << "Verbose output turned on" << std::endl;
               break;
 	
           default:
@@ -237,7 +199,7 @@ main(int argc, char *argv[])
 
     std::thread client_thread (client_handler, std::ref(net));
 #ifdef BUILD_OWNET
-    Ownet ownet(DEFAULT_ARGV);
+    Ownet ownet(owserver);
     std::thread ownet_thread (ownet_handler, std::ref(ownet));
 #endif
 #ifdef BUILD_XANTREX
@@ -248,73 +210,6 @@ main(int argc, char *argv[])
 //    std::thread forth (msg_handler, std::ref(pdb));
 #endif
     
-#ifdef BUILD_OUTBACK
-    // Network daemon/client mode. Normally we're a network daemon that
-    // responses to requests by a remote client. Many house networks
-    // are behind a firewall, so the daemon can also connect to a
-    // publically accessible host to establish the connection the
-    // other direction.
-    if (daemon || client) {
-      
-        Msgs msg;
-        msg.toggleDebug(true);
-        // Make a client connection
-        if (client == true) {
-            msg.init(hostname);
-        }
-      
-        // Start as a daemon
-        if (daemon == true) {
-            msg.init(true);
-        }
-        //msg.methodsDump();          // FIXME: debugging crap
-      
-        //msg.print_msg(msg.status((meter_data_t *)0));
-      
-        if (client) {
-            msg.writeNet(msg.metersRequestCreate(Msgs::BATTERY_VOLTS));
-        }
-      
-        //      msg.cacheDump();
-      
-        XML xml;
-        unsigned int i;
-
-        vector<const xmlChar *> messages;        
-        bool loop = true;
-        while (loop) {
-            ret = msg.anydata(messages);
-            if (ret == ERROR) {
-                dbglogfile << "ERROR: Got error from socket " << endl;
-                msg.closeNet();
-                // wait for the next connection
-                if ((ret = msg.newNetConnection(true))) {
-                    dbglogfile << "New connection started for remote client."
-                               << msg.remoteIP().c_str()
-                               << msg.remoteName().c_str() << endl;
-                    ret = SUCCESS;        // the error has been handled
-                    continue;
-                }
-            }
-            if (messages.size() == 0) {
-                dbglogfile << "ERROR: client socket shutdown! " << endl;
-            }
-            for (i=0; i < messages.size(); i++) {
-                cerr << "Got (" << messages.size() << ") messages " << messages[i] << endl;
-                string str = (const char *)messages[i];
-                delete messages[i];
-                if (msg.findTag("command")) {
-                    cerr << "Got command message!" << endl;
-                }
-                if (xml.parseMem(str) == ERROR) {
-                    continue;
-                }
-            }
-            messages.clear();
-        }
-    }
-#endif
-
     // Commands from the client via the client_handler get processed here
     // so messages can be passed between threads.
     while (true) {
@@ -349,79 +244,41 @@ main(int argc, char *argv[])
     exit(0);
 }
 
-
-// signal handler for displaying item values
-void
-alarm_handler2 (int sig)
-{
-    DEBUGLOG_REPORT_FUNCTION;
-    ostringstream oss;
-    struct sigaction  act;
-#if 0
-    int ch;
-  
-#if 1
-    // If there is keyboard input, stop looking for the old
-    // output.
-    ch = con.Getc();
-    if (ch > 0) {
-        alarm(0);
-        con.Ungetc(ch);
-        return;
-    }
-#else
-    datasrc.RecvPacket((unsigned char *)&ch, 1);
-    dbglogfile << " CH is " << ch << endl;
-  
-    if (ch > 0) {
-        alarm(0);
-        con.Ungetc(ch);
-        return;
-    }
-#endif
-#endif
-  
-    act.sa_handler = alarm_handler2;
-    sigaction (SIGALRM, &act, NULL);
-  
-    alarm(1);
-}
-
 static void
 usage (const char *prog)
 {
-    cerr <<"This program implements a command line interface" << endl; 
-    cerr << "for an inverter or charge controller" << endl;
-    cerr << "Usage: " << prog << " [sglvphmdcx]" << endl;
+    std::cerr <<"This program implements a command line interface" << std::endl; 
+    std::cerr << "for an inverter or charge controller" << std::endl;
+    std::cerr << "Usage: " << prog << " [sglvphmdcx]" << std::endl;
 
 #if 0
     // enable SNMP daemon mode
-    cerr << "SNMP Mode:" << endl;
-    cerr << "\t-j\t\t\t\tEnable SNMP agent mode" << endl;
-    cerr << "\t-r\t\t\t\trun in the background as a daemon." << endl;
+    std::cerr << "SNMP Mode:" << std::endl;
+    std::cerr << "\t-j\t\t\t\tEnable SNMP agent mode" << std::endl;
+    std::cerr << "\t-r\t\t\t\trun in the background as a daemon." << std::endl;
     // Display the End User options
-    cerr << "User Options:" << endl;
-    // cerr << "\t-s [heading:item or name]\tSet Item value" << endl;
-    // cerr << "\t-g [heading:item or name]\tGet Item value" << endl;
-    cerr << "\t-p\t\t\t\tPoll the Meters" << endl;
-    cerr << "\t-l\t\t\t\tLogfile name" << endl;
-    cerr << "\t-v\t\t\t\tVerbose mode" << endl;
-    cerr << "\t-d [filespec]\t\t\tSpecify Serial Port" << endl;
-    cerr << "\t-h\t\t\t\tHelp (this display)" << endl;
-    cerr << "\t-a\t\t\t\tDisplay Command names" << endl;
+    std::cerr << "User Options:" << std::endl;
+    // cerr << "\t-s [heading:item or name]\tSet Item value" << std::endl;
+    // cerr << "\t-g [heading:item or name]\tGet Item value" << std::endl;
+    std::cerr << "\t-p\t\t\t\tPoll the Meters" << std::endl;
+    std::cerr << "\t-l\t\t\t\tLogfile name" << std::endl;
+    std::cerr << "\t-v\t\t\t\tVerbose mode" << std::endl;
+    std::cerr << "\t-d [filespec]\t\t\tSpecify Serial Port" << std::endl;
+    std::cerr << "\t-h\t\t\t\tHelp (this display)" << std::endl;
+    std::cerr << "\t-a\t\t\t\tDisplay Command names" << std::endl;
 
     // Display the Maintainer options
-    cerr << "Maintainer Options:" << endl;
-    cerr << "\t-m head:item\t\t\tMenu Item index" << endl;
-    cerr << "\t-d\t\t\t\tDump internal data" << endl;
-    cerr << "\t-x\t\t\t\tXantrex Console mode" << endl;
-    cerr << "\t-o\t\t\t\tOutback Console mode" << endl;
-    cerr << "\t-e\t\t\t\tEcho Input Mode" << endl;
+    std::cerr << "Maintainer Options:" << std::endl;
+    std::cerr << "\t-m head:item\t\t\tMenu Item index" << std::endl;
+    std::cerr << "\t-d\t\t\t\tDump internal data" << std::endl;
+    std::cerr << "\t-x\t\t\t\tXantrex Console mode" << std::endl;
+    std::cerr << "\t-o\t\t\t\tOutback Console mode" << std::endl;
+    std::cerr << "\t-e\t\t\t\tEcho Input Mode" << std::endl;
 #endif
 
     // Display the Database options
-    cerr << "Database Options:" << endl;
-    cerr << "\t-m hostname\t\t\tSpecify Database hostname or IP" << endl;
+    std::cerr << "Database Options:" << std::endl;
+    std::cerr << "\t-m hostname\t\t\tSpecify Database hostname or IP" << std::endl;
 
     exit (-1);
 }

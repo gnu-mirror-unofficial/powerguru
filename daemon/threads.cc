@@ -54,6 +54,7 @@ extern LogFile dbglogfile;
 
 using namespace std::chrono_literals;
 
+// This queue is used to pass data between the threads.
 extern std::mutex queue_lock;
 extern std::queue <XML> tqueue;
 extern std::condition_variable queue_cond;
@@ -63,7 +64,6 @@ onewire_handler(Onewire &onewire)
 {
     DEBUGLOG_REPORT_FUNCTION;
     dbglogfile << "PowerGuru - 1 Wire Mode" << std::endl;
-    bool poll = true;
 #ifdef HAVE_LIBPQ
     Database pdb;
     if (!pdb.openDB()) {
@@ -77,9 +77,9 @@ onewire_handler(Onewire &onewire)
     query += "";
     query += ");";
 
-    std::map<std::string, boost::shared_ptr<temperature_t>> temps = onewire.getTemperatures();
     std::map<std::string, boost::shared_ptr<temperature_t>>::iterator it;
     while (onewire.getPollSleep() > 0) {
+        std::map<std::string, boost::shared_ptr<temperature_t>> temps = onewire.getTemperatures();
         for (it = temps.begin(); it != temps.end(); it++) {
             if ((it->second->family == "10") | (it->second->family == "28")) {
 #ifdef HAVE_LIBPQ
@@ -204,6 +204,9 @@ ownet_handler(Ownet &ownet)
         for (it = sensors.begin(); it != sensors.end(); it++) {
             if ((it->second->family == "10") | (it->second->family == "28")) {
                 boost::shared_ptr<temperature_t> temp = ownet.getTemperature(it->first.c_str());
+                if (temp == 0) {
+                    continue;
+                }
 #ifdef HAVE_LIBPQ
                 std::string stamp;
                 stamp = pdb.gettime(stamp);
@@ -233,8 +236,84 @@ void
 outback_handler(Ownet &ownet)
 {
     DEBUGLOG_REPORT_FUNCTION;
+#if 0
+    setitem = false;
+    getitem = false;
+    monitor = false;
+    outbackmode = false;
+    xantrexmode = false;
+    background = false;
+    hostname = "localhost";
+#endif
 
-    dbglogfile << "FIXME: outback_handler() unimplementd"<< std::endl;
+#ifdef BUILD_OUTBACK
+    // Network daemon/client mode. Normally we're a network daemon that
+    // responses to requests by a remote client. Many house networks
+    // are behind a firewall, so the daemon can also connect to a
+    // publically accessible host to establish the connection the
+    // other direction.
+    if (daemon || client) {
+      
+        Msgs msg;
+        msg.toggleDebug(true);
+        // Make a client connection
+        if (client == true) {
+            msg.init(hostname);
+        }
+      
+        // Start as a daemon
+        if (daemon == true) {
+            msg.init(true);
+        }
+        //msg.methodsDump();          // FIXME: debugging crap
+      
+        //msg.print_msg(msg.status((meter_data_t *)0));
+      
+        if (client) {
+            msg.writeNet(msg.metersRequestCreate(Msgs::BATTERY_VOLTS));
+        }
+      
+        //      msg.cacheDump();
+      
+        XML xml;
+        unsigned int i;
+
+        vector<const xmlChar *> messages;        
+        bool loop = true;
+        while (loop) {
+            ret = msg.anydata(messages);
+            if (ret == ERROR) {
+                dbglogfile << "ERROR: Got error from socket " << endl;
+                msg.closeNet();
+                // wait for the next connection
+                if ((ret = msg.newNetConnection(true))) {
+                    dbglogfile << "New connection started for remote client."
+                               << msg.remoteIP().c_str()
+                               << msg.remoteName().c_str() << endl;
+                    ret = SUCCESS;        // the error has been handled
+                    continue;
+                }
+            }
+            if (messages.size() == 0) {
+                dbglogfile << "ERROR: client socket shutdown! " << endl;
+            }
+            for (i=0; i < messages.size(); i++) {
+                cerr << "Got (" << messages.size() << ") messages " << messages[i] << endl;
+                string str = (const char *)messages[i];
+                delete messages[i];
+                if (msg.findTag("command")) {
+                    cerr << "Got command message!" << endl;
+                }
+                if (xml.parseMem(str) == ERROR) {
+                    continue;
+                }
+            }
+            messages.clear();
+        }
+    }
+#endif
+
+    dbglogfile << "FIXME: outback_handler() unimplemented"<< std::endl;
     // Don't eat up all the cpu cycles!
     std::this_thread::sleep_for(std::chrono::seconds(ownet.getPollSleep()));
 }
@@ -245,6 +324,15 @@ void
 xantrex_handler(Ownet &ownet)
 {
     DEBUGLOG_REPORT_FUNCTION;
+#if 0
+    setitem = false;
+    getitem = false;
+    monitor = false;
+    outbackmode = false;
+    xantrexmode = false;
+    background = false;
+    hostname = "localhost";
+#endif
 
     dbglogfile << "FIXME: xantrext_handler() unimplemented"<< std::endl;
     // Don't eat up all the cpu cycles!
