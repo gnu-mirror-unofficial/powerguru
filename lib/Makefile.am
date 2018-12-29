@@ -1,5 +1,6 @@
 # 
-# Copyright (C) 2005, 2006-2018.
+# Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+#               2014, 2015, 2016, 2017, 2018, 2019
 #	Free Software Foundation, Inc.
 # 
 # This program is free software; you can redistribute it and/or modify
@@ -35,19 +36,17 @@ libpguru_la_CPPFLAGS =	-I$(top_srcdir)/devices
 libpguru_la_LIBDADD =
 
 #	err.cc err.h
+#	log.cc log.h
 libpguru_la_SOURCES = \
 	proc.cc proc.h \
-	log.cc log.h \
 	rc.cc rc.h \
-	serial.cc serial.h \
 	console.cc console.h \
-	menuitem.cc menuitem.h \
 	database.h \
 	tcputil.cc tcputil.h \
 	tcpip.cc tcpip.h
 
 if BUILD_OUTBACK
-libpguru_la_SOURCES += msgs.cc msgs.h
+libpguru_la_SOURCES += msgs.cc msgs.h menuitem.cc menuitem.h
 endif
 
 if BUILD_LIBXML

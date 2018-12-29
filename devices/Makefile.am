@@ -28,7 +28,7 @@ noinst_LTLIBRARIES = libpdev.la
 TTYS=@TTYS@
 
 # These headers get installed
-# include_HEADERS = log.h err.h proc.h serial.h xantrex.h outback.h
+# include_HEADERS = log.h err.h proc.h serial.h xantrex.h outback.h serial.h
 
 libpdev_la_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/lib -I..
 libpdev_la_LIBDADD = -lboost_filesystem
@@ -39,6 +39,10 @@ libpdev_la_SOURCES += xantrex-trace.cc xantrex-trace.h xanbus.cc xanbus.h
 endif
 if BUILD_OUTBACK
 libpdev_la_SOURCES += outbackpower.cc outbackpower.h
+endif
+
+if BUILD_SERIAL
+SERIAL_FILES = serial.cc serial.h
 endif
 
 if BUILD_SNMP
