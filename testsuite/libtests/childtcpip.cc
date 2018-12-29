@@ -83,16 +83,17 @@ main(int argc, char *argv[])
     tcpip.readNet(data);
     if (data.size() > 0) {
         std::cout << "Child read " << data.size() <<" bytes from parent:" << std::endl;
+        runtest.pass("child readNet");
+    } else {
+        runtest.fail("child readNet()");
     }  
-
-    sleep(2);
 }
 
 static void
 usage (void)
 {
-    std::cerr << "This program tests the Global memory system." << std::endl;
-    std::cerr << "Usage: tglobal [h] filename" << std::endl;
+    std::cerr << "This program tests the tcpip subsystem." << std::endl;
+    std::cerr << "Usage: childtcpip [h]" << std::endl;
     std::cerr << "-h\tHelp" << std::endl;
     std::cerr << "-d\tDump parsed data" << std::endl;
     exit (-1);

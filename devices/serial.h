@@ -34,9 +34,6 @@
 
 #include <termios.h>
 
-// Project include files
-#include "err.h"
-
 //#define DEFAULT_UART "/dev/pts/12";
 #define DEFAULT_UART "/dev/ttyS0";
 

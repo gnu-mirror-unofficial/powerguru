@@ -1,5 +1,6 @@
 # 
-# Copyright (C) 2005, 2006-2018
+# Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+#               2014, 2015, 2016, 2017, 2018, 2019
 #	Free Software Foundation, Inc.
 # 
 # This program is free software; you can redistribute it and/or modify
@@ -22,7 +23,8 @@ AUTOMAKE_OPTIONS = # dejagnu
 
 pgd_CPPFLAGS = -Wall -I$(top_srcdir)/lib -I$(top_srcdir)/devices
 pgd_LDADD = ../devices/libpdev.la ../lib/libpguru.la -lboost_filesystem \
-	 -lboost_regex -lboost_system -lpthread -lresolv
+	 -lboost_regex -lboost_system -lboost_log -lboost_log_setup \
+	-lpthread -lresolv -ldl
 
 if BUILD_LIBXML
 pgd_CPPFLAGS += $(LIBXML_CPPFLAGS)
@@ -45,7 +47,7 @@ endif
 bin_PROGRAMS = pgd
 
 pgd_SOURCES = main.cc threads.cc
-pgd_LDFLAGS = -export-dynamic -ldl
+# pgd_LDFLAGS += -export-dynamic -ldl
 
 # MUDFLAP_OPT = -fmudflap
 # MUDFLAP_LIB =  /usr/local/lib/libmudflap.so

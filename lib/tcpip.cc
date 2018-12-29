@@ -49,8 +49,6 @@ static const int INBUF          = 2048;
 static const int DEFAULTTIMEOUT = 5;
 const int BLOCKING_TIMEOUT      = -1;
 
-extern LogFile dbglogfile;
-
 #ifndef INADDR_NONE
 #define INADDR_NONE  0xffffffff
 #endif
@@ -83,8 +81,8 @@ Tcpip::createNetServer(const std::string &service, const std::string &proto)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
-    dbglogfile << "Port number is " << _service->s_port
-               << ", byte swapped is " << htons(_service->s_port) << std::endl;
+    BOOST_LOG(lg) << "Port number is " << _service->s_port
+               << ", byte swapped is " << htons(_service->s_port);
 
     // Store the port number
     _port = _service->s_port;
@@ -119,9 +117,9 @@ Tcpip::createNetServer(short port, const std::string &protocol)
     }
     
     if (bind(_sockIOfd, addr->ai_addr, addr->ai_addrlen) == -1) {
-        dbglogfile << "WARNING: unable to bind to"
+        BOOST_LOG(lg) << "WARNING: unable to bind to"
                    << inet_ntoa(sock_in.sin_addr)
-                   << " port!" << strerror(errno) << std::endl;
+                   << " port!" << strerror(errno);
         if (errno == EADDRINUSE) {
             std::cerr << "ERROR: There is another process already bound to this port!"
                       << std::endl;
@@ -129,17 +127,17 @@ Tcpip::createNetServer(short port, const std::string &protocol)
         }
     }
     
-    dbglogfile << "Server bound to port: " << port
+    BOOST_LOG(lg) << "Server bound to port: " << port
                << " on IP " << inet_ntoa(((struct sockaddr_in *)addr->ai_addr)->sin_addr)
-                   << " using fd #" << _sockIOfd << std::endl;
+                   << " using fd #" << _sockIOfd;
     
     if (listen(_sockIOfd, 5) < 0) {
-        dbglogfile << "ERROR: unable to listen on port: "
-                   << port << ": " <<  strerror(errno) << std::endl; 
+        BOOST_LOG(lg) << "ERROR: unable to listen on port: "
+                   << port << ": " <<  strerror(errno); 
         return ERROR;
     }
     
-    dbglogfile << "Listening for net traffic on fd #" << _sockIOfd << std::endl;
+    BOOST_LOG(lg) << "Listening for net traffic on fd #" << _sockIOfd;
 
     return SUCCESS;
 }
@@ -165,7 +163,7 @@ Tcpip::newNetConnection(bool block)
     fd_set          fdset;
     int             retries = 3;
 
-    dbglogfile << "Trying to accept net traffic on fd #" << _sockIOfd << std::endl;
+    BOOST_LOG(lg) << "Trying to accept net traffic on fd #" << _sockIOfd;
   
     if (_sockIOfd <= 2) {
         return ERROR;
@@ -190,30 +188,30 @@ Tcpip::newNetConnection(bool block)
         }
     
         if (FD_ISSET(0, &fdset)) {
-            dbglogfile << "There is data at the console for stdin!" << std::endl;
+            BOOST_LOG(lg) << "There is data at the console for stdin!";
             return SUCCESS;
         }
 
         // If interupted by a system call, try again
         if (ret == -1 && errno == EINTR) {
-            dbglogfile <<
+            BOOST_LOG(lg) <<
                 "The accept() socket for fd #%d was interupted by a system call!"
-                       << _sockIOfd << std::endl;
+                       << _sockIOfd;
         }
     
         if (ret == -1) {
-            dbglogfile << "ERROR: The accept() socket for fd " << _sockIOfd
-                       << " never was available for writing!" << std::endl;
+            BOOST_LOG(lg) << "ERROR: The accept() socket for fd " << _sockIOfd
+                       << " never was available for writing!";
             return ERROR;
         }
     
         if (ret == 0) {
-            dbglogfile <<
+            BOOST_LOG(lg) <<
                 "ERROR: The accept() socket for fd #%d timed out waiting to write!"
-                       << _sockIOfd << std::endl;
+                       << _sockIOfd;
         }
         if (ret >= 1) {
-            dbglogfile << "The accept() socket got something!" << std::endl;
+            BOOST_LOG(lg) << "The accept() socket got something!";
         }
     }
 #endif
@@ -223,10 +221,10 @@ Tcpip::newNetConnection(bool block)
     _sockfd = ::accept(_sockIOfd, &fsin, &alen);
   
     if (_sockfd < 0) {
-        dbglogfile << "ERROR: unable to accept : " << strerror(errno) << std::endl;
+        BOOST_LOG(lg) << "ERROR: unable to accept : " << strerror(errno);
         return ERROR;
     } else {
-        dbglogfile << "Accepting tcp/ip connection on fd #" << _sockfd << std::endl;
+        BOOST_LOG(lg) << "Accepting tcp/ip connection on fd #" << _sockfd;
     }
 
     std::memcpy(&_client, &fsin, sizeof(struct sockaddr));
@@ -261,15 +259,15 @@ Tcpip::createNetClient(const std::string &hostname, short port,
     if (addr) {
         _sockfd = ::socket(addr->ai_family, addr->ai_socktype, _proto->p_proto);
         if (_sockfd < 0) {
-            dbglogfile << "WARNING: unable to create socket: "
-                       << ::strerror(errno) << std::endl;
+            BOOST_LOG(lg) << "WARNING: unable to create socket: "
+                       << ::strerror(errno);
             return ERROR;
         }
 
-        dbglogfile << "Trying to connect to: " << hostname << ":" << port << std::endl;
+        BOOST_LOG(lg) << "Trying to connect to: " << hostname << ":" << port;
         if (::connect(_sockfd, addr->ai_addr, addr->ai_addrlen) < 0) {
-            dbglogfile << "ERROR: Couldn't connect to: " << hostname << " "
-                       << strerror(errno) << std::endl;
+            BOOST_LOG(lg) << "ERROR: Couldn't connect to: " << hostname << " "
+                       << strerror(errno);
             retries = 1;
             while (retries-- > 0) {
                 // We use select to wait for the read file descriptor to be
@@ -283,37 +281,37 @@ Tcpip::createNetClient(const std::string &hostname, short port,
                 ret = ::select(_sockfd+1, &fdset, NULL, NULL, &tval);
                 // If interupted by a system call, try again
                 if (ret == -1 && errno == EINTR) {
-                    dbglogfile <<
+                    BOOST_LOG(lg) <<
                         "The connect() socket for fd #%d was interupted by a system call!"
-                               << _sockfd << std::endl;
+                               << _sockfd;
                 }
                 if (ret == -1) {
-                    dbglogfile <<
+                    BOOST_LOG(lg) <<
                         "The connect() socket for fd #%d never was available for writing!"
-                               << _sockfd << std::endl;
+                               << _sockfd;
                     shutdown(_sockfd, SHUT_RDWR);
                     return ERROR;
                 }
                 if (ret == 0) {
-                    dbglogfile <<
+                    BOOST_LOG(lg) <<
                         "WARNING: The connect() socket for fd #%d timed out waiting to write!"
-                               << _sockfd << std::endl;
+                               << _sockfd;
                 }
             }
             ret = ::connect(_sockfd, addr->ai_addr, addr->ai_addrlen);
             if (ret <= 0) {
-                dbglogfile << "unable to connect to "
+                BOOST_LOG(lg) << "unable to connect to "
                            << hostname
                            << ", port " << port
-                           << ": " << strerror(errno) << std::endl;
+                           << ": " << strerror(errno);
                 close(_sockfd);
                 return ERROR;
             }
             if (ret <= 0) {
-                dbglogfile << "unable to connect to "
+                BOOST_LOG(lg) << "unable to connect to "
                            << hostname
                            << ", port " << port
-                           << ": " << strerror(errno) << std::endl;
+                           << ": " << strerror(errno);
                 close(_sockfd);
                 return ERROR;
             }
@@ -324,9 +322,9 @@ Tcpip::createNetClient(const std::string &hostname, short port,
     char ascip[INET_ADDRSTRLEN];
     std::memset(ascip, 0, INET_ADDRSTRLEN);
     //inet_ntop(AF_INET, &_ipaddr, ascip, INET_ADDRSTRLEN);
-    dbglogfile << "Client connected to service at port " << port
+    BOOST_LOG(lg) << "Client connected to service at port " << port
                << " at IP " << ascip
-               << " using fd #" << _sockfd << std::endl;
+               << " using fd #" << _sockfd;
   
     // For a client, the IO file descriptor is the same as the default one
     _sockIOfd = _sockfd;
@@ -370,23 +368,23 @@ Tcpip::closeNet(void)
 #if 0
             if (shutdown(_sockfd, SHUT_RDWR) < 0) {
                 if (errno != ENOTCONN) {
-                    dbglogfile << "WARNING: Unable to shutdown socket for fd #"
-                               << _sockfd << strerror(errno) << std::endl;
+                    BOOST_LOG(lg) << "WARNING: Unable to shutdown socket for fd #"
+                               << _sockfd << strerror(errno);
                 } else {
-                    dbglogfile << "The socket using fd #" << _sockfd
-                               << " has been shut down successfully." << std::endl;
+                    BOOST_LOG(lg) << "The socket using fd #" << _sockfd
+                               << " has been shut down successfully.";
                     return SUCCESS;
                 }
             }
 #endif 
             if (close(_sockfd) < 0) {
-                dbglogfile <<
+                BOOST_LOG(lg) <<
                     "WARNING: Unable to close the socket for fd "
-                           <<	_sockfd << strerror(errno) << std::endl;
+                           <<	_sockfd << strerror(errno);
                 sleep(1);
                 retries++;
             } else {
-                // dbglogfile << "Closed the socket for "
+                // BOOST_LOG(lg) << "Closed the socket for "
                 //            << (_service->s_name
                 //            << " on fd " << _sockfd << std::endl;
                 return SUCCESS;
@@ -442,21 +440,21 @@ Tcpip::anydata(int fd, std::vector<const unsigned char *> &msgs)
 
         // If interupted by a system call, try again
         if (ret == -1 && (errno == EINTR || errno == EAGAIN)) {
-            dbglogfile << "The socket for fd #%d was interupted by a system call!"
-                       << fd << std::endl;
+            BOOST_LOG(lg) << "The socket for fd #%d was interupted by a system call!"
+                       << fd;
             continue;
         }
         if (ret == 0) {
-            dbglogfile << "There is no data in the socket for fd #" << fd << std::endl;
+            BOOST_LOG(lg) << "There is no data in the socket for fd #" << fd;
             // msgs.clear();
             return SUCCESS;
         }
         if (ret == -1) {
-            dbglogfile << "The socket for fd #%d never was available!" << fd << std::endl;
+            BOOST_LOG(lg) << "The socket for fd #%d never was available!" << fd;
             return ERROR;
         }
         if (ret > 0) {
-            dbglogfile << "There is data in the socket for fd #" << fd << std::endl;
+            BOOST_LOG(lg) << "There is data in the socket for fd #" << fd;
         }
 
         memset(buf, 0, INBUF);
@@ -481,8 +479,8 @@ Tcpip::anydata(int fd, std::vector<const unsigned char *> &msgs)
             return ERROR;
         }
         cr = strlen(buf);
-        //dbglogfile << "read " << ret << " bytes, first msg terminates at " << cr << std::endl;
-        //dbglogfile << "read " << buf << std::endl;
+        //BOOST_LOG(lg) << "read " << ret << " bytes, first msg terminates at " << cr << std::endlen;
+        //BOOST_LOG(lg) << "read " << buf << std::endl;
         ptr = buf;
         // If we get a single XML message, do less work
         if (ret == cr + 1) {
@@ -530,7 +528,7 @@ Tcpip::anydata(int fd, std::vector<const unsigned char *> &msgs)
                 memset(packet, 0, adjusted_size);
                 strcpy(packet, ptr);
                 ptr += cr + 1;
-                //dbglogfile << "Packet is: " << packet << std::endl;
+                //BOOST_LOG(lg) << "Packet is: " << packet << std::endl;
             } // end of if remainder
             if (*packet == '<') {
                 eom = strrchr(packet, '\n'); // drop the CR off the end there is one
@@ -543,11 +541,11 @@ Tcpip::anydata(int fd, std::vector<const unsigned char *> &msgs)
                 msgs.push_back((const unsigned char *)packet);
             } else {
                 if (*packet == *ptr) {
-                    // dbglogfile << "Read all XML messages in packet " << packet << std::endl;
+                    // BOOST_LOG(lg) << "Read all XML messages in packet " << packet << std::endl;
                     break;
                 } else { 
-                    //dbglogfile << "WARNING: Throwing out partial packet " << std::endl;
-                    dbglogfile << "WARNING: Throwing out partial packet " << packet << std::endl;
+                    //BOOST_LOG(lg) << "WARNING: Throwing out partial packet " << std::endl;
+                    BOOST_LOG(lg) << "WARNING: Throwing out partial packet " << packet;
                     break;
                 }
             }
@@ -590,8 +588,8 @@ Tcpip::readNet(std::vector<unsigned char> &buf)
         FD_ZERO(&fdset);
         FD_SET(_sockfd, &fdset);
     } else {
-        dbglogfile << "WARNING: Can't do anything with socket fd #"
-                   << _sockfd << std::endl;
+        BOOST_LOG(lg) << "WARNING: Can't do anything with socket fd #"
+                   << _sockfd;
         buf.clear();
         buf.push_back(255);
         return buf;
@@ -614,30 +612,28 @@ Tcpip::readNet(std::vector<unsigned char> &buf)
 
     // If interupted by a system call, try again
     if (ret == -1 && errno == EINTR) {
-        dbglogfile <<
-            "The socket for fd #" << _sockfd << " we interupted by a system call!"
-                                  << std::endl;
-        dbglogfile << "WARNING: error is " << strerror(errno) << std::endl;
+        BOOST_LOG(lg) <<
+            "The socket for fd #" << _sockfd << " we interupted by a system call!";
+        BOOST_LOG(lg) << "WARNING: error is " << strerror(errno);
     }
   
     if (ret == -1) {
-        dbglogfile << "The socket for fd #" << _sockfd << " never was available for reading!"
-                   << std::endl;
+        BOOST_LOG(lg) << "The socket for fd #" << _sockfd << " never was available for reading!";
     }
   
 #if 0                           // FIXME: too verbose
     if (ret == 0) {
-        dbglogfile <<
-            "The socket for fd #" << _sockfd << " timed out waiting to read!" << std::endl;
+        BOOST_LOG(lg) <<
+            "The socket for fd #" << _sockfd << " timed out waiting to read!";
     }
 #endif
     ret = read(_sockfd, buffer, nbytes);
 #if 0
     if (ret != 0) {
-        dbglogfile << "Read " << ret << " bytes from fd #" << _sockfd << std::endl;
-        dbglogfile << "Buffer says " << buffer << std::endl;
-        dbglogfile << "Read " << (int)buf.size() << " bytes from fd #" << _sockfd << std::endl;
-        dbglogfile << "Buffer says " << buf.data() << std::endl;
+        BOOST_LOG(lg) << "Read " << ret << " bytes from fd #" << _sockfd;
+        BOOST_LOG(lg) << "Buffer says " << buffer << std::endl;
+        BOOST_LOG(lg) << "Read " << (int)buf.size() << " bytes from fd #" << _sockfd;
+        BOOST_LOG(lg) << "Buffer says " << buf.data();
     }
 #endif
 
@@ -655,7 +651,7 @@ Tcpip::writeNet(const std::string &buffer) {
 int
 Tcpip::writeNet(const std::vector<unsigned char> &buffer)
 {
-     DEBUGLOG_REPORT_FUNCTION;
+//     DEBUGLOG_REPORT_FUNCTION;
     fd_set              fdset;
     int                 ret = 0;
     const unsigned char *bufptr;
@@ -665,7 +661,7 @@ Tcpip::writeNet(const std::vector<unsigned char> &buffer)
     bufptr = buffer.data();
     int nbytes = buffer.size();
 
-    dbglogfile << "Writing data to socket." << std::endl;
+    BOOST_LOG(lg) << "Writing data to socket.";
 
     while (retries-- > 1) {
         // Wait for the socket to be ready for writing
@@ -673,8 +669,8 @@ Tcpip::writeNet(const std::vector<unsigned char> &buffer)
             FD_ZERO(&fdset);
             FD_SET(_sockfd, &fdset);
         } else {
-            dbglogfile << "WARNING: Can't do anything with socket fd #!"
-                       << _sockfd << std::endl;
+            BOOST_LOG(lg) << "WARNING: Can't do anything with socket fd #!"
+                       << _sockfd;
             return -1;
         }
     
@@ -685,19 +681,19 @@ Tcpip::writeNet(const std::vector<unsigned char> &buffer)
     
         // If interupted by a system call, try again
         if (ret == -1 && errno == EINTR) {
-            dbglogfile <<
-                "The socket for fd #" << _sockfd << " we interupted by a system call!" << std::endl;
+            BOOST_LOG(lg) <<
+                "The socket for fd #" << _sockfd << " we interupted by a system call!";
         }
     
         if (ret == -1) {
-            dbglogfile << "The socket for fd #" << _sockfd
-                       << " never was available for writing!" << std::endl;
+            BOOST_LOG(lg) << "The socket for fd #" << _sockfd
+                       << " never was available for writing!";
             continue;
         }
     
         if (ret == 0) {
-            dbglogfile << "The socket for fd #"
-                       << _sockfd << " timed out waiting to write!" << std::endl;
+            BOOST_LOG(lg) << "The socket for fd #"
+                       << _sockfd << " timed out waiting to write!";
             continue;
         }
         ret = write(_sockfd, bufptr, nbytes);
@@ -706,31 +702,31 @@ Tcpip::writeNet(const std::vector<unsigned char> &buffer)
     
     
         if (ret == 0) {
-            dbglogfile << "Couldn't write any bytes to fd #" << _sockfd << std::endl;
+            BOOST_LOG(lg) << "Couldn't write any bytes to fd #" << _sockfd;
             return ret;
         }
     
         if (ret < 0) {
-            dbglogfile << "Couldn't write " << nbytes << " bytes to fd #"
-                       << _sockfd << std::endl;
+            BOOST_LOG(lg) << "Couldn't write " << nbytes << " bytes to fd #"
+                       << _sockfd;
             return ret;
         }
     
         if (ret > 0) {
             bufptr += ret;            
             if (ret != nbytes) {
-                dbglogfile << "wrote " << ret << " bytes to fd #"
-                           << _sockfd << " expected " <<  nbytes << std::endl;
+                BOOST_LOG(lg) << "wrote " << ret << " bytes to fd #"
+                           << _sockfd << " expected " <<  nbytes;
                 retries++;
             } else {
 #if 0
-                dbglogfile << "Wrote " << ret << " bytes to fd #" << _sockfd << std::endl;
+                BOOST_LOG(lg) << "Wrote " << ret << " bytes to fd #" << _sockfd;
 #endif
                 return ret;
             }
       
             if (ret == 0) {
-                dbglogfile << "Wrote 0 bytes to fd #" << _sockfd << std::endl;
+                BOOST_LOG(lg) << "Wrote 0 bytes to fd #" << _sockfd << std::endl;
             }
         }
     }

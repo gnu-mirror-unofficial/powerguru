@@ -32,7 +32,6 @@
 #include <libxml/xmlreader.h>
 #include <libxml/xmlstring.h>
 #include "xml.h"
-#include "log.h"
 
 // This holds the data (name & value) for an XML node.
 class XMLNode

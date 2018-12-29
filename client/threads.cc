@@ -48,8 +48,6 @@ extern char *optarg;
 #include "xml.h"
 #include "commands.h"
 
-extern LogFile dbglogfile;
-
 using namespace std::chrono_literals;
 
 void
@@ -112,7 +110,7 @@ daemon_handler(Tcpip &net)
         while (loop) {
             data.clear();
             if (net.readNet(data).size() < 0) {
-                dbglogfile << "ERROR: Got error from socket " << std::endl;
+                BOOST_LOG(lg) << "ERROR: Got error from socket ";
                 loop = false;
             } else {
                 if (data.data() == 0) {
@@ -149,7 +147,7 @@ daemon_handler(Tcpip &net)
                 if (buffer[0] == '<') {
                     XML xml;
                     xml.parseMem(buffer);
-                    dbglogfile << "FIXME1: \"" << xml.nameGet() << "\"" << std::endl;
+                    BOOST_LOG(lg) << "FIXME1: \"" << xml.nameGet() << "\"";
                     if (xml.nameGet() == "command") {
                         std::cerr << "FIXME2: Command: " << xml.valueGet() << std::endl;
                         if (xml.valueGet() == "help") {

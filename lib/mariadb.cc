@@ -99,7 +99,7 @@ Database::openDB (void)
 
     unsigned long flag = 0;
 
-    dbglogfile <<"Connecting to MySQL database "  << _dbname.c_str()
+    BOOST_LOG(lg) <<"Connecting to MySQL database "  << _dbname.c_str()
                << " on " << _dbhost.c_str()
                << " as user " << _dbuser.c_str() << endl;
 
@@ -110,11 +110,11 @@ Database::openDB (void)
     /* check for a connection error */
     if(_connection == NULL) {
         /* print the error message */
-        dbglogfile << "MySQL error when connecting: \n" << mysql_error(&_mysql) << endl;
+        BOOST_LOG(lg) << "MySQL error when connecting: \n" << mysql_error(&_mysql) << endl;
         return false;
     }
     
-    dbglogfile << "Connected to MySQL database " << _dbname.c_str()
+    BOOST_LOG(lg) << "Connected to MySQL database " << _dbname.c_str()
                <<  " on host " <<_dbhost.c_str() << endl;
     
 #if 0
@@ -145,13 +145,13 @@ Database::queryInsert(const char *query)
   
     retries = 2;
   
-    dbglogfile << "Query is: " << query << endl;
+    BOOST_LOG(lg) << "Query is: " << query << endl;
   
 #if 0
     string str = query;
     // FIXME: We shouldn't ever get this condition
     if (str.find("INSERT", 10) != string::npos) {        
-        dbglogfile << "Extra INSERT in query!\n", query << endl;
+        BOOST_LOG(lg) << "Extra INSERT in query!\n", query << endl;
     }
 #endif
   
@@ -162,7 +162,7 @@ Database::queryInsert(const char *query)
           case CR_SERVER_LOST:
           case CR_COMMANDS_OUT_OF_SYNC:
           case CR_SERVER_GONE_ERROR:
-              dbglogfile << "MySQL connection error: " << mysql_error(&_mysql) << endl;
+              BOOST_LOG(lg) << "MySQL connection error: " << mysql_error(&_mysql) << endl;
               // Try to reconnect to the database
               closeDB();
               openDB();
@@ -170,16 +170,16 @@ Database::queryInsert(const char *query)
               break;
           case -1:
           case CR_UNKNOWN_ERROR:
-              dbglogfile << "MySQL error on query for:\n\t " <<
+              BOOST_LOG(lg) << "MySQL error on query for:\n\t " <<
                   mysql_error(&_mysql) << endl;
-              dbglogfile << "Query was: " << query << endl;
+              BOOST_LOG(lg) << "Query was: " << query << endl;
               return false;
               break;            
           default:
               return true;
         }
     
-        dbglogfile << "Lost connection to the database server, shutting down..." << endl;
+        BOOST_LOG(lg) << "Lost connection to the database server, shutting down..." << endl;
         
         return false;
     }
@@ -199,7 +199,7 @@ Database::queryResults(const char *query)
     int         nrows;
     unsigned int i, res;
 
-    dbglogfile << "Query is: " << query << endl;
+    BOOST_LOG(lg) << "Query is: " << query << endl;
 
     res = mysql_real_query(&_mysql, query, strlen(query));
     
@@ -208,14 +208,14 @@ Database::queryResults(const char *query)
           case CR_SERVER_LOST:
           case CR_COMMANDS_OUT_OF_SYNC:
           case CR_SERVER_GONE_ERROR:
-              dbglogfile << "MySQL connection error: "
+              BOOST_LOG(lg) << "MySQL connection error: "
                          << mysql_error(&_mysql) << endl;
               // Try to reconnect to the database
               closeDB();
               openDB();
               break;
           case CR_UNKNOWN_ERROR:
-              dbglogfile << "MySQL error on query for:" << mysql_error(&_mysql) << endl;
+              BOOST_LOG(lg) << "MySQL error on query for:" << mysql_error(&_mysql) << endl;
 //        ACE_DEBUG((LM_INFO, "Query was: %s\n", query));
 //        return false;
 //      default:
@@ -258,7 +258,7 @@ Database::queryInsert(vector<meter_data_t *> data)
     ostringstream  query;
 
     if (data.size() == 0) {
-        dbglogfile << "No data to insert." << endl;
+        BOOST_LOG(lg) << "No data to insert." << endl;
         return false;
     }
   

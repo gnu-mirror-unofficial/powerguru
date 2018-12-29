@@ -22,8 +22,7 @@
 #include <iostream>
 #include <cstdio>
 #include "onewire.h"
-
-extern LogFile dbglogfile;
+#include "log.h"
 
 Onewire::Onewire(void)
     : _scale('F'),
@@ -31,7 +30,7 @@ Onewire::Onewire(void)
     _mounted(false),
     _rootdir("/mnt/1wire")
 {
-    DEBUGLOG_REPORT_FUNCTION;
+//    DEBUGLOG_REPORT_FUNCTION;
 
     boost::filesystem::path p(_rootdir);
     try {
@@ -64,7 +63,7 @@ void
 Onewire::setValue(const std::string &device, const std::string &file,
                   const std::string &value)
 {
-    DEBUGLOG_REPORT_FUNCTION;
+//    DEBUGLOG_REPORT_FUNCTION;
 
     // Don't try to do anything if the owfs isn't mounted and we somehow got here anyway.
     if (!_mounted) {
@@ -108,7 +107,7 @@ Onewire::getValue(const std::string &device, std::string file, std::string &resu
         entry >> result;
         entry.close();
     } catch (const std::exception& e) {
-        dbglogfile << "Warning: iostream failure! " << e.what() << std::endl;
+        BOOST_LOG(lg) << "Warning: iostream failure! " << e.what();
     }
     //std::cerr << "Getting " << filespec << ", value: " << result<< std::endl;
     return result;
@@ -142,7 +141,7 @@ Onewire::getTemperatures(void)
 void
 Onewire::dump(void)
 {
-    DEBUGLOG_REPORT_FUNCTION;
+//    DEBUGLOG_REPORT_FUNCTION;
 
     std::map<std::string, boost::shared_ptr<onewire_t>>::iterator sit;
     for (sit = _sensors.begin(); sit != _sensors.end(); sit++) {

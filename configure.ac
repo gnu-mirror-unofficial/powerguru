@@ -85,6 +85,7 @@ AC_ARG_WITH(devices, [  --with-devices          the device(s) to build (ownet, o
 for i in ${devices}; do
     echo "FIXME: $i"
      case ${i} in
+     	 serial)  BUILD_SERIAL="yes" ;;
       	 ownet)  BUILD_OWNET="yes" ;;
       	 outback) BUILD_OUTBACK="yes" ;;
       	 xantrex) BUILD_XANTREX="yes" ;;
@@ -96,9 +97,13 @@ dnl AC_SUBST(BUILD_OWNET)
 dnl AC_SUBST(BUILD_OUTBACK)
 dnl AC_SUBST(BUILD_XANTREX)
 
+AM_CONDITIONAL(BUILD_SERIAL, [ test x${BUILD_SERIAL} = xyes ])
+if test x${BUILD_SERIAL} = xyes; then
+   AC_DEFINE([BUILD_SERIAL], [1], [Build support for serial ports])
+fi
 AM_CONDITIONAL(BUILD_OWNET, [ test x${BUILD_OWNET} = xyes ])
 if test x${BUILD_OWNET} = xyes; then
-   AC_DEFINE([BUILD_OWNET], [1], [Buikd support for owfs])
+   AC_DEFINE([BUILD_OWNET], [1], [Build support for owfs])
 fi
 AM_CONDITIONAL(BUILD_OUTBACK, [ test x${BUILD_OUTBACK} = xyes ])
 if test x${BUILD_OUTBACK} = xyes; then
@@ -386,7 +391,9 @@ if (test x"${has_boost_filesystem}" = x"no" \
    -o x"${has_boost_regex}" = x"no" -o x"${has_boost_system}" = x"np"); then
   AC_MSG_ERROR([You need all the boost libraries!])
 fi
-LIBS="-lboost_filesystem -lboost_system -lboost_regex"
+LIBS="-lboost_filesystem -lboost_system -lboost_regex -lboost_log -lboost_log_setup -lboost_thread"
+AC_DEFINE([BOOST_LOG_DYN_LINK], [1], [Force Boost::logging to be dynamically linked])
+dnl AC_DEFINE(]BOOST_ALL_DYN_LINK], [1], [Fo ])
 
 AC_MSG_CHECKING([For DejaGnu])
 AC_TRY_COMPILE([#include <dejagnu.h>], [

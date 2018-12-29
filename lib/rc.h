@@ -35,8 +35,8 @@ public:
     RCinitFile();
     ~RCinitFile();
     retcode_t load_files();
-    retcode_t parse_file(std::string filespec);
-    retcode_t update_file(std::string filespec);
+    retcode_t parse_file(std::string &filespec);
+    retcode_t update_file(std::string &filespec);
 
     // Database config options
     std::string dbhostGet()   { return _dbhost; }

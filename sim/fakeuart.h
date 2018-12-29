@@ -26,8 +26,6 @@
 #include <iostream>
 #include <fstream>
 
-#include "err.h"
-
 #define DEFAULT_FAKEUART "/dev/ptypc"
 
 class FakeUart {
@@ -35,26 +33,13 @@ public:
   enum state_e {IDLE, OPEN, INPROGRESS, CLOSED};
   FakeUart(void);
   ~FakeUart(void);
-  retcode_t Open(ErrCond &err);
-  retcode_t Open(std::string &filespec, ErrCond &err);
-  retcode_t Close(std::string &filespec, ErrCond &err);
+  retcode_t Open(void);
+  retcode_t Open(const std::string &filespec);
+  retcode_t Close(const std::string &filespec);
 
-  int Read(unsigned char *, int, ErrCond &);
-  int Write(const unsigned char *, int, ErrCond &) 
-  {
-
-  }
-  
-  int Write(std::string &str, ErrCond &) {
-    DEBUGLOG_REPORT_FUNCTION;
-    
-    if (!str.empty()) {
-      //dbglogfile << "Writing " << str << " to uart FD: " << _uartfd << std::endl;
-      //write(4, str.c_str(), str.size());
-      //write (_uartfd, str.c_str(), str.size());
-      write(4, "Hello World!\r\n", 12); 
-    }
-  }
+  int Read(unsigned char *, int);
+  //int Write(const unsigned char *, int);
+  int Write(const std::string &str);
   void SendEOL(void);
 
    // get a byte from the console
@@ -67,12 +52,12 @@ public:
   int Putc (int x) { return Putc (x, uartStream); }
   int Putc (int x, FILE * y) { return putc(x, y); }
 
-  FakeUart& operator << (int);
-  FakeUart& operator << (const char *);
-  FakeUart& operator << (std::string);
+  FakeUart &operator << (int);
+  FakeUart &operator << (const char *);
+  FakeUart &operator << (const std::string &);
   //  ostream&  operator << (ostream & (&)(ostream &));
 
-  void SetName (std::string &name);
+  void SetName (const std::string &name);
   std::string &GetName (void) { return name; }
 
 

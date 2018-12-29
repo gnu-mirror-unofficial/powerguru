@@ -28,7 +28,6 @@
 #include <vector>
 #include <map>
 #include "xml.h"
-#include "log.h"
 
 class Commands 
 {
@@ -36,6 +35,8 @@ public:
     typedef enum { NOP, LIST, POLL, HELO } cmd_t; 
     Commands();
     ~Commands();
+    std::string &createNode(cmd_t cmd, const std::string &args,
+                               std::string &str);
     std::string &createCommand(cmd_t cmd, const std::string &args,
                                std::string &str);
     std::string &execCommand(XML &xml, std::string &str);

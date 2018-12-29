@@ -27,8 +27,6 @@
 #include <boost/filesystem.hpp>
 #include "log.h"
 
-extern LogFile dbglogfile;
-
 struct onewire {
     std::string family;
     std::string id;

@@ -41,8 +41,7 @@
 #include "log.h"
 #include "serial.h"
 
-extern LogFile dbglogfile;
-LogFile seriallogfile; // ("tserial.log")
+static src::logger lg;
 
 // Set the names of the baud rates so we can dump them in a human
 // readable fashion.
@@ -133,7 +132,7 @@ Serial::Open(std::string &filespec)
 {
     DEBUGLOG_REPORT_FUNCTION;
   
-    dbglogfile << "Opening host device " << filespec << std::endl;
+    BOOST_LOG(lg) << "Opening host device " << filespec << std::endl;
 
     // We don't want to timestamp
     seriallogfile.SetStamp(false);
@@ -168,7 +167,7 @@ Serial::Open(std::string &filespec)
 #if 0
     // set the timeout value for communications
     if (SetTimeout (20, errcond) == ERROR) {
-        dbglogfile << "ERROR: Couldn't set the timeout value";
+        BOOST_LOG(lg) << "ERROR: Couldn't set the timeout value";
         return ERROR;
     }
     DumpTtyState();
@@ -183,7 +182,7 @@ Serial::Close(void)
 {
     DEBUGLOG_REPORT_FUNCTION;
   
-    dbglogfile << std::endl << "Closing host device" << std::endl;
+    BOOST_LOG(lg) << std::endl << "Closing host device" << std::endl;
     seriallogfile << std::endl << "Closing host device" << std::endl;
 
     tcsetattr(_uartfd, TCSANOW, &origtty);
@@ -228,7 +227,7 @@ Serial::Read(char *buf, int nbytes)
             FD_SET(_uartfd, &fdset);
       
             sret = select(_uartfd+1, &fdset, NULL, NULL, &timeout);
-            dbglogfile << "select returned " << sret
+            BOOST_LOG(lg) << "select returned " << sret
                        << " for file descriptor  " << _uartfd << std::endl;
 #if 1
             if (sret == 0) {
@@ -245,13 +244,13 @@ Serial::Read(char *buf, int nbytes)
             memset(tmpbuf, 0, nbytes+1);
             memset(buf, 0, nbytes);
             ret = ::read (_uartfd, tmpbuf, nbytes);
-            dbglogfile << "read returned " << ret << " for file descriptor  " << _uartfd << std::endl;
+            BOOST_LOG(lg) << "read returned " << ret << " for file descriptor  " << _uartfd << std::endl;
             if (ret == 0) {
                 continue;
             }
       
             if (ret > 0) {
-                dbglogfile << "Read " << ret << " bytes" << std::endl;
+                BOOST_LOG(lg) << "Read " << ret << " bytes" << std::endl;
                 //if ((line.find('\n', 0) == string::npos) && (ret > 0)) 
                 // Filter out the control characters that appear on the
                 // end of the line
@@ -263,7 +262,7 @@ Serial::Read(char *buf, int nbytes)
                         data += tmpbuf[i];
                     }
                 } // end of for loop
-                // dbglogfile << "Reading more data, data left before is \"" << tmpbuf << "\"" << std::endl;
+                // BOOST_LOG(lg) << "Reading more data, data left before is \"" << tmpbuf << "\"" << std::endl;
             }
       
             //if (ret < 0)
@@ -291,12 +290,12 @@ Serial::Read(char *buf, int nbytes)
         
     //if ((ret == 1) && (ret == 0xa)) {
     if (ret == 1) {
-        dbglogfile << "Read CR " << std:;endl;
+        BOOST_LOG(lg) << "Read CR " << std:;endl;
         //ret = ::read (_uartfd, buf, 36);
     }
         
     if (ret > 0) {
-        dbglogfile << "Read " << ret << " bytes" << std::endl;
+        BOOST_LOG(lg) << "Read " << ret << " bytes" << std::endl;
         for (i=0; i< nbytes; i++){
 #if 0
             if (buf[i] == 0xa) {
@@ -305,7 +304,7 @@ Serial::Read(char *buf, int nbytes)
             }
 #endif
             if ((buf[i] > ' ') && (buf[i] < 'z')) {
-                dbglogfile << "Copying character: " << i << std::endl;
+                BOOST_LOG(lg) << "Copying character: " << i << std::endl;
                 *bufptr++ = buf[i];
             } else {
                 buf[i] = ' ';
@@ -319,7 +318,7 @@ Serial::Read(char *buf, int nbytes)
 }
 
 if ((sret == 0) && (ret <= 0)) {
-    dbglogfile << "WARNING: Too many retries." << std::endl;
+    BOOST_LOG(lg) << "WARNING: Too many retries." << std::endl;
 }
 
 //    seriallogfile.Write((const char *)buf, ret);
@@ -378,7 +377,7 @@ Serial::SetBaud (int baudcode)
 #endif
     int ret = tcsetattr(_uartfd, TCSANOW, &ctty);
     if (ret == 0) {
-        dbglogfile << __PRETTY_FUNCTION__ << " worked" << std::endl;
+        BOOST_LOG(lg) << __PRETTY_FUNCTION__ << " worked" << std::endl;
         return SUCCESS;
     }
   
@@ -388,10 +387,10 @@ Serial::SetBaud (int baudcode)
     //int ret = tcsetattr(_uartfd, TCSADRAIN, &currenttty);
     ibaud = cfgetispeed(&currenttty);
     obaud = cfgetospeed(&currenttty);
-    dbglogfile << "Input baud is now set to " << serial_speeds[ibaud] << std::endl;
-    dbglogfile << "Output baud is now set to " << serial_speeds[obaud] << std::endl;
+    BOOST_LOG(lg) << "Input baud is now set to " << serial_speeds[ibaud] << std::endl;
+    BOOST_LOG(lg) << "Output baud is now set to " << serial_speeds[obaud] << std::endl;
 
-    dbglogfile << __PRETTY_FUNCTION__ << " failed" << std::endl;
+    BOOST_LOG(lg) << __PRETTY_FUNCTION__ << " failed" << std::endl;
     return ERROR;
 }
 
@@ -494,10 +493,10 @@ Serial::DumpTtyState (void)
     int ibaud, obaud;
 
     ibaud = cfgetispeed(&currenttty);
-    dbglogfile << "Input baud rate is " << serial_speeds[ibaud] << std::endl;
+    BOOST_LOG(lg) << "Input baud rate is " << serial_speeds[ibaud] << std::endl;
 
     obaud = cfgetospeed(&currenttty);
-    dbglogfile << "Output baud rate is " << serial_speeds[obaud] << std::endl;
+    BOOST_LOG(lg) << "Output baud rate is " << serial_speeds[obaud] << std::endl;
   
 }
 

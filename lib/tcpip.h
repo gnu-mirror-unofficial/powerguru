@@ -32,7 +32,6 @@
 #include <vector>
 #include <sys/ioctl.h>
 
-#include "log.h"
 #include "tcputil.h"
 
 extern const std::string DEFAULTPROTO;
@@ -41,8 +40,8 @@ extern const short DEFAULTPORT;
 class Tcpip : public Tcputil
 {
 public:
-    Tcpip();
-    ~Tcpip();
+    Tcpip(void);
+    ~Tcpip(void);
 
     // Create a new server. After creating it, then you have to wait for an
     // incoming connection.

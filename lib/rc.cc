@@ -32,7 +32,6 @@
 #include "log.h"
 #include "rc.h"
 
-using namespace std;
 using namespace rcinit;
   
 RCinitFile::RCinitFile()
@@ -48,7 +47,7 @@ retcode_t
 RCinitFile::load_files()
 {
     char *home;
-    string loadfile;
+    std::string loadfile;
   
     // Check the default system location
     loadfile = "/etc/powerguru/config";
@@ -71,15 +70,15 @@ RCinitFile::load_files()
 
 // Parse the config file and set the variables.
 retcode_t
-RCinitFile::parse_file(string filespec)
+RCinitFile::parse_file(std::string &filespec)
 {
     struct stat stats;
-    string action;
-    string variable;
-    string value;
-    ifstream in;
+    std::string action;
+    std::string variable;
+    std::string value;
+    std::ifstream in;
 
-    dbglogfile << "Seeing if " << filespec << " exists." << endl;
+    BOOST_LOG(lg) << "Seeing if " << filespec << " exists.";
     if (filespec.size() == 0) {
         return ERROR;
     }
@@ -88,7 +87,7 @@ RCinitFile::parse_file(string filespec)
         in.open(filespec.c_str());
     
         if (!in) {
-            dbglogfile << "ERROR: Couldn't open file: " << filespec << endl;
+            BOOST_LOG(lg) << "ERROR: Couldn't open file: " << filespec;
             return ERROR;
         }
 
@@ -98,36 +97,36 @@ RCinitFile::parse_file(string filespec)
             in >> action;
             // Ignore comment lines
             if (action == "#" ) {
-                dbglogfile << "Ignoring comment line " << endl;
+                BOOST_LOG(lg) << "Ignoring comment line ";
                 continue;
             }
       
             in >> variable >> value;
-            //      dbglogfile << action << variable << value << endl;
+            //      BOOST_LOG(lg) << action << variable << value;
 
             if (action == "set") {
                 if (variable == "dbhost") {
-                    dbglogfile << "Database host configured to be " << value << endl;
+                    BOOST_LOG(lg) << "Database host configured to be " << value;
                     _dbhost = value;
                 }
                 if (variable == "dbuser") {
-                    dbglogfile << "Database user configured to be " << value << endl;
+                    BOOST_LOG(lg) << "Database user configured to be " << value;
                     _dbuser = value;
                 }
                 if (variable == "dbpasswd") {
-                    dbglogfile << "Database password configured to be " << value << endl;
+                    BOOST_LOG(lg) << "Database password configured to be " << value;
                     _dbpasswd = value;
                 }
                 if (variable == "dbname") {
-                    dbglogfile << "Database name configured to be " << value << endl;
+                    BOOST_LOG(lg) << "Database name configured to be " << value;
                     _dbname = value;
                 }
                 if (variable == "devmode") {
-                    dbglogfile << "Device mode configured to be " << value << endl;
+                    BOOST_LOG(lg) << "Device mode configured to be " << value;
                     _devmode = value;
                 }
                 if (variable == "device") {
-                    dbglogfile << "Device is " << value << endl;
+                    BOOST_LOG(lg) << "Device is " << value;
                     _device = value;
                 }
             }
@@ -147,9 +146,9 @@ RCinitFile::parse_file(string filespec)
 
 // Write the changed settings to the config file
 retcode_t
-RCinitFile::update_file(string filespec)
+RCinitFile::update_file(std::string &filespec)
 {
-    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
+    std::cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << std::endl;
     return ERROR;
 }
 

@@ -21,7 +21,6 @@
 # include "config.h"
 #endif
 
-
 #include <stdarg.h>
 #include <signal.h>
 #include <netinet/in.h>
@@ -122,14 +121,13 @@ public:
         // Read data from the child process
         std::vector<unsigned char> data;
         readNet(data);
-
         if (data.size() > 0) {
-            runtest.pass("Established netork connection");
+            runtest.pass("Established network connection from client");
         } else {
-            runtest.fail("Established netork connection");
+            runtest.fail("Established network connection from client");
         }
 
-        sleep(1);
+        writeNet("done");
         closeNet();
     };
 

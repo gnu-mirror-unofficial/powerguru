@@ -70,7 +70,7 @@ outback::readSerial()
     ret = Read(buf, PACKET_SIZE);
   
     if (ret > 0) {
-        //dbglogfile << "FIXME3: Read " << ret << " bytes: " << buf << "\t" << buf << endl;
+        //BOOST_LOG(lg) << "FIXME3: Read " << ret << " bytes: " << buf << "\t" << buf << endl;
         return buf;
     }
 
@@ -85,7 +85,7 @@ outback::commInit(string filespec)
     DEBUGLOG_REPORT_FUNCTION;
 
     if (filespec.size() == 0) {
-        dbglogfile << "ERROR: no serial device specified!" << endl;
+        BOOST_LOG(lg) << "ERROR: no serial device specified!" << endl;
         exit(0);
     }    
 
@@ -93,7 +93,7 @@ outback::commInit(string filespec)
         Open(filespec);
     }
     catch (ErrCond catch_err) {
-        dbglogfile << catch_err << endl;
+        BOOST_LOG(lg) << catch_err << endl;
         exit(1);
     }
   
@@ -229,7 +229,7 @@ retcode_t outback::parse(const char *data)
     } else if ((_address >= 'A') && (_address <= 'K')) {
         _type = OUTBACK_MX;
     } else {
-        dbglogfile << "ERROR: bad address in packet!" << endl;
+        BOOST_LOG(lg) << "ERROR: bad address in packet!" << endl;
         return ERROR;
     }
 
@@ -320,14 +320,14 @@ outback::dump()
 {
     switch (_type) {
       case OUTBACK_MX:
-          dbglogfile << "Outback Power Systems MX Charge Controller" << endl;
+          BOOST_LOG(lg) << "Outback Power Systems MX Charge Controller" << endl;
           break;
       case OUTBACK_FX:
-          dbglogfile << "Outback Power Systems FX inverter" << endl;
+          BOOST_LOG(lg) << "Outback Power Systems FX inverter" << endl;
           break;
       case OUTBACK_NONE:
       default:
-          dbglogfile << "Outback Power Systems, no type specified!" << endl;
+          BOOST_LOG(lg) << "Outback Power Systems, no type specified!" << endl;
           break;
     };
   
@@ -339,247 +339,247 @@ outback::dump()
     } else if ((_address >= 'A') && (_address <= 'K')) {
         addr += _address;
     }
-    dbglogfile << "The address is: " << addr.c_str() << endl;
+    BOOST_LOG(lg) << "The address is: " << addr.c_str() << endl;
 
     // Amperage readings. These range from 0-99 in 1 amp increments
     if (_inverter_current) {
-        dbglogfile << "Inverter current is: " << _inverter_current << endl;
+        BOOST_LOG(lg) << "Inverter current is: " << _inverter_current << endl;
     }
 
     if (_charge_current) {
-        dbglogfile << "Charge current is: " << _charge_current << " Amps" << endl;
+        BOOST_LOG(lg) << "Charge current is: " << _charge_current << " Amps" << endl;
     }
     if (_buy_current) {
-        dbglogfile << "Buy current is: " <<  _buy_current << " Amps" << endl;
+        BOOST_LOG(lg) << "Buy current is: " <<  _buy_current << " Amps" << endl;
     }
     if (_pv_current) {
-        dbglogfile << "PV current is: " <<  _pv_current << " Amps" << endl;
+        BOOST_LOG(lg) << "PV current is: " <<  _pv_current << " Amps" << endl;
     }
     if (_sell_current) {
-        dbglogfile << "Sell current is: " <<  _sell_current << " Amps" << endl;
+        BOOST_LOG(lg) << "Sell current is: " <<  _sell_current << " Amps" << endl;
     }
 
     // Voltage readings. These range from 0-256. If the Misc Mode bit is
     // set, then this number is multiplied by 2.
     if (_AC_input_voltage) {
-        dbglogfile << "AC Input voltage is: " << _AC_input_voltage << " VAC" << endl;
+        BOOST_LOG(lg) << "AC Input voltage is: " << _AC_input_voltage << " VAC" << endl;
     }
     if (_AC_output_voltage) {
-        dbglogfile << "AC Output voltage is: " << _AC_output_voltage << " VAC" << endl;
+        BOOST_LOG(lg) << "AC Output voltage is: " << _AC_output_voltage << " VAC" << endl;
     }
     // one volt increments, ignore the misc Byte. FIXME: Do we devide this by 2 ?
     if (_pv_input_voltage) {
-        dbglogfile << "PV Input voltage is: " << _pv_input_voltage/2 << " VDC" << endl;
+        BOOST_LOG(lg) << "PV Input voltage is: " << _pv_input_voltage/2 << " VDC" << endl;
     }
   
     // the resolution is 0.1 volts for a 12VDC system, 0.2 volts for a
     // 24VDC system, and 0.4 for a 48 volt system.
     if (_battery_voltage) {
-        dbglogfile << "Battery voltage is: " << _battery_voltage/10
+        BOOST_LOG(lg) << "Battery voltage is: " << _battery_voltage/10
                    << "." << _battery_voltage%10 << " VDC" << endl;
     }
     // The total kilowatts used daily. This ranges from 0-999, with the
     // last digit being the fraction. ie... 99 = 99.9.
     if (_daily_kwh) {
-        dbglogfile << "The daily Kilowatts used is: " << _daily_kwh/10
+        BOOST_LOG(lg) << "The daily Kilowatts used is: " << _daily_kwh/10
                    << "." << _daily_kwh%10 << " KW" << endl;
     }
 
     // Modes. Not all modes are currently implemented on the MX
     // series. All the modes range from 0-99 except for the error and
     // warning modes which range from 0-256.
-    dbglogfile << "The operating mode is: ";
+    BOOST_LOG(lg) << "The operating mode is: ";
     switch (_operating_mode){
       case INV_OFF:
-          dbglogfile << "Inverter OFF" << endl;
+          BOOST_LOG(lg) << "Inverter OFF" << endl;
           break;
       case INV_SEARCH:
-          dbglogfile << "Inverter SEARCH" << endl;
+          BOOST_LOG(lg) << "Inverter SEARCH" << endl;
           break;
       case INV_ON:
-          dbglogfile << "Inverter ON" << endl;    
+          BOOST_LOG(lg) << "Inverter ON" << endl;    
           break;
       case CHARGE:
-          dbglogfile << "Charge" << endl;
+          BOOST_LOG(lg) << "Charge" << endl;
           break;
       case SILENT:
-          dbglogfile << "Silent" << endl;
+          BOOST_LOG(lg) << "Silent" << endl;
           break;
       case FLOAT:
-          dbglogfile << "Float" << endl;
+          BOOST_LOG(lg) << "Float" << endl;
           break;
       case EQ:
-          dbglogfile << "Equalize" << endl;
+          BOOST_LOG(lg) << "Equalize" << endl;
           break;
       case CHARGER_OFF:
-          dbglogfile << "Charger Off" << endl;
+          BOOST_LOG(lg) << "Charger Off" << endl;
           break;
       case SUPPORT:
-          dbglogfile << "Support" << endl;
+          BOOST_LOG(lg) << "Support" << endl;
           break;
       case SELL_ON:
-          dbglogfile << "Sell On" << endl;
+          BOOST_LOG(lg) << "Sell On" << endl;
           break;
       case PASS_THRU:
-          dbglogfile << "Pass Thru" << endl;
+          BOOST_LOG(lg) << "Pass Thru" << endl;
           break;
       case FX_ERR:
-          dbglogfile << "FX Error" << endl;
+          BOOST_LOG(lg) << "FX Error" << endl;
           break;
       case AGS_ERR:
-          dbglogfile << "AGS Error" << endl;
+          BOOST_LOG(lg) << "AGS Error" << endl;
           break;
       case COM_ERR:
-          dbglogfile << "Communications Error" << endl;
+          BOOST_LOG(lg) << "Communications Error" << endl;
           break;
       default:
-          dbglogfile << "No operating mode!" << endl;
+          BOOST_LOG(lg) << "No operating mode!" << endl;
           break;
     };
   
-    dbglogfile << "The AC mode is: \t";
+    BOOST_LOG(lg) << "The AC mode is: \t";
     switch (_AC_mode) {
       case NO_AC:
-          dbglogfile << "No AC" << endl;
+          BOOST_LOG(lg) << "No AC" << endl;
           break;
       case AC_DROP:
-          dbglogfile << "AC Dropped" << endl;
+          BOOST_LOG(lg) << "AC Dropped" << endl;
           break;
       case AC_USE:
-          dbglogfile << "AC In Use" << endl;    
+          BOOST_LOG(lg) << "AC In Use" << endl;    
           break;
       default:
-          dbglogfile << "No AC mode!" << endl;
+          BOOST_LOG(lg) << "No AC mode!" << endl;
           break;
     };
 
-    dbglogfile << "The Misc Byte is: \t";
+    BOOST_LOG(lg) << "The Misc Byte is: \t";
     switch (_misc_byte) {
       case 0:
-          dbglogfile << "No Misc byte" << endl;
+          BOOST_LOG(lg) << "No Misc byte" << endl;
       case AC_UNIT:
-          dbglogfile << "AC Unit" << endl;
+          BOOST_LOG(lg) << "AC Unit" << endl;
           break;
       case AUX_OUT_ON:
-          dbglogfile << "Aux Mode On set" << endl;
+          BOOST_LOG(lg) << "Aux Mode On set" << endl;
           break;
       default:
-          dbglogfile << "Reserved" << endl;
+          BOOST_LOG(lg) << "Reserved" << endl;
           break;
     };
 
-    dbglogfile << "The Aux mode is: \t";
+    BOOST_LOG(lg) << "The Aux mode is: \t";
     switch (_aux_mode) {
       case DISABLED:
-          dbglogfile << "Aux Mode Disabled" << endl;
+          BOOST_LOG(lg) << "Aux Mode Disabled" << endl;
           break;
       case DIVERSION:
-          dbglogfile << "Diversion" << endl;
+          BOOST_LOG(lg) << "Diversion" << endl;
           break;
       case REMOTE:
-          dbglogfile << "Remote" << endl;
+          BOOST_LOG(lg) << "Remote" << endl;
           break;
       case MANUAL:
-          dbglogfile << "Manual" << endl;
+          BOOST_LOG(lg) << "Manual" << endl;
           break;
       case VENT_FAN:
-          dbglogfile << "Vent Fan" << endl;
+          BOOST_LOG(lg) << "Vent Fan" << endl;
           break;
       case PV_TRIGGER:
-          dbglogfile << "PV Trigger" << endl;
+          BOOST_LOG(lg) << "PV Trigger" << endl;
           break;
       default:
-          dbglogfile << "No AUX mode set" << endl;
+          BOOST_LOG(lg) << "No AUX mode set" << endl;
           break;
     };
 
-    dbglogfile << "The charge mode is: \t";
+    BOOST_LOG(lg) << "The charge mode is: \t";
     switch (_charge_mode) {
       case SILENT_MODE:
-          dbglogfile << "Silent Charge mode" << endl;
+          BOOST_LOG(lg) << "Silent Charge mode" << endl;
           break;
       case FLOAT_MODE:
-          dbglogfile << "Float Charge mode" << endl;
+          BOOST_LOG(lg) << "Float Charge mode" << endl;
           break;
       case BULK_MODE:
-          dbglogfile << "Bulk Charge mode" << endl;
+          BOOST_LOG(lg) << "Bulk Charge mode" << endl;
           break;
       case ABSORB_MODE:
-          dbglogfile << "Absorb Charge mode" << endl;
+          BOOST_LOG(lg) << "Absorb Charge mode" << endl;
           break;
       case EQ_MODE:
-          dbglogfile << "Equalization Charge mode" << endl;
+          BOOST_LOG(lg) << "Equalization Charge mode" << endl;
           break;
       default:
-          dbglogfile << "No Charge mode" << endl;
+          BOOST_LOG(lg) << "No Charge mode" << endl;
           break;
     };
 
-    dbglogfile << "The error mode is: \t";
+    BOOST_LOG(lg) << "The error mode is: \t";
     switch (_error_mode) {
       case NO_ERROR:
-          dbglogfile << "No error" << endl;
+          BOOST_LOG(lg) << "No error" << endl;
           break;
       case LOW_VAC:
-          dbglogfile << "ERROR: Low Volts AC" << endl;
+          BOOST_LOG(lg) << "ERROR: Low Volts AC" << endl;
           break;
       case STACKING:
-          dbglogfile << "ERROR: Stacking" << endl;
+          BOOST_LOG(lg) << "ERROR: Stacking" << endl;
           break;
       case OVER_TEMP:
-          dbglogfile << "ERROR: Over Temperature" << endl;
+          BOOST_LOG(lg) << "ERROR: Over Temperature" << endl;
           break;
       case LOW_BATT:
-          dbglogfile << "ERROR: Low Battery" << endl;
+          BOOST_LOG(lg) << "ERROR: Low Battery" << endl;
           break;
       case PHASE_LOSS:
-          dbglogfile << "ERROR: Phase Loss" << endl;
+          BOOST_LOG(lg) << "ERROR: Phase Loss" << endl;
           break;
       case HIGH_BATT:
-          dbglogfile << "ERROR: High Battery" << endl;
+          BOOST_LOG(lg) << "ERROR: High Battery" << endl;
           break;
       case SHORT:
-          dbglogfile << "ERROR: Short" << endl;
+          BOOST_LOG(lg) << "ERROR: Short" << endl;
           break;
       case BACKFEED:
-          dbglogfile << "ERROR: Backfeed" << endl;
+          BOOST_LOG(lg) << "ERROR: Backfeed" << endl;
           break;
       default:
-          dbglogfile << "No error mode" << endl;
+          BOOST_LOG(lg) << "No error mode" << endl;
           break;
     };
 
-    dbglogfile << "The warning mode is: \t";
+    BOOST_LOG(lg) << "The warning mode is: \t";
     switch (_warning_mode) {
       case NO_WARNING:
-          dbglogfile << "No warning" << endl;
+          BOOST_LOG(lg) << "No warning" << endl;
           break;
       case AC_IN_FREQ_HIGH:
-          dbglogfile << "WARNING: Input Frequency High" << endl;
+          BOOST_LOG(lg) << "WARNING: Input Frequency High" << endl;
           break;
       case AC_IN_FREQ_LOW:
-          dbglogfile << "WARNING: Input Frequency Low" << endl;
+          BOOST_LOG(lg) << "WARNING: Input Frequency Low" << endl;
           break;
       case IN_VAC_HIGH:
-          dbglogfile << "WARNING: Input Volts AC High" << endl;
+          BOOST_LOG(lg) << "WARNING: Input Volts AC High" << endl;
           break;
       case IN_VAC_LOW:
-          dbglogfile << "WARNING: Input Volts AC low" << endl;
+          BOOST_LOG(lg) << "WARNING: Input Volts AC low" << endl;
           break;
       case BUY_IN_SIZE:
-          dbglogfile << "WARNING: Buy in size" << endl;
+          BOOST_LOG(lg) << "WARNING: Buy in size" << endl;
           break;
       case TEMP_FAILED:
-          dbglogfile << "WARNING: Temperature Failure" << endl;
+          BOOST_LOG(lg) << "WARNING: Temperature Failure" << endl;
           break;
       case COMM_ERROR:
-          dbglogfile << "WARNING: Communications error" << endl;
+          BOOST_LOG(lg) << "WARNING: Communications error" << endl;
           break;
       case FAN_FAILURE:
-          dbglogfile << "WARNING: Fan Failure" << endl;
+          BOOST_LOG(lg) << "WARNING: Fan Failure" << endl;
           break;
       default:
-          dbglogfile << "No warning mode" << endl;
+          BOOST_LOG(lg) << "No warning mode" << endl;
           break;
     };
 }
@@ -623,13 +623,13 @@ outback::calcChecksum(const char *packet)
         checksum+= (*ptr++) - '0';
     } while ((ptr - packet) <= 44); // Don't add the checksum itself
 
-    //dbglogfile << "Transmitted checksum for packet is: " << chk << endl;
-    //dbglogfile << "Calculated checksum for packet is: " << checksum << endl;
+    //BOOST_LOG(lg) << "Transmitted checksum for packet is: " << chk << endl;
+    //BOOST_LOG(lg) << "Calculated checksum for packet is: " << checksum << endl;
 
     // See if the calculated checksum matches the checksum from the
     // packet checksum field. (the last 3 bytes before the CR terminator)
     if (checksum != chk_field) {
-        dbglogfile << "ERROR: Checksums don't match!" << endl;
+        BOOST_LOG(lg) << "ERROR: Checksums don't match!" << endl;
         return ERROR;
     }
   
@@ -719,7 +719,7 @@ outback::exportMeterData(meter_data_t *data)
 #if defined(HAVE_MARIADB) && defined(HAVE_POSTGRESQL)
         } else {
             if (outdev.main(con, pdb) == ERROR) {
-                dbglogfile << "ERROR: Main Loop exited with an error!" << endl;
+                BOOST_LOG(lg) << "ERROR: Main Loop exited with an error!" << endl;
             }
 #endif
         }

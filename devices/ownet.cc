@@ -20,9 +20,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 #include "ownet.h"
-
-//extern LogFile dbglogfile;
-#define dbglogfile std::cerr
+#include "log.h"
 
 // Default host and port for the owserver
 const int OWPORT = 4304;
@@ -33,19 +31,19 @@ Ownet::Ownet(void)
       _scale('F'),
       _owserver(false)
 {
-    DEBUGLOG_REPORT_FUNCTION;
+//    DEBUGLOG_REPORT_FUNCTION;
 }
 
 Ownet::Ownet(std::string &host)
     : Ownet()
 {
-    DEBUGLOG_REPORT_FUNCTION;
+//    DEBUGLOG_REPORT_FUNCTION;
 
     int retries = 2;
     if (host.find(':') == std::string::npos) {
         host += ":" + std::to_string(OWPORT);
     }
-    dbglogfile << "Trying to connect to the owserver on " << host << std::endl;
+    BOOST_LOG(lg) << "Trying to connect to the owserver on " << host;
 
     // OW_init() takes what looks like a standard command line
     std::string argv = "-s " + host;
@@ -54,10 +52,10 @@ Ownet::Ownet(std::string &host)
     // but always does on the second.
     while (retries-- > 0) {
         if (OW_init(argv.c_str()) < 0) {
-            dbglogfile << "WARNING: Couldn't connect to owserver with " << argv << std::endl;
+            BOOST_LOG(lg) << "WARNING: Couldn't connect to owserver with " << argv;
             //return;
         } else {
-            dbglogfile << "Connected to owserver on host " << host << std::endl;
+            BOOST_LOG(lg) << "Connected to owserver on host " << host;
             _owserver = true;
             break;
         }
@@ -98,9 +96,9 @@ Ownet::Ownet(std::string &host)
         }
         std::string dev = *it + "temperature";
         if (OW_present(dev.c_str()) == 0) {
-            dbglogfile << "Temperature sensor found: " << *it << std::endl;
+            BOOST_LOG(lg) << "Temperature sensor found: " << *it;
         } else {
-            dbglogfile << "Temperature sensor not found!" << std::endl;
+            BOOST_LOG(lg) << "Temperature sensor not found!";
         }
         std::lock_guard<std::mutex> guard(_mutex);
         _sensors[*it] = data;
@@ -117,7 +115,7 @@ Ownet::getTemperature(const std::string &device)
     std::string type = getValue(device, "type");
     
     if (family == "10" | family == "28") {
-        // dbglogfile << device << " is a thermometer" << std::endl;
+        // BOOST_LOG(lg) << device << " is a thermometer";
         // boost::shared_ptr<temperature_t> temp = boost::make_shared<temperature_t>(1);
         boost::shared_ptr<temperature_t> temp(new temperature_t);
         temp->family = getValue(device, "family");
@@ -132,7 +130,7 @@ Ownet::getTemperature(const std::string &device)
         temp->scale = buffer[0];
         return temp;
     } else {
-        dbglogfile << device << " is not a thermometer" << std::endl;
+        BOOST_LOG(lg) << device << " is not a thermometer";
     }
     boost::shared_ptr<temperature_t> temp;
     return temp;
@@ -141,7 +139,7 @@ Ownet::getTemperature(const std::string &device)
 const std::vector<std::string>
 Ownet::listDevices(std::vector<std::string> &list)
 {
-    DEBUGLOG_REPORT_FUNCTION;
+//    DEBUGLOG_REPORT_FUNCTION;
     
     std::map<std::string, boost::shared_ptr<ownet_t>>::iterator sit;
     for (sit = _sensors.begin(); sit != _sensors.end(); sit++) {
@@ -154,6 +152,8 @@ Ownet::listDevices(std::vector<std::string> &list)
 std::string
 Ownet::getValue(const std::string &device, std::string file)
 {
+//    DEBUGLOG_REPORT_FUNCTION;
+
     char * buf;
     size_t s  = 0;
     
@@ -163,7 +163,7 @@ Ownet::getValue(const std::string &device, std::string file)
     if (ret <= 0) {
         return std::string();
         //} else {
-        //std::cout << ", Got(" << s << "): " <<  buf << std::endl;
+        //std::cout << ", Got(" << s << "): " <<  buf;
     }
     
     std::string value = (buf);

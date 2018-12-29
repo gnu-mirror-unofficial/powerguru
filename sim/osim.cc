@@ -39,16 +39,14 @@ extern char *optarg;
 
 // local header files
 #include "log.h"
-#include "err.h"
 #include "outbackpower.h"
 #include "console.h"
 #include "fakeuart.h"
 #include "rc.h"
 
 using namespace rcinit;
-using namespace pdev;
 
-static void usage (const char *);
+static void usage (const std::string &);
 extern LogFile dbglogfile;
  
 retcode_t sim_mx(const std::string &filespec);
@@ -59,7 +57,6 @@ main(int argc, char *argv[])
 {
     int c, i, ch, ret;
     std::string device;
-    ErrCond Err;
     outback_type_t otype;
     
     if (argc == 1) {
@@ -89,7 +86,7 @@ main(int argc, char *argv[])
       case 'v':
         // verbosity++;
 	dbglogfile.set_verbosity();
-	dbglogfile << "Verbose output turned on" << std::endl;
+	BOOST_LOG(lg) << "Verbose output turned on" << std::endl;
 	break;
         
       case 'd':
@@ -116,11 +113,11 @@ main(int argc, char *argv[])
 
     // Say which device we're simulating
     if (otype == OUTBACK_MX) {
-      dbglogfile << "Simulating a Outback MX60 charge controller" << std::endl;
+      BOOST_LOG(lg) << "Simulating a Outback MX60 charge controller" << std::endl;
       sim_mx(device);
     }
     if (otype == OUTBACK_FX) {
-      dbglogfile << "Simulating a Outback FX Series Inverter" << std::endl;
+      BOOST_LOG(lg) << "Simulating a Outback FX Series Inverter" << std::endl;
       sim_fx(device);
     }
 
@@ -128,7 +125,7 @@ main(int argc, char *argv[])
 }
 
 static void
-usage (const char *prog)
+usage (const std::string &prog)
 {
     std::cerr <<"This program implements a command line interface" << std::endl; 
     std::cerr << "for an Outback Power Systems Device" << std::endl;
@@ -147,7 +144,6 @@ sim_mx(const std::string &device)
     //struct stat stats;
     std::string datafile;
     std::string home;
-    ErrCond err;
     std::string line, newline;
     std::ifstream in;
     FakeUart fu;
@@ -156,20 +152,20 @@ sim_mx(const std::string &device)
     }
     
     // See if it exists in the right place
-    fu.Open(err);
+    fu.Open();
     
     // Check the users home directory for the data file
     datafile = std::getenv("HOME");
     datafile += "/.powerguru/mx60.data";
     
-    //dbglogfile << "Seeing if the TTY "<< device << " exists." << std::endl;
+    //BOOST_LOG(lg) << "Seeing if the TTY "<< device << " exists." << std::endl;
     //if (stat(datafile.c_str(), &stats) == 0) {
     in.open(datafile);
     if (!in) {
-        dbglogfile << "ERROR: Couldn't open datafile: " << datafile << std::endl;
+        BOOST_LOG(lg) << "ERROR: Couldn't open datafile: " << datafile << std::endl;
         return ERROR;
     } else {
-        dbglogfile << "Opened datafile: " << datafile << std::endl;
+        BOOST_LOG(lg) << "Opened datafile: " << datafile << std::endl;
     }
         
     // Read in each line and send it
@@ -178,9 +174,7 @@ sim_mx(const std::string &device)
         newline = line;
         newline += "\r\n";
         std::cout << newline;
-        write(4, newline.c_str(), newline.size());
-        //fu.Write(newline, err);
-        //fu.Write((const unsigned char *)newline.c_str(), newline.size(), err);
+        fu.Write(newline);
         // All outback products send their data at 1 second intervals
         sleep(1);
     }

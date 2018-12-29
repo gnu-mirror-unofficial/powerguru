@@ -28,8 +28,6 @@
 #include <cstdio>
 #include <sstream>
 
-using namespace std;
-
 #include "database.h"
 #include "log.h"
 
@@ -41,7 +39,6 @@ using namespace std;
 
 const int LINELEN = 80;
 const int QUERYLEN = 10000;
-extern LogFile dbglogfile;
 
 Database::Database()
     : _dbtype(NODB), _dbport(0)
@@ -94,15 +91,15 @@ Database::openDB (void)
 
     unsigned long flag = 0;
 
-    dbglogfile <<"Connecting to Postgresql database "  << _dbname.c_str()
+    BOOST_LOG(lg) <<"Connecting to Postgresql database "  << _dbname.c_str()
                << " on " << _dbhost.c_str()
-               << " as user " << _dbuser.c_str() << endl;
+               << " as user " << _dbuser.c_str();
 
     _connection = PQconnectdb("dbname = powerguru");
      /* Check to see that the backend connection was successfully made */
     if (PQstatus(_connection) != CONNECTION_OK)
     {
-        dbglogfile << "ERROR: Connection to database failed" << std::endl;
+        BOOST_LOG(lg) << "ERROR: Connection to database failed";
         //exit_nicely(_connection);
     }
 
@@ -128,10 +125,10 @@ Database::queryInsert(const std::string &query)
     std::string str = "INSERT INTO onewire VALUES(";
     str += query + ");";
 
-    //dbglogfile << "Query is: " << query << endl;
+    BOOST_LOG(lg) << "Query is: " << query;
     
     if (PQexec(_connection, str.c_str()) == nullptr) {
-        std::cerr << "Lost connection to the database server, shutting down..." << endl;
+        std::cerr << "Lost connection to the database server, shutting down...";
         std::cerr << PQerrorMessage(_connection) << std::endl;
     }
     
@@ -149,7 +146,7 @@ Database::queryResults(const char *query)
     int         nrows;
     unsigned int i, res;
 
-    dbglogfile << "Query is: " << query << endl;
+    BOOST_LOG(lg) << "Query is: " << query;
 
     // FIXME: return something intelligent here
     return (void *)0;
@@ -169,7 +166,7 @@ Database::queryInsert(vector<meter_data_t *> data)
     ostringstream  query;
 
     if (data.size() == 0) {
-        dbglogfile << "No data to insert." << endl;
+        BOOST_LOG(lg) << "No data to insert.";
         return false;
     }
   

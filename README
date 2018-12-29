@@ -1,23 +1,39 @@
-2005-05-27
-  Currently I'd ignore the src directory. This is the support code for the
-barely started Glade2 GUI. I postponed this to make powerguru have a
-separete backend and GUI, rather than the way I was doing it with TraceGUI.
+struct servent {
+     char  *s_name;       /* official service name */
+     char **s_aliases;    /* alias list */
+     int    s_port;       /* port number */
+     char  *s_proto;      /* protocol to use */
+}
 
-  Not much works but datalogging to a MySQL database someplace. I've got
-broadband, so I write my data to my server at work. I've just started the PHP
-pages to plot the data. These are in the web directory, but once again, barely
-started.
+The members of the servent structure are:
+     s_name The official name of the service.
+     s_aliases A NULL-terminated list of alternative names for the service.
+     s_port The port number for the service given in network byte order.
+     s_proto The name of the protocol to use with this service.
 
-  This originally started life as TraceGUI, but I got distracted rebuilding
-my entire houses's power system, GTK1 and Glade1 went to 2.0 releases that were
-incompatable enough with the previous versions to make upgrading slow. Then
-Trace became Xantrex, and I bought an Outback MX-60...
 
-  I got the idea to make a tiny backend so it would run on a 12VDC,
-Linux based motherboard like a Nexus, a Via, or a Soekris. This would do
-datalogging directly and support an SNMP connection to execute remote commands.
-This way I could have multiple front ends, a command line interface, a
-graphical one, and a web based one. Ideally I'd even like one that's written
-in QT or Java so I can run it on my Zaurus 6000-L.
+struct protoent {
+     char  *p_name;       /* official protocol name */
+     char **p_aliases;    /* alias list */
+     int    p_proto;      /* protocol number */
+}
 
-	- rob -
+       The members of the protoent structure are:
+       p_name The official name of the protocol.
+       p_aliases A NULL-terminated list of alternative names for the protocol.
+       p_proto The protocol number.
+
+The  addrinfo  structure  used  by getaddrinfo() contains the following fields:
+
+struct addrinfo {
+       int              ai_flags;
+       int              ai_family;
+       int              ai_socktype;
+       int              ai_protocol;
+       socklen_t        ai_addrlen;
+       struct sockaddr *ai_addr;
+       char            *ai_canonname;
+       struct addrinfo *ai_next;
+}
+
+getaddrinfo() is an excellent function that will return information on a particular host name (such as its IP address) and load up a struct sockaddr for you, taking care of the gritty details (like if it's IPv4 or IPv6.) It replaces the old functions gethostbyname() and getservbyname().T

@@ -31,7 +31,7 @@ libpgsnmp_la_SOURCES = \
 #		ifTable_data_access.c \
 #		ifTable_data_set.c
 
-AM_CPPFLAGS = -I$(srcdir) -I.. $(SNMP_CFLAGS)
+AM_CPPFLAGS = -I$(srcdir) -I.. $(SNMP_CPPFLAGS)
 libpgsnmp_la_LIBDADD =  $(SNMP_LIBS)
 
 generate-templates:

@@ -52,7 +52,7 @@ const short DEFAULTPORT  = 7654;
 
 class Test : public Tcputil
 {
-public:    
+public:
     Test(void) {
         // Get some system information needed to test the classes.
         std::memset(_thost, 0, MAXHOSTNAMELEN);
@@ -81,7 +81,7 @@ public:
         }
 
         // Check the defaults
-        if (_hostname == _thost) {
+        if (_hostname != _thost && _hostname == "localhost") {
             runtest.pass ("Hostname is correct");
         } else {
             runtest.fail ("Hostname is not correct");
@@ -103,6 +103,28 @@ public:
         } else {
             runtest.fail ("Tcputil::lookupService(ftp)");
         }
+
+        struct addrinfo *addr;
+        if (addr = getAddrInfo()) {
+            runtest.pass ("Tcputil::getAddrInfo()");
+        } else {
+            runtest.fail ("Tcputil::getAddrInfo()");
+        }
+
+        std::string str;
+        if (printIP(addr, str) == "127.0.0.1") {
+            runtest.pass ("Tcputil::printIP()");
+        } else {
+            runtest.fail ("Tcputil::printIP()");
+        }
+
+        if (addr = getAddrInfo("gnu.org")) {
+            runtest.pass ("Tcputil::getAddrInfo(gnu.org)");
+        } else {
+            runtest.fail ("Tcputil::getAddrInfo(gnu.org)");
+        }
+        
+        dump();
     };
     
     ~Test(void) {

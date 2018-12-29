@@ -31,6 +31,6 @@ RUNTEST = `if test -x $(top_srcdir)/../dejagnu/runtest; then \
            else \
               echo runtest; \
            fi`
- 
+
 CLEANFILES = *.log *.sum site.bak
 

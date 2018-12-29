@@ -58,7 +58,7 @@ XantrexUI::ReadSerial(void)
   
     while (retries--) {
         if (ret = Read((char *)&buffy, 99) < 0) {
-            //dbglogfile << "FIXME: " << retries << "\t" << buffy << endl;
+            //BOOST_LOG(lg) << "FIXME: " << retries << "\t" << buffy << endl;
             //ret = Read((char *)&buffy, 100);
             continue;
         } else {
@@ -70,7 +70,7 @@ XantrexUI::ReadSerial(void)
 #endif
   
     if (ret > 0) {
-        //dbglogfile << "FIXME3: Read " << ret << " bytes: " << buffy << "\t" << buffy << endl;
+        //BOOST_LOG(lg) << "FIXME3: Read " << ret << " bytes: " << buffy << "\t" << buffy << endl;
         menudisp = buffy;
     } else {
         menudisp.erase();
@@ -83,7 +83,7 @@ string
 XantrexUI::GetLabel() {
     //DEBUGLOG_REPORT_FUNCTION;
 
-    dbglogfile << "menuheading: " << menuheading << " menuitem:" << menuitem << endl;
+    BOOST_LOG(lg) << "menuheading: " << menuheading << " menuitem:" << menuitem << endl;
   
     MenuItem ti = GetItem(menuheading, menuitem);
   
@@ -99,7 +99,7 @@ XantrexUI::WriteSerial(const char *buf, int nbytes)
     memset(buffy, 0, 100);
   
     ret = Write(buf, nbytes);
-    //dbglogfile << "FIXME" << buffy << endl;
+    //BOOST_LOG(lg) << "FIXME" << buffy << endl;
     ret = Read(buffy, nbytes);
   
     menudisp = buffy;
@@ -115,7 +115,7 @@ XantrexUI::SelectInverter(int x)
 
     Write((char *)&x, 1);
     Read((char *)&buffy, 100);
-    dbglogfile << buffy << endl;
+    BOOST_LOG(lg) << buffy << endl;
 
     menudisp = buffy;
     return menudisp;
@@ -131,7 +131,7 @@ XantrexUI::MenuHeadingMinus(void)
     Write("L", 1);
     //Read((char *)&buffy, 100);
     menudisp = ReadSerial();
-    //dbglogfile << "FIXME" << menudisp << endl;
+    //BOOST_LOG(lg) << "FIXME" << menudisp << endl;
 
     //cerr << "FIXMEh-: \"" << menudisp  << "\"" << endl;
     //cerr << "FIXMEh-: \"" << GetLabel() << "\"" << endl;
@@ -142,9 +142,9 @@ XantrexUI::MenuHeadingMinus(void)
     menuitem = 0;
 
     if (menudisp.find(GetLabel()) == string::npos) {
-        dbglogfile << "Heading Minus didn't Match!!" << menuheading << endl;  
+        BOOST_LOG(lg) << "Heading Minus didn't Match!!" << menuheading << endl;  
     } else {
-        dbglogfile << "Heading Minus Matched!!" << endl;
+        BOOST_LOG(lg) << "Heading Minus Matched!!" << endl;
     }
 
 
@@ -165,7 +165,7 @@ XantrexUI::MenuHeadingPlus(void)
     menudisp = ReadSerial();
     //mi = GetItem();
 
-    //dbglogfile << menudisp << endl;
+    //BOOST_LOG(lg) << menudisp << endl;
 
     menuheading++;
     menuitem = 0;
@@ -174,9 +174,9 @@ XantrexUI::MenuHeadingPlus(void)
     //cerr << "FIXMEh+: \"" << GetLabel() << "\"" << endl;
   
     if (menudisp.find(GetLabel()) == string::npos) {
-        dbglogfile << "Heading Plus didn't Match!!" << endl;  
+        BOOST_LOG(lg) << "Heading Plus didn't Match!!" << endl;  
     } else {
-        dbglogfile << "Heading Plus Matched!!" << endl;
+        BOOST_LOG(lg) << "Heading Plus Matched!!" << endl;
     }
 
 
@@ -198,7 +198,7 @@ XantrexUI::MenuItemMinus(void)
     //Write("D", 1);
     //Read((char *)&buffy, 100);
     //menudisp = ReadSerial();
-    //dbglogfile << menudisp << endl;
+    //BOOST_LOG(lg) << menudisp << endl;
 
     menuitem++;
 
@@ -213,9 +213,9 @@ XantrexUI::MenuItemMinus(void)
         label = GetLabel();
         if (label.size()) {
             if (menudisp.find(label) == string::npos) {
-                dbglogfile << "Item Minus didn't Match!!" << endl;
+                BOOST_LOG(lg) << "Item Minus didn't Match!!" << endl;
             } else {
-                dbglogfile << "Item Minus Matched!!" << endl;
+                BOOST_LOG(lg) << "Item Minus Matched!!" << endl;
                 break;
             }
         }
@@ -236,13 +236,13 @@ XantrexUI::MenuItemPlus(void)
     //Write("U", 1);
     //Read((char *)&buffy, 100);
     //menudisp = ReadSerial();
-    //dbglogfile << menudisp << endl;
+    //BOOST_LOG(lg) << menudisp << endl;
     //menudisp = buffy;
     if (menuitem > 1)
         menuitem--;
 
     //  if (strcmp(label.c_str(), buffy) == 0)
-    //    dbglogfile << "AAAAHHHHHHH" << endl;
+    //    BOOST_LOG(lg) << "AAAAHHHHHHH" << endl;
   
     while (retries--) {
         Write("U", 1);
@@ -253,15 +253,15 @@ XantrexUI::MenuItemPlus(void)
         //cerr << "FIXMEi+: \"" << GetLabel() << "\"" << endl;
 
         if (menudisp.find(GetLabel()) == string::npos) {
-            dbglogfile << "Item Plus didn't Match!!" << endl;
+            BOOST_LOG(lg) << "Item Plus didn't Match!!" << endl;
         } else {
-            dbglogfile << "Item Plus Matched!!" << endl;
+            BOOST_LOG(lg) << "Item Plus Matched!!" << endl;
             break;
         }
     }
 
     //  if (menudisp != label)
-    //  dbglogfile << "FIXME: Wrong Item " << menuheading << ":" << menuitem << menudisp << "\t" << label << endl;
+    //  BOOST_LOG(lg) << "FIXME: Wrong Item " << menuheading << ":" << menuitem << menudisp << "\t" << label << endl;
     
     return menudisp;
 }
@@ -274,7 +274,7 @@ XantrexUI::SetPointMinus(void)
   
     Write("-", 1);
     Read((char *)&buffy, 100);
-    dbglogfile << buffy << endl;
+    BOOST_LOG(lg) << buffy << endl;
 
     menudisp = buffy;
     return menudisp;
@@ -288,7 +288,7 @@ XantrexUI::SetPointPlus(void)
   
     Write("+", 1);
     Read((char *)&buffy, 100);
-    dbglogfile << buffy << endl;
+    BOOST_LOG(lg) << buffy << endl;
 
     menudisp = buffy;
     return menudisp;
@@ -302,7 +302,7 @@ XantrexUI::Inverter(void)
   
     Write("|", 1);
     Read((char *)&buffy, 100);
-    dbglogfile << buffy << endl;
+    BOOST_LOG(lg) << buffy << endl;
 
     menudisp = buffy;
     return menudisp;
@@ -316,7 +316,7 @@ XantrexUI::Generator(void)
   
     Write("G", 1);
     Read((char *)&buffy, 100);
-    dbglogfile << buffy << endl;
+    BOOST_LOG(lg) << buffy << endl;
 
     menudisp = buffy;
     return menudisp;
@@ -330,7 +330,7 @@ XantrexUI::SetupMenu(void)
   
     Write("\003", 1);
     Read((char *)&buffy, 100);
-    dbglogfile << buffy << endl;
+    BOOST_LOG(lg) << buffy << endl;
 
     menuheading = 8;
     menuitem = 0;
@@ -347,7 +347,7 @@ XantrexUI::LedStatus(void)
   
     Write("?", 1);
     Read((char *)&buffy, 100);
-    dbglogfile << buffy << endl;
+    BOOST_LOG(lg) << buffy << endl;
 
     menudisp = buffy;
     return menudisp;  
@@ -361,7 +361,7 @@ XantrexUI::Version(void)
   
     Write("V", 1);
     Read((char *)&buffy, 100);
-    dbglogfile << buffy << endl;
+    BOOST_LOG(lg) << buffy << endl;
 
     menudisp = buffy;
     return menudisp;
@@ -375,7 +375,7 @@ XantrexUI::SetTerminalMode(void)
   
     Write("T", 1);
     Read((char *)&buffy, 100);
-    dbglogfile << buffy << endl;
+    BOOST_LOG(lg) << buffy << endl;
 
     menudisp = buffy;
     return menudisp;
@@ -421,7 +421,7 @@ XantrexUI::GotoMenuStart(void)
   
     menuheading = 1;
     menuitem = 0;
-    dbglogfile << "At Start Of Menu" << endl;
+    BOOST_LOG(lg) << "At Start Of Menu" << endl;
   
     return SUCCESS;
 }
@@ -592,7 +592,7 @@ XantrexUI::GotoMenuItem(int mh, int mi)
     }
 
     if (menudisp.find(item.GetLabel()) != string::npos) {
-        dbglogfile << "Didn't Match!!" << endl;  
+        BOOST_LOG(lg) << "Didn't Match!!" << endl;  
     }
 
     //menudisp = CleanUpData(tmpstr);
@@ -653,38 +653,38 @@ XantrexUI::PollMeters(int loops)
                     //downdata->
                 }
                 if (label.substr(0, 4) == "Load") {
-                    dbglogfile << "Matched label going down " << label;
-                    dbglogfile << " value is: " << intval << endl;
+                    BOOST_LOG(lg) << "Matched label going down " << label;
+                    BOOST_LOG(lg) << " value is: " << intval << endl;
                     downdata->ac_load_amps = intval;
                 }
                 if (label.substr(8, 6) == "actual") {
-                    dbglogfile << "Matched label going down " << label << endl;
-                    dbglogfile << " value is: " << fltval << endl;
+                    BOOST_LOG(lg) << "Matched label going down " << label << endl;
+                    BOOST_LOG(lg) << " value is: " << fltval << endl;
                     downdata->battery_volts = fltval;
                 }
                 if (label.substr(8, 8) == "TempComp") {
-                    dbglogfile << "Matched label going down " << label << endl;
-                    dbglogfile << " value is: " << fltval << endl;
+                    BOOST_LOG(lg) << "Matched label going down " << label << endl;
+                    BOOST_LOG(lg) << " value is: " << fltval << endl;
                     downdata->tempcomp_volts = fltval;
                 }
                 if (label.substr(0, 8) == "Inverter") {
-                    dbglogfile << "Matched label going down " << label << endl;
-                    dbglogfile << " value is: " << intval << endl;
+                    BOOST_LOG(lg) << "Matched label going down " << label << endl;
+                    BOOST_LOG(lg) << " value is: " << intval << endl;
                     downdata->ac_volts_out = intval;
                 }
                 if (label.substr(0, 4) == "Grid") {
-                    dbglogfile << "Matched label going down " << label << endl;
-                    dbglogfile << " value is: " << fltval << endl;
+                    BOOST_LOG(lg) << "Matched label going down " << label << endl;
+                    BOOST_LOG(lg) << " value is: " << fltval << endl;
                     downdata->ac1_volts_in = fltval;
                 }
                 if (label.substr(0, 9) == "Generator") {
-                    dbglogfile << "Matched label going down " << label << endl;
-                    dbglogfile << " value is: " << fltval << endl;
+                    BOOST_LOG(lg) << "Matched label going down " << label << endl;
+                    BOOST_LOG(lg) << " value is: " << fltval << endl;
                     downdata->ac2_volts_in = fltval;
                 }
                 if (label.substr(0, 9) == "Read Freq") {
-                    dbglogfile << "Matched label going down " << label << endl;
-                    dbglogfile << " value is: " << intval << endl;
+                    BOOST_LOG(lg) << "Matched label going down " << label << endl;
+                    BOOST_LOG(lg) << " value is: " << intval << endl;
                     downdata->hertz = intval;
                 }
             }
@@ -721,41 +721,41 @@ XantrexUI::PollMeters(int loops)
                     //updata->
                 }
                 if (label.substr(0, 4) == "Load ") {
-                    dbglogfile << "Matched label going up " << label << endl;
-                    dbglogfile << " value is: " << intval << endl;
+                    BOOST_LOG(lg) << "Matched label going up " << label << endl;
+                    BOOST_LOG(lg) << " value is: " << intval << endl;
                     updata->ac_load_amps = intval;
                 }
                 if (label.substr(8, 6) == "actual") {
-                    dbglogfile << "Matched label going up " << label << endl;
-                    dbglogfile << " value is: " << fltval << endl;
+                    BOOST_LOG(lg) << "Matched label going up " << label << endl;
+                    BOOST_LOG(lg) << " value is: " << fltval << endl;
                     updata->battery_volts = fltval;
                 }
                 if (label.substr(8, 8) == "TempComp") {
-                    dbglogfile << "Matched label going up " << label << endl;
-                    dbglogfile << " value is: " << fltval << endl;
+                    BOOST_LOG(lg) << "Matched label going up " << label << endl;
+                    BOOST_LOG(lg) << " value is: " << fltval << endl;
                     updata->tempcomp_volts = fltval;
                 }
                 if (label.substr(0, 8) == "Inverter") {
-                    dbglogfile << "Matched label going up " << label << endl;
-                    dbglogfile << " value is: " << intval << endl;
+                    BOOST_LOG(lg) << "Matched label going up " << label << endl;
+                    BOOST_LOG(lg) << " value is: " << intval << endl;
                     updata->ac_volts_out = intval;
                 }
                 if (label.substr(0, 4) == "Grid") {
-                    dbglogfile << "Matched label going up " << label << endl;
-                    dbglogfile << " value is: " << fltval << endl;
+                    BOOST_LOG(lg) << "Matched label going up " << label << endl;
+                    BOOST_LOG(lg) << " value is: " << fltval << endl;
                     updata->ac1_volts_in = fltval;
                 }
                 if (label.substr(0, 9) == "Generator") {
-                    dbglogfile << "Matched label going up " << label << endl;
-                    dbglogfile << " value is: " << fltval << endl;
+                    BOOST_LOG(lg) << "Matched label going up " << label << endl;
+                    BOOST_LOG(lg) << " value is: " << fltval << endl;
                     updata->ac2_volts_in = fltval;
                 }
                 // Since this is the last and first reading, it doesn't really
                 // have time to change.
                 updata->hertz = downdata->hertz;
 //         if (label.substr(0, 9) == "Read Freq") {
-//           dbglogfile << "Matched label going up " << label << endl;
-//           dbglogfile << " value is: " << intval << endl;
+//           BOOST_LOG(lg) << "Matched label going up " << label << endl;
+//           BOOST_LOG(lg) << " value is: " << intval << endl;
 //           updata->hertz = intval;
 //         }
             } // end of if str
@@ -1188,7 +1188,7 @@ XantrexUI::Dump (void)
     vector< vector< MenuItem > >::iterator mh;
     vector< MenuItem >::iterator it;
 
-    dbglogfile << "There are " << (int)_items.size() << " menu _items" << endl;
+    BOOST_LOG(lg) << "There are " << (int)_items.size() << " menu _items" << endl;
 
     for (mh = _items.begin(); mh != _items.end(); ++mh) {
         for (it = mh->begin(); it != mh->end(); ++it) {
@@ -1232,10 +1232,10 @@ XantrexUI::Match(string &str)
     for (mh = _items.begin(); mh != _items.end(); ++mh) {
         arg = *mh;
         for (it = arg.begin(); it != arg.end(); ++it) {
-            dbglogfile << "Matching \"" << it->GetAlias() << "\""
+            BOOST_LOG(lg) << "Matching \"" << it->GetAlias() << "\""
                        << " against the argument \"" << str << "\"" << endl;
             if (it->GetAlias() == str){
-                dbglogfile << "Matched " << it->GetLabel() << " !" << endl;
+                BOOST_LOG(lg) << "Matched " << it->GetLabel() << " !" << endl;
                 return *it;
             }
         }
@@ -1378,28 +1378,28 @@ XantrexUI::xantrex_main(Console &con);
                   case MenuItem::MENUITEM:
                   case MenuItem::BOOL:
                       if (ui.GetBoolValue() == false)
-                          dbglogfile << "\tBoolean value is: " << "OFF" ;
+                          BOOST_LOG(lg) << "\tBoolean value is: " << "OFF" ;
                       else
-                          dbglogfile << "\tBoolean value is: " << "ON" ;      
-                      dbglogfile << endl;
+                          BOOST_LOG(lg) << "\tBoolean value is: " << "ON" ;      
+                      BOOST_LOG(lg) << endl;
                       break;
                   case MenuItem::INT:
-                      dbglogfile << "\tInteger value is: " << value.intval << endl;
+                      BOOST_LOG(lg) << "\tInteger value is: " << value.intval << endl;
                       break;
                   case MenuItem::FLOAT:
                       cerr << "\tFIXME: Float value is: " << value.floatval << endl;
                       break;
                   case MenuItem::TIME:
-                      dbglogfile << "\tTime value is: " << value.timeval << endl;
+                      BOOST_LOG(lg) << "\tTime value is: " << value.timeval << endl;
                       break;
                   case MenuItem::EOL:
                   case MenuItem::CLOCK:
                   case MenuItem::ENUM:
                   case MenuItem::DATE:
-                      dbglogfile << "\tFIXME: unsupported type! " << value.intval << endl;
+                      BOOST_LOG(lg) << "\tFIXME: unsupported type! " << value.intval << endl;
                       break;
                   default:
-                      dbglogfile << "Data Type out of range";
+                      BOOST_LOG(lg) << "Data Type out of range";
                       break;
                 };
 #endif
@@ -1421,7 +1421,7 @@ XantrexUI::xantrex_main(Console &con);
         //    ui.Read((char *)&buffy, 100);
         cerr << "Inverter returned: " << str << endl;
 
-        //      dbglogfile << "BREAK HERE" << endl;
+        //      BOOST_LOG(lg) << "BREAK HERE" << endl;
       
         switch (ti.GetType()) {
           case MenuItem::BOOL:

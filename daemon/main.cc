@@ -1,5 +1,7 @@
 // 
-// Copyright (C) 2005, 2006-2018 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+//               2014, 2015, 2016, 2017, 2018, 2019
+// Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -40,7 +42,6 @@ extern int optind;
 extern char *optarg;
 #endif
 
-// local header files
 #include "log.h"
 #ifdef BUILD_XANTREX
 include "xantrex-trace.h"
@@ -58,14 +59,12 @@ include "xantrex-trace.h"
 #include "snmp.h"
 #include "rc.h"
 #include "tcpip.h"
-#include "xml.h"
+//#include "xml.h"
 #include "serial.h"
 #include "commands.h"
 #include "onewire.h"
 
 using namespace rcinit;
-
-extern LogFile dbglogfile;
 
 static void usage (const char *);
 
@@ -98,6 +97,8 @@ main(int argc, char *argv[])
     retcode_t   ret;
     std::condition_variable alldone;
 
+    log_init("pgd");
+    
     // scan for the two main standard GNU options
     for (c = 0; c < argc; c++) {
         if (strcmp("--help", argv[c]) == 0) {
@@ -134,8 +135,9 @@ main(int argc, char *argv[])
           case 'h':
               usage (argv[0]);
               break;
-
           case 'w':
+              // this string needs to include the port if it's
+              // not using the default one.
               owserver = strdup(optarg);
               break;
 #if 0
@@ -169,8 +171,8 @@ main(int argc, char *argv[])
 #endif
           case 'v':
               // verbosity++;
-              dbglogfile.set_verbosity();
-              dbglogfile << "Verbose output turned on" << std::endl;
+              //dbglogfile.set_verbosity();
+              BOOST_LOG(lg) << "Verbose output turned on" << std::endl;
               break;
 	
           default:
@@ -187,7 +189,7 @@ main(int argc, char *argv[])
     }
 #endif
 
-    dbglogfile << "PowerGuru - 1 Wire Mode" << std::endl;
+    BOOST_LOG(lg) << "PowerGuru - 1 Wire Mode" << std::endl;
     Tcpip net;
     if (net.createNetServer(DEFAULTPORT) == ERROR) {
         std::cerr << "ERROR: Couldn't create a network server!" << std::endl;
@@ -228,7 +230,7 @@ main(int argc, char *argv[])
     }
 
     // synchronize threads:
-    dbglogfile << "Killing all threads..." << std::endl;
+    BOOST_LOG(lg) << "Killing all threads..." << std::endl;
     onewire_thread.join();      // pauses until first finishes
     client_thread.join();       // pauses until first finishes
 #ifdef BUILD_OWNET

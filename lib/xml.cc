@@ -35,8 +35,6 @@
 #include "xml.h"
 #include "log.h"
 
-extern LogFile dbglogfile;
-
 // XMLNode methods. An XMLNode holds all the info for an XML node,
 // including it's children and attributes.
 // XMLNode::XMLNode()
@@ -61,9 +59,9 @@ XML::extractNode(xmlNodePtr node)
     XMLNode *child;
     int len;
 
-    // dbglogfile << "\rCreated new element for " << (const char *)node->name << " at " << element << std::endl;
+    // BOOST_LOG(lg) << "\rCreated new element for " << (const char *)node->name << " at " << element << std::endl;
 
-    dbglogfile << "extracting node " << node->name << std::endl;
+    BOOST_LOG(lg) << "extracting node " << node->name << std::endl;
 
     XMLNode *xml = new XMLNode;
     std::string name;
@@ -78,7 +76,7 @@ XML::extractNode(xmlNodePtr node)
             xml->attribAdd(name, value);
             attr = attr->next;
 #if 0
-            dbglogfile << "FIXME: attribute " << node->name
+            BOOST_LOG(lg) << "FIXME: attribute " << node->name
                        << " has property "
                        << name << " value is "
                        << value << std::endl;
@@ -103,7 +101,7 @@ XML::extractNode(xmlNodePtr node)
             //value = reinterpret_cast<const char *>(node->children->content);
             value = reinterpret_cast<const char *>(ptr);
 #if 1
-            dbglogfile << "\tChild node: " << name
+            BOOST_LOG(lg) << "\tChild node: " << name
                        << " has contents " << value << std::endl;
 #endif
             xml->valueSet(value.substr(0, value.find('\n')));
@@ -116,11 +114,11 @@ XML::extractNode(xmlNodePtr node)
 
     while (childnode != NULL) {
         if (childnode->type == XML_ELEMENT_NODE) {
-            dbglogfile << "\tfound node " << (const char *)childnode->name << std::endl;
+            BOOST_LOG(lg) << "\tfound node " << (const char *)childnode->name << std::endl;
             XMLNode *child = extractNode(childnode);
             //if (child->_value.get_type() != as_value::UNDEFINED) {
 #if 1
-            dbglogfile << "\tPushing child Node " << child->nameGet()
+            BOOST_LOG(lg) << "\tPushing child Node " << child->nameGet()
                        << " value " << child->valueGet()
                        <<  " on element "
                        <<  xml->nameGet() << std::endl;
@@ -141,10 +139,10 @@ XML::parseMem(const std::string &xml_in)
     DEBUGLOG_REPORT_FUNCTION;
     bool          ret = true;
 
-    dbglogfile << "Parse XML from memory: " << xml_in.c_str() << std::endl;
+    BOOST_LOG(lg) << "Parse XML from memory: " << xml_in.c_str() << std::endl;
 
     if (xml_in.size() == 0) {
-        dbglogfile << "ERROR: XML data is empty!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: XML data is empty!" << std::endl;
         return false;
     }
 
@@ -152,7 +150,7 @@ XML::parseMem(const std::string &xml_in)
   
     _doc = xmlParseMemory(xml_in.c_str(), xml_in.size());
     if (_doc == 0) {
-        dbglogfile << "ERROR: Can't parse XML data!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: Can't parse XML data!" << std::endl;
         return false;
     }
     _nodes = extractNode(xmlDocGetRootElement(_doc));
@@ -194,14 +192,14 @@ bool
 XML::parseFile(const std::string &filespec)
 {
     DEBUGLOG_REPORT_FUNCTION;
-    dbglogfile << "Load disk XML file: " << filespec << std::endl;
+    BOOST_LOG(lg) << "Load disk XML file: " << filespec << std::endl;
   
-    //dbglogfile << %s: mem is %d\n", __FUNCTION__, mem);
+    //BOOST_LOG(lg) << %s: mem is %d\n", __FUNCTION__, mem);
 
     xmlInitParser();
     _doc = xmlParseFile(filespec.c_str());
     if (_doc == 0) {
-        dbglogfile << "ERROR: Can't load XML file: " << filespec << std::endl;
+        BOOST_LOG(lg) << "ERROR: Can't load XML file: " << filespec << std::endl;
         return false;
     }
     //_nodes = extractNode(xmlDocGetRootElement(_doc));

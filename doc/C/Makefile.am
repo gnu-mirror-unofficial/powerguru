@@ -1,7 +1,8 @@
 ## Process this file with automake to produce Makefile.in
 
-# Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-# 2003, 2004  Free Software Foundation, Inc.
+# Copyright (C) 2004, 2005-2018.
+#
+# Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -43,7 +44,7 @@ alldocs: html pdf man
 html: powerguru.html
 pdf:  powerguru.pdf
 man:  pgd.1
-powerguru.pdf powerguru.html: powerguru.xml outback.xml xantrex.xml
+powerguru.pdf powerguru.html: powergdb2x_texixml powerguru.txmluru.xml outback.xml xantrex.xml
 
 .xml.html:
 	@echo "Making HTML from XML source..."

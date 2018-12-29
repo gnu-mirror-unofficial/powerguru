@@ -1,358 +1,78 @@
-<?xml version="1.0"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-    "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
-  <!ENTITY legal SYSTEM "legal.xml">
-  <!ENTITY appversion "0.2">
-  <!ENTITY manrevision "0.2">
-  <!ENTITY date "August 2005">
-  <!ENTITY app "<application>PowerGuru</application>">
-  <!ENTITY appname "Power Guru">
-  <!ENTITY version "2.0">
-  <!ENTITY xantrexdoc SYSTEM "xantrex.xml"> 
-  <!ENTITY outbackdoc SYSTEM "outback.xml"> 
-  <!ENTITY man SYSTEM "man.xml"> 
- ]
->
-
- <!-- =============Document Header ============================= -->
- <article id="index" lang="en">
-<!-- please do not change the id; for translations, change lang to -->
-<!-- appropriate code -->
-   <articleinfo>
-     <title>&app; Manual V&manrevision;</title>
-     <copyright>
-       <year>2005</year>
-       <holder>Rob Savoye</holder>
-     </copyright>
-<!-- translators: uncomment this:
-
-  <copyright>
-   <year>2005</year>
-   <holder>ME-THE-TRANSLATOR (Latin translation)</holder>
-  </copyright>
-
-   -->
-<!-- An address can be added to the publisher information.  If a role is 
-     not specified, the publisher/author is the same for all versions of the 
-     document.  -->
-    <publisher> 
-      <publishername> GNOME Documentation Project </publishername> 
-    </publisher> 
-
-<!-- 
-      Copyright (c)  2005, Free Software Foundation, Inc.
-      Permission is granted to copy, distribute and/or modify this document
-      under the terms of the GNU Free Documentation License, Version 1.2
-      or any later version published by the Free Software Foundation;
-      with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
-      Texts.  A copy of the license is included in the section entitled "GNU
-      Free Documentation License".
--->
-
-   &legal;
-   <!-- This file  contains link to license for the documentation (GNU FDL), and 
-        other legal stuff such as "NO WARRANTY" statement. Please do not change 
-	any of this. -->
-
-    <authorgroup> 
-      <author> 
-	<firstname>Rob</firstname> 
-	<surname>Savoye</surname> 
-	<affiliation> 
-	  <address>
-	    <email>rob@senecass.com</email>
-	  </address> 
-	</affiliation> 
-      </author> 
-<!-- This is appropriate place for other contributors: translators,
-      maintainers,  etc. Commented out by default.
-       <othercredit role="translator">
-	<firstname>Latin</firstname> 
-	<surname>Translator 1</surname> 
-	<affiliation> 
-	  <orgname>Latin Translation Team</orgname> 
-	  <address> <email>translator@gnome.org</email> </address> 
-	</affiliation>
-	<contrib>Latin translation</contrib>
-      </othercredit>
--->
-    </authorgroup>
-
-    <revhistory>
-      <revision> 
-	<revnumber>&appname; Manual V&manrevision;</revnumber> 
-	<date>&date;</date> 
-	<revdescription> 
-	  <para role="author">Rob Savoye
-	    <email>rob@senecass.com</email>
-	  </para>
-	  <para role="publisher">GNOME Documentation Project</para>
-	</revdescription> 
-      </revision> 
-    </revhistory> 
-
-    <releaseinfo>This manual describes version &appversion; of &appname;.
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+<article lang="en">
+  <articleinfo>
+    <title>PowerGuru Manual V0.2</title>
+    <subtitle/>
+    <edition/>
+    <releaseinfo>This manual describes version  of .
     </releaseinfo>
-   </articleinfo>
-
-  <indexterm zone="index"> 
-    <primary>PowerGuru</primary> 
-  </indexterm>
-
-<!-- ============= Document Body ============================= -->
-<!-- ============= Introduction ============================== -->
-  <sect1 id="intro"> <title>Introduction</title>
-    <para>This is power monitoring system for Xantrex (was Trace)
-     and Outback Power Systems products.
-    </para>
-    <sect2 id="betterintro">
-      <title>What is &appname; ?</title>
-      <para>&appname; is a tool for remotely controlling
-      <ulink type="http" url="http://www.xantrex.com">Xantrex</ulink>
-      and <ulink type="http" url="http://www.outbackpower.com">Outback
-      Power Systems</ulink> products. In my case, an old Trace 4024 and
-      an Outback MX-60.
-
-	<mediaobject>
-	  <imageobject>
-	    <imagedata fileref="images/domes.png"/>
-	  </imageobject>
-	</mediaobject>  
-      </para>
-
-      <para>This all started when I bought a fixer upper, off-grid
-	house... Like many projects, this one seems to have fallen
-	into my lap, more than it was a concious idea. Over time, the
-	concept has evolved into an actual product in development.
-	That project, <ulink type="http" url="http://www.senecass.com/abelmon">
-	AbelMon</ulink>, is a much larger project, and this application
-	<application>&appname;</application>, is part of that project
-	spun off into a standalone application.</para>
-
-      <para>There are other similar products, but for WinDoze are
-        <ulink type="http" url="http://www.righthandeng.com">Right
-        Hand Engineer's Winverter</ulink> or <ulink type="http"
-        url="http://www.mauisolarsoftware.com"> Maui Solar Software's
-        TraceTools</ulink>.</para>
-
-    </sect2>    
+    <author>
+      <surname>Savoye</surname>
+      <firstname>Rob</firstname>
+      <affiliation>
+        <address>
+	    rob@senecass.com
+	  </address>
+      </affiliation>
+    </author>
+    <copyright/>
+  </articleinfo>
+  <sect1>
+    <title>Introduction</title>
+    <para>This is power monitoring system for Xantrex (was Trace) and Outback Power Systems products. </para>
+    <sect2>
+      <title>What is Power Guru ?</title>
+      <para>is a tool for remotely controlling <ulink url="http://www.xantrex.com/">Xantrex</ulink> and <ulink url="http://www.outbackpower.com/">Outback Power Systems</ulink> products. In my case, an old Trace 4024 and an Outback MX-60.  </para>
+      <para>This all started when I bought a fixer upper, off-grid house... Like many projects, this one seems to have fallen into my lap, more than it was a concious idea. Over time, the concept has evolved into an actual product in development. That project, <ulink url="http://www.senecass.com/abelmon">AbelMon</ulink>, is a much larger project, and this application , is part of that project spun off into a standalone application.</para>
+      <para>There are other similar products, but for WinDoze are <ulink url="http://www.righthandeng.com/">Right Hand Engineer's Winverter</ulink> or <ulink url="http://www.mauisolarsoftware.com/">Maui Solar Software's TraceTools</ulink>.</para>
+    </sect2>
   </sect1>
-
-  <sect1 id="PowerGuru Overview">
+  <sect1>
     <title>PowerGuru Overview</title>
-
-    <para>
-      PowerGuru is an interface to your inverter or charge
-      controller. It's main purpose is to handle the low-level
-      work of reading and writing from these devices. At this level
-      PowerGuru is an SDK for C,C++, or Java programers to work with
-      Xantrex and Outback Power Systems products.
-    </para>
-
-    <para>
-      The backend of PowerGuru is a daemon that runs all the time and
-      is connected via serial ports or USB to your power production
-      equipment. This daemon handles all the ugly work of interfacing
-      with each device. The daemon has two modes, one is data-logging
-      mode, and the other is a command mode.
-    </para>
-
-    <sect2 id="Project Goals">
+    <para>PowerGuru is an interface to your inverter or charge controller. It's main purpose is to handle the low-level work of reading and writing from these devices. At this level PowerGuru is an SDK for C,C++, or Java programers to work with Xantrex and Outback Power Systems products. </para>
+    <para>The backend of PowerGuru is a daemon that runs all the time and is connected via serial ports or USB to your power production equipment. This daemon handles all the ugly work of interfacing with each device. The daemon has two modes, one is data-logging mode, and the other is a command mode. </para>
+    <sect2>
       <title>Project Goals</title>
-
-      <para>
-	The goals of this are project are to make it easy to datalog or
-	remotely control your inverter or charge controller. The
-	daemon is designed to be reasonably small, so it can run on
-	12VDC low-power computer systems 24 hours a day, 7 days a
-	week. Since everything is done through a network interface, a
-	GUI can use the SDK to talk to the backend for all
-	functionality. This makes it easier for somebody (not me, I
-	suck at GUIs) to write good GUIs, without having to reverse
-	engineer these protocols like I have. I'd prefer to stick to
-	bit-twiddling.
-      </para>
-
-      <para>
-	If I'm not home, like on a business trip, I want to be able to
-	check on the status of my house while I'm gone. I have had
-	weird things happen like needing to reboot the charge
-	controller, or a few fuses in the combiner box blowing for no
-	apparent reason. I'd also like to be able to store the default
-	configuration settings for my inverter or controller, and set
-	a new one with my prefered default settings off disk after a
-	full system reset.
-      </para>
-
-      <para>
-	If a house is a rental and you are the landlord, or you have
-	an off-grid vacation house, or you are a solar installer, and
-	want to offer remote support for your customers as an
-	additional service, this is the type of thing I want PowerGuru
-	to support.
-      </para>
-
+      <para>The goals of this are project are to make it easy to datalog or remotely control your inverter or charge controller. The daemon is designed to be reasonably small, so it can run on 12VDC low-power computer systems 24 hours a day, 7 days a week. Since everything is done through a network interface, a GUI can use the SDK to talk to the backend for all functionality. This makes it easier for somebody (not me, I suck at GUIs) to write good GUIs, without having to reverse engineer these protocols like I have. I'd prefer to stick to bit-twiddling. </para>
+      <para>If I'm not home, like on a business trip, I want to be able to check on the status of my house while I'm gone. I have had weird things happen like needing to reboot the charge controller, or a few fuses in the combiner box blowing for no apparent reason. I'd also like to be able to store the default configuration settings for my inverter or controller, and set a new one with my prefered default settings off disk after a full system reset. </para>
+      <para>If a house is a rental and you are the landlord, or you have an off-grid vacation house, or you are a solar installer, and want to offer remote support for your customers as an additional service, this is the type of thing I want PowerGuru to support. </para>
     </sect2>
-
-    <sect2 id="Data Logging Mode">
+    <sect2>
       <title>PowerGuru Data Logging Mode</title>
-      
-      <para>
-	In this mode, the PowerGuru daemon just polls all the devices
-	that have output data, and writes it directly to an SQL
-	database. The time between data collection cycles can be set
-	by the user, since the amount of data can be huge, and doesn't
-	often vary much.
-      </para>
-      
+      <para>In this mode, the PowerGuru daemon just polls all the devices that have output data, and writes it directly to an SQL database. The time between data collection cycles can be set by the user, since the amount of data can be huge, and doesn't often vary much. </para>
     </sect2>
-
-    <sect2 id="Command Mode">
+    <sect2>
       <title>PowerGuru Command Mode</title>
-      
-      <para>
-	In this mode, the PowerGuru daemon acts as the remote agent to
-	control the device. Client programs use a network connection
-	(I'm contemplating using SNMP) to operate the commands
-	supported by each device. This enables the settings of each
-	device to be stored and set remotely.
-      </para>
-      
+      <para>In this mode, the PowerGuru daemon acts as the remote agent to control the device. Client programs use a network connection (I'm contemplating using SNMP) to operate the commands supported by each device. This enables the settings of each device to be stored and set remotely. </para>
     </sect2>
-
-    <sect2 id="User Interfaces">
+    <sect2>
       <title>User Interfaces</title>
-
-      <para>
-	There are two planned user interfaces for PowerGuru. One is web
-	based, and will enable the plotting of the logged data in
-	various forms. The other interface is designed to run standalone
-	without the need for a PHP enabled web server. It is also
-	designed to be run from a PDA or laptop in the field with a
-	direct serial connection to the device. This is for installers
-	so they can download the default settings they prefer to the
-	device, or extract the current device settings to store in a
-	disk file.
-      </para>
-
-      <sect3 id="Web Interface">
-	<title>Web Interface</title>
-
-	<para>
-	  The web interface is written in PHP, and should be supported
-	  by most all web servers and browsers. This is primarily a
-	  data mining and display application to plot the power
-	  readings in graphical manner. This UI is currently under
-	  development.
-	</para>
-
+      <para>There are two planned user interfaces for PowerGuru. One is web based, and will enable the plotting of the logged data in various forms. The other interface is designed to run standalone without the need for a PHP enabled web server. It is also designed to be run from a PDA or laptop in the field with a direct serial connection to the device. This is for installers so they can download the default settings they prefer to the device, or extract the current device settings to store in a disk file. </para>
+      <sect3>
+        <title>Web Interface</title>
+        <para>The web interface is written in PHP, and should be supported by most all web servers and browsers. This is primarily a data mining and display application to plot the power readings in graphical manner. This UI is currently under development. </para>
       </sect3>
-
-      <sect3 id="Standalone Interface">
-	<title>Standalone Interface</title>
-
-	<para>
-	  I want to be able to run PowerGuru on multiple systems,
-	  namely Linux, Darwin, and Win32. The choice of a
-	  cross-platform user interface toolkit that runs on all three
-	  is not a trivial decision. Most PDAs these days runs Qtopia
-	  (written in QT), PalmOS, or WinCE. Other than Java, a
-	  language I truly dislike, the only multi-platform
-	  solution supported on all platforms is QT. (called Qtopia on
-	  a PDA) I'm not a GUI programer, I'm an embedded systems
-	  type, so I'd prefer to only write the GUI once.
-	</para>
-
-	<para>
-	  I have long prefered GTK+/GNOME over QT/KDE mostly cause I'm
-	  a "free software" purist, and I'm not sure I want to learn
-	  either QT or Java right now anyway. The original GUI for
-	  PowerGuru back when it was still called "TraceGUI" was
-	  written in GTK1.2, using the Glade prototyper. This can run
-	  on Linux, Darwin and Win32, but not my PDA.
-	</para>
-
-	<para>
-	  It is possible to run Tcl/Tk on most PDAs as an addon
-	  package. For my Zaurus it needs an X11 environment (I run
-	  OpenZaurus (a Debian port) on my Zaurus), plus Gentoo also
-	  runs on the Zaurus with X11 support. There are also native
-	  Tcl/Tk ports for PalmOS and WinCE, and it has a visual
-	  development environment as well. I also used to be one of
-	  the Tcl/Tk maintainers, so I wouldn't have the learning
-	  curve and time drain of using QT or Java.
-	</para>
-
+      <sect3>
+        <title>Standalone Interface</title>
+        <para>I want to be able to run PowerGuru on multiple systems, namely Linux, Darwin, and Win32. The choice of a cross-platform user interface toolkit that runs on all three is not a trivial decision. Most PDAs these days runs Qtopia (written in QT), PalmOS, or WinCE. Other than Java, a language I truly dislike, the only multi-platform solution supported on all platforms is QT. (called Qtopia on a PDA) I'm not a GUI programer, I'm an embedded systems type, so I'd prefer to only write the GUI once. </para>
+        <para>I have long preferred GTK+/GNOME over QT/KDE mostly cause I'm a "free software" purist, and I'm not sure I want to learn either QT or Java right now anyway. The original GUI for PowerGuru back when it was still called "TraceGUI" was written in GTK1.2, using the Glade prototyper. This can run on Linux, Darwin and Win32, but not my PDA. </para>
+        <para>It is possible to run Tcl/Tk on most PDAs as an addon package. For my Zaurus it needs an X11 environment (I run OpenZaurus (a Debian port) on my Zaurus), plus Gentoo also runs on the Zaurus with X11 support. There are also native Tcl/Tk ports for PalmOS and WinCE, and it has a visual development environment as well. I also used to be one of the Tcl/Tk maintainers, so I wouldn't have the learning curve and time drain of using QT or Java. </para>
       </sect3>
-
     </sect2>
-
   </sect1>
-
-  <sect1 id="Protocol Reference">
+  <sect1>
     <title>Protocol Reference</title>
-
-    <para>
-      PowerGuru supports multiple protocols, since it supports
-      multiple devices. As documentation of these protocols is often
-      non-existant or there is a lot of supporting info needed by
-      developers that isn't covered in the existing manuals, I figured
-      I'd document my experiences with these systems from my
-      perspective as an embedded systems engineer with over 25 years
-      experience.
-    </para>
-
-    &xantrexdoc;
-
-    &outbackdoc;
-
+    <para>PowerGuru supports multiple protocols, since it supports multiple devices. As documentation of these protocols is often non-existant or there is a lot of supporting info needed by developers that isn't covered in the existing manuals, I figured I'd document my experiences with these systems from my perspective as an embedded systems engineer with over 25 years experience. </para>
   </sect1>
-
-<!-- ============= Authors ================================ -->
-
-  <sect1 id="authors">
+  <sect1>
     <title>Authors</title>
-    <para>
-      <application>PowerGuru</application> was written by Rob Savoye
-      (<email>rob@senecass.com</email>).  Please send all comments,
-      suggestions, and bug reports to <email>rob@senecass.com</email>. 
-      I am available for consulting on a variety of renewable energy
-      and open source technologies. More details at <ulink type="http"
-      url="http://www.senecass.com">http://www.senecass.com</ulink>
-   </para>
-
+    <para><application>PowerGuru</application> was written by Rob Savoye (rob@senecass.com). Please send all comments, suggestions, and bug reports to rob@senecass.com. I am available for consulting on a variety of renewable energy and open source technologies. More details at <ulink url="http://www.senecass.com/">http://www.senecass.com</ulink> </para>
   </sect1>
-
-  <!-- ============= Application License ============================= -->
-
-  <sect1 id="license">
-   <title>License</title>
-   <para>
-    This program is free software; you can redistribute it and/or
-    modify it under the terms of the <citetitle>GNU General Public
-    License</citetitle> as published by the Free Software Foundation;
-    either version 2 of the License, or (at your option) any later
-    version.
-   </para>
-   <para>
-    This program is distributed in the hope that it will be useful, but
-    WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    <citetitle>GNU General Public License</citetitle> for more details.
-   </para>
-   <para>
-    A copy of the <citetitle>GNU General Public License</citetitle> is
-    included as an appendix to the <citetitle>GNOME Users
-    Guide</citetitle>.  You may also obtain a copy of the
-    <citetitle>GNU General Public License</citetitle> from the Free
-    Software Foundation by visiting <ulink type="http"
-    url="http://www.fsf.org">their Web site</ulink> or by writing to
-    <address>
-     Free Software Foundation, Inc.
-     <street>51 Franklin St, Fifth Floor</street>
-     <city>Boston</city>, <state>MA</state> <postcode>02111-1301</postcode>
-     <country>USA</country>
-    </address>
-   </para>
+  <sect1>
+    <title>License</title>
+    <para>This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version. </para>
+    <para>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. </para>
+    <para>A copy of the GNU General Public License is included as an appendix to the GNOME Users Guide. You may also obtain a copy of the GNU General Public License from the Free Software Foundation by visiting <ulink url="http://www.fsf.org/">their Web site</ulink> or by writing to Free Software Foundation, Inc. 51 Franklin St, Fifth Floor Boston, MA 02111-1301 USA </para>
   </sect1>
 </article>

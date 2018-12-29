@@ -53,7 +53,7 @@ SharedLib::OpenLib (string &filespec, ErrCond &Err)
           case EBADF:
           case ENOENT:
               Err.SetMsg("Specified shared library doesn't exist");
-              dbglogfile << "ERROR: Dynamic library, " << filespec << " doesn't exist!" << endl;
+              BOOST_LOG(lg) << "ERROR: Dynamic library, " << filespec << " doesn't exist!" << endl;
               return ERROR;
               break;
         }
@@ -78,7 +78,7 @@ SharedLib::OpenLib (string &filespec, ErrCond &Err)
         return ERROR;
     }
 
-    dbglogfile << "Initialized ltdl" << endl;
+    BOOST_LOG(lg) << "Initialized ltdl" << endl;
   
     // Get the path to look for libraries in, or force a default one 
     // if the ABELMON environment variable isn't set.
@@ -86,7 +86,7 @@ SharedLib::OpenLib (string &filespec, ErrCond &Err)
     if (abelmon == NULL) {
         getcwd((char *)&pwd, 512);
         abelmon = pwd;
-        dbglogfile << "WARNING: using default DL search path" << endl;
+        BOOST_LOG(lg) << "WARNING: using default DL search path" << endl;
     }
   
     errors = lt_dladdsearchdir (abelmon);
@@ -95,9 +95,9 @@ SharedLib::OpenLib (string &filespec, ErrCond &Err)
         return ERROR;
     }
 
-    dbglogfile << "Added " << abelmon << " to the search paths" << endl;
+    BOOST_LOG(lg) << "Added " << abelmon << " to the search paths" << endl;
   
-    dbglogfile << "Trying to open shared library " << filespec << endl;
+    BOOST_LOG(lg) << "Trying to open shared library " << filespec << endl;
 
     dlhandle = lt_dlopenext (filespec.c_str());
 
@@ -108,7 +108,7 @@ SharedLib::OpenLib (string &filespec, ErrCond &Err)
 
     dlname = filespec;
   
-    dbglogfile << "Opened dynamic library " << filespec << endl;
+    BOOST_LOG(lg) << "Opened dynamic library " << filespec << endl;
     return SUCCESS;
 }
 
@@ -126,7 +126,7 @@ SharedLib::GetSymbol (std::string &symbol, ErrCond &err)
         err << "Couldn't find symbol" << symbol << endl;
         return NULL;
     } else {
-        dbglogfile << "Found symbol " << symbol << " @ " << (void *)run << endl;
+        BOOST_LOG(lg) << "Found symbol " << symbol << " @ " << (void *)run << endl;
     }
 
     return run;
@@ -155,11 +155,11 @@ SharedLib::ScanDir (void) {
     const char *abelmon = (char *)getenv ("ABELMON");
     if (abelmon == NULL) {
         abelmon = "/usr/local/lib/abelmon";
-        dbglogfile << "ERROR: You need to set ABELMON" << endl;
+        BOOST_LOG(lg) << "ERROR: You need to set ABELMON" << endl;
     }
   
     lt_dladdsearchdir (abelmon);
-    // dbglogfile << timestamp << "Searching in " << abelmon << "for database drivers" << endl;
+    // BOOST_LOG(lg) << timestamp << "Searching in " << abelmon << "for database drivers" << endl;
   
     DIR *library_dir = opendir (abelmon);
 
@@ -184,11 +184,11 @@ SharedLib::ScanDir (void) {
         //    InitDBaddr = (retcode_t (*)(...))dlsym (handle, "InitDB");
         (lt_ptr_t) InitDBaddr = lt_dlsym (dlhandle, "InitDB");
         if (InitDBaddr != NULL) {
-            //      dbglogfile << "Found OpenDB in " << entry->d_name << endl;
+            //      BOOST_LOG(lg) << "Found OpenDB in " << entry->d_name << endl;
             cout << "Found InitDB in " << entry->d_name << " at " << addr << endl;
             InitDBaddr();
         } else {
-            //      dbglogfile << "Didn't find OpenDB in " << entry->d_name << endl;
+            //      BOOST_LOG(lg) << "Didn't find OpenDB in " << entry->d_name << endl;
             cout << "Didn't find InitDB in " << entry->d_name << endl;
         }
         lt_dlclose (dlhandle);

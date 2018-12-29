@@ -96,18 +96,18 @@ Msgs::init(net_mode_e mode)
     if (mode == CLIENT) {
         _net_mode = CLIENT;
         if (createNetClient(hostname)) {
-            dbglogfile << "Connected to server at " << hostname.c_str() << std::endl;
+            BOOST_LOG(lg) << "Connected to server at " << hostname.c_str() << std::endl;
             init();                     // initialize the table of pointers
             return SUCCESS;
         } else {
-            dbglogfile << "ERROR: Couldn't create connection to server" << hostname.c_str()  << std::endl;
+            BOOST_LOG(lg) << "ERROR: Couldn't create connection to server" << hostname.c_str()  << std::endl;
         }
     } else if (mode == DAEMON) {
         _net_mode = DAEMON;
         init(DAEMON, block);
-        dbglogfile << "WARNING: ignoring hostname, starting as daemon" << std::endl;
+        BOOST_LOG(lg) << "WARNING: ignoring hostname, starting as daemon" << std::endl;
     } else {
-        dbglogfile << "ERROR: no mode specified! " << std::endl;
+        BOOST_LOG(lg) << "ERROR: no mode specified! " << std::endl;
         _net_mode = NONET;
     }
     return ERROR;  
@@ -129,13 +129,13 @@ Msgs::init(const std::string &hostname)
     DEBUGLOG_REPORT_FUNCTION;
   
     if (createNetClient(hostname)) {
-        dbglogfile << "Connected to server at " << hostname << std::endl;
+        BOOST_LOG(lg) << "Connected to server at " << hostname << std::endl;
         init();                     // initialize the table of pointers
         _net_mode = CLIENT;
         writeNet(heloCreate(_version));
         return SUCCESS;
     } else {
-        dbglogfile << "ERROR: Couldn't create connection to server" << hostname  << std::endl;
+        BOOST_LOG(lg) << "ERROR: Couldn't create connection to server" << hostname  << std::endl;
     }
     return ERROR;
 }
@@ -148,18 +148,18 @@ Msgs::init(net_mode_e mode, bool block)
     if (mode == CLIENT) {
         _net_mode = CLIENT;
         if (createNetClient(hostname)) {
-            dbglogfile << "Connected to server at " << hostname.c_str() << std::endl;
+            BOOST_LOG(lg) << "Connected to server at " << hostname.c_str() << std::endl;
             init();                     // initialize the table of pointers
             return SUCCESS;
         } else {
-            dbglogfile << "ERROR: Couldn't create connection to server" << hostname.c_str()  << std::endl;
+            BOOST_LOG(lg) << "ERROR: Couldn't create connection to server" << hostname.c_str()  << std::endl;
         }
     } else if (mode == DAEMON) {
         _net_mode = DAEMON;
         init(true);
-        dbglogfile << "WARNING: ignoring hostname, starting as daemon" << std::endl;
+        BOOST_LOG(lg) << "WARNING: ignoring hostname, starting as daemon" << std::endl;
     } else {
-        dbglogfile << "ERROR: no mode specified! " << std::endl;
+        BOOST_LOG(lg) << "ERROR: no mode specified! " << std::endl;
         _net_mode = NONET;
     }
     return ERROR;
@@ -172,19 +172,19 @@ Msgs::init(bool block)
     _net_mode = DAEMON;
   
     if (createNetServer()) {
-        dbglogfile << "New server started for remote client." << std::endl;
+        BOOST_LOG(lg) << "New server started for remote client." << std::endl;
         init();                     // initialize the table of pointers
     } else {
-        dbglogfile << "ERROR: Couldn't create a new server" << std::endl;
+        BOOST_LOG(lg) << "ERROR: Couldn't create a new server" << std::endl;
     }      
   
     if (newNetConnection(block)) {
-        dbglogfile << "New connection started for remote client." << std::endl;
+        BOOST_LOG(lg) << "New connection started for remote client." << std::endl;
         _net_mode = DAEMON;
         writeNet(heloCreate(_version));
         return SUCCESS;
     } else {
-        dbglogfile << "ERROR: Couldn't create a new connection!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: Couldn't create a new connection!" << std::endl;
     }
     return ERROR;
 }
@@ -289,12 +289,12 @@ Msgs::cacheGet(const std:;string &name) {
             if (str.size() != 0) {
                 _body << " Has data: " << str;
             } else {
-                dbglogfile << " doesn't have data";
+                BOOST_LOG(lg) << " doesn't have data";
                 return _body.str();
             }
             return str;
         }
-        dbglogfile << "Looking for cache value for XML Tag \"" << tag
+        BOOST_LOG(lg) << "Looking for cache value for XML Tag \"" << tag
                    << "\" has " << _body.str().c_str() << std::endl;
     }
     return _body.str();
@@ -342,14 +342,14 @@ Msgs::methodGet(const std::string &name)
         } else {
             _body << " doesn't have a function pointer";
         }
-        //     dbglogfile << "Looking for method for XML Tag \"" << name.c_str()
+        //     BOOST_LOG(lg) << "Looking for method for XML Tag \"" << name.c_str()
         //                << "\" has " << _body.str().c_str() << std::endl;
         if (strcmp(str, name) == 0) {
             return ptr;
         }
     }
 #else
-    dbglogfile << "\"" << name << "\" method we want" << std::endl;
+    BOOST_LOG(lg) << "\"" << name << "\" method we want" << std::endl;
     return _methods[name];
 #endif
     //return (methodPtr_t *)0;
@@ -372,7 +372,7 @@ Msgs::methodsDump(void)
     const char         *name;
     Msgs::methodPtr_t     ptr;
   
-    dbglogfile << "We have " << (int)_methods.size() << " in function table" << std::endl;
+    BOOST_LOG(lg) << "We have " << (int)_methods.size() << " in function table" << std::endl;
   
     std::map<const char *, Msgs::methodPtr_t>::const_iterator it;
     for (it = _methods.begin(); it != _methods.end(); it++) {
@@ -384,7 +384,7 @@ Msgs::methodsDump(void)
         } else {
             _body << "no pointer to method";
         }
-        dbglogfile << "XML Tag \"" << name
+        BOOST_LOG(lg) << "XML Tag \"" << name
                    << "\" has " << _body.str().c_str() << std::endl;
     }
 }
@@ -397,7 +397,7 @@ Msgs::cacheDump(void)
     const char         *name;
     std::string                data;
   
-    dbglogfile << "We have " << (int)_cache.size() << " items in the cache" << std::endl;
+    BOOST_LOG(lg) << "We have " << (int)_cache.size() << " items in the cache" << std::endl;
   
     std::map<const std::string, std::string &>::const_iterator it;
     for (it = _cache.begin(); it != _cache.end(); it++) {
@@ -409,7 +409,7 @@ Msgs::cacheDump(void)
         } else {
             _body << "no data";
         }
-        dbglogfile << "XML Tag \"" << name
+        BOOST_LOG(lg) << "XML Tag \"" << name
                    << "\" has " << _body.str().c_str() << std::endl;
     }
 }
@@ -425,7 +425,7 @@ Msgs::unimplementedProcess(XMLNode *xml)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
-    dbglogfile << "XML tag \"" << xml->nameGet() << "\" doesn't exist." << std::endl;
+    BOOST_LOG(lg) << "XML tag \"" << xml->nameGet() << "\" doesn't exist." << std::endl;
 
     _body.str("");                // erase the current string
     _body << "<powerguru version=\"" << _version << "\">";
@@ -457,16 +457,16 @@ Msgs::process(XMLNode *xml)
     //methodsDump();
   
     if (fptr != 0) {
-        dbglogfile << "XML tag \"" << str << "\" has method pointer" << std::endl;
+        BOOST_LOG(lg) << "XML tag \"" << str << "\" has method pointer" << std::endl;
         ret = (this->*fptr)(xml);
     } else {
-        dbglogfile << "WARNING: XML tag \"" << str << "\" doesn't have a method pointer" << std::endl;
+        BOOST_LOG(lg) << "WARNING: XML tag \"" << str << "\" doesn't have a method pointer" << std::endl;
     }
 
     if (ret < 0) {
-        dbglogfile << "ERROR: Got an error from executing function pointer!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: Got an error from executing function pointer!" << std::endl;
     } else {    
-        dbglogfile << "executed function pointer successfully!" << std::endl;
+        BOOST_LOG(lg) << "executed function pointer successfully!" << std::endl;
     }
   
     // Process the children too
@@ -482,36 +482,36 @@ Msgs::dump(XMLNode *xml)
     int           child,  i;
     XMLNode       *childnode;
 
-    dbglogfile << "processing node " << xml->nameGet() << std::endl;
+    BOOST_LOG(lg) << "processing node " << xml->nameGet() << std::endl;
 
     // Process the node's value, if it has one.
     if (xml->valueGet() == 0) {
-        dbglogfile << "No content for node " << xml->nameGet() << std::endl;
+        BOOST_LOG(lg) << "No content for node " << xml->nameGet() << std::endl;
     } else {
-        dbglogfile << "Content for node " << xml->nameGet()
+        BOOST_LOG(lg) << "Content for node " << xml->nameGet()
                    << " is " << xml->valueGet() << std::endl;
     }
   
     // Process the attributes, if any
     if (xml->attributesSize() == 0) {
-        dbglogfile << "\tNo attributes for node " << xml->nameGet() << std::endl;
+        BOOST_LOG(lg) << "\tNo attributes for node " << xml->nameGet() << std::endl;
     } else {
         for (i=0; i<xml->attributesSize(); i++) {
-            dbglogfile << "\tAttribute is " << xml->attribGet(i)->nameGet()
+            BOOST_LOG(lg) << "\tAttribute is " << xml->attribGet(i)->nameGet()
                        << " who's value is " << xml->attribGet(i)->valueGet() << std::endl;
         }
     }
 
     // Process the children, if there are any
     if (xml->childrenSize()) {
-        dbglogfile << "\tProcessing " << xml->childrenSize() << " children nodes for "
+        BOOST_LOG(lg) << "\tProcessing " << xml->childrenSize() << " children nodes for "
                    << xml->nameGet() << std::endl;
         for (child=0; child<xml->childrenSize(); child++) {
             childnode = xml->childGet(child);
             dump(childnode); // setup child node
         }
     } else {
-        dbglogfile << "Node " << xml->nameGet() << " has no children" << std::endl;
+        BOOST_LOG(lg) << "Node " << xml->nameGet() << " has no children" << std::endl;
     }
 }
 
@@ -1010,7 +1010,7 @@ Msgs::statusProcess(XMLNode &node)
     _body.str("");
     _body << _version;
 
-    // dbglogfile <<  node->valueGet() << std::endl;
+    // BOOST_LOG(lg) <<  node->valueGet() << std::endl;
   
     if (_net_mode == DAEMON) {
         if (strcmp(node->valueGet(),  "sysversion") == 0) {
@@ -1052,7 +1052,7 @@ Msgs::statusProcess(XMLNode &node)
 #endif
 
         cacheAdd(node->nameGet(), node->valueGet());
-        dbglogfile << "tag \"" << node->nameGet() << "\" has a value of: " << node->valueGet() << std::endl;
+        BOOST_LOG(lg) << "tag \"" << node->nameGet() << "\" has a value of: " << node->valueGet() << std::endl;
     
         return SUCCESS;
     }
@@ -1064,7 +1064,7 @@ retcode_t
 Msgs::heloProcess(XMLNode &node)
 {
     DEBUGLOG_REPORT_FUNCTION;
-    dbglogfile << "WARNING: unimplemented method" << std::endl;
+    BOOST_LOG(lg) << "WARNING: unimplemented method" << std::endl;
   
     return ERROR;                 // FIXME: implement this method
 }
@@ -1082,7 +1082,7 @@ Msgs::metersProcess(XMLNode &node)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
-    dbglogfile << "Node is \"" << node->nameGet()
+    BOOST_LOG(lg) << "Node is \"" << node->nameGet()
                << "\" with a value of " << node->valueGet()
                << " and mode is: " << (int)_net_mode << std::endl;
 
@@ -1090,7 +1090,7 @@ Msgs::metersProcess(XMLNode &node)
         //cacheDump();
         //    const unsigned char *xxx = node->nameGet();
         std::string value = cacheGet(node->valueGet());
-        dbglogfile << "value for \"" << node->valueGet() << "\" is " << value.c_str() << std::endl;
+        BOOST_LOG(lg) << "value for \"" << node->valueGet() << "\" is " << value.c_str() << std::endl;
         if (value.size() == 0) {
         } else {
       
@@ -1105,7 +1105,7 @@ Msgs::metersProcess(XMLNode &node)
     }
 
     if (_net_mode == CLIENT) {
-        //dbglogfile << node->valueGet()
+        //BOOST_LOG(lg) << node->valueGet()
         // Process the result
     }
 
@@ -1118,26 +1118,26 @@ Msgs::serverProcess(XMLNode &node)
     //  DEBUGLOG_REPORT_FUNCTION;
     XMLAttr *attr;
   
-    dbglogfile << "Node is \"" << node->nameGet()
+    BOOST_LOG(lg) << "Node is \"" << node->nameGet()
                << "\" with a value of " << node->valueGet() << std::endl;
       
     if (node->hasAttributes()) {
         if ((attr = node->attribGet(0))) {
-            dbglogfile << "\tAttribute is \"" << attr->nameGet()
+            BOOST_LOG(lg) << "\tAttribute is \"" << attr->nameGet()
                        << "\" with a value of " << attr->valueGet() << std::endl;
             if (strcmp(attr->valueGet(), (const char *)_thisip.c_str()) != 0) {
-                dbglogfile << "WARNING: IP's don't match!!!!" << std::endl;
+                BOOST_LOG(lg) << "WARNING: IP's don't match!!!!" << std::endl;
                 return ERROR;
             }
         }
     }
 
     if (strcmp(node->valueGet(), (const char *)_thishost.c_str()) != 0) {
-        dbglogfile << "WARNING: Host's don't match!!!!" << std::endl;
+        BOOST_LOG(lg) << "WARNING: Host's don't match!!!!" << std::endl;
         return ERROR;
     }
 
-    dbglogfile << "Host and IP data match" << std::endl;
+    BOOST_LOG(lg) << "Host and IP data match" << std::endl;
     return SUCCESS;
 }
 
@@ -1147,16 +1147,16 @@ Msgs::clientProcess(XMLNode &node)
     // DEBUGLOG_REPORT_FUNCTION;
     XMLAttr *attr;
 
-    dbglogfile << "Node is \"" << node->nameGet()
+    BOOST_LOG(lg) << "Node is \"" << node->nameGet()
                << "\" with a value of " << node->valueGet() << std::endl;
       
     if (_remoteip.size() > 0) {
         if (node->hasAttributes()) {
             if ((attr = node->attribGet(0))) {
-                dbglogfile << "\tAttribute is \"" << attr->nameGet()
+                BOOST_LOG(lg) << "\tAttribute is \"" << attr->nameGet()
                            << "\" with a value of " << attr->valueGet() << std::endl;
                 if (strcmp(attr->valueGet(), (const char *)_remoteip.c_str()) != 0) {
-                    dbglogfile << "WARNING: IP's don't match!!!!" << std::endl;
+                    BOOST_LOG(lg) << "WARNING: IP's don't match!!!!" << std::endl;
                     return ERROR;
                 }
             }
@@ -1165,7 +1165,7 @@ Msgs::clientProcess(XMLNode &node)
 
     if (_remotehost.size() != 0) {
         if (strcmp(node->valueGet(), (const char *)_remotehost.c_str()) != 0) {
-            dbglogfile << "WARNING: Host's don't match!!!!" << std::endl;
+            BOOST_LOG(lg) << "WARNING: Host's don't match!!!!" << std::endl;
             return ERROR;
         }
     }
@@ -1183,17 +1183,17 @@ Msgs::powerguruProcess(XMLNode &node)
     _body.str("");
     _body << _version;
   
-//   dbglogfile << "Node is \"" << node->nameGet()
+//   BOOST_LOG(lg) << "Node is \"" << node->nameGet()
 //              << "\" with a value of " << node->valueGet() << std::endl;
       
     if (node->hasAttributes()) {
         if ((attr = node->attribGet(0))) {
-//       dbglogfile << "\tAttribute is \"" << attr->nameGet().c_str()
+//       BOOST_LOG(lg) << "\tAttribute is \"" << attr->nameGet().c_str()
 //                  << "\" with a value of " << attr->valueGet().c_str() << std::endl;
             if (strcmp((const char *)_body.str().c_str(), (const char*)attr->valueGet()) != 0) {
-                dbglogfile << "Versions in header don't match!" << std::endl;
+                BOOST_LOG(lg) << "Versions in header don't match!" << std::endl;
             } else {
-                dbglogfile << "Versions in header match" << std::endl;
+                BOOST_LOG(lg) << "Versions in header match" << std::endl;
             }
         }
     }
@@ -1205,11 +1205,11 @@ retcode_t
 Msgs::chargeAmpsProcess(XMLNode &node) {
     DEBUGLOG_REPORT_FUNCTION;
   
-    dbglogfile << "Node is \"" << node->nameGet()
+    BOOST_LOG(lg) << "Node is \"" << node->nameGet()
                << "\" with a value of " << node->valueGet() << std::endl;
       
     if (node->valueGet() <= 0) {
-        dbglogfile << "ERROR: no value in messages!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
         return ERROR;
     }
       
@@ -1220,16 +1220,16 @@ retcode_t
 Msgs::loadAmpsProcess(XMLNode &node) {
     DEBUGLOG_REPORT_FUNCTION;
   
-    dbglogfile << "Node is \"" << node->nameGet()
+    BOOST_LOG(lg) << "Node is \"" << node->nameGet()
                << "\" with a value of " << node->valueGet() << std::endl;
       
     if (node->valueGet() <= 0) {
-        dbglogfile << "ERROR: no value in messages!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
         //    return ERROR;
     }
   
     if (_net_mode == CLIENT) {
-        dbglogfile << "Battery voltage is: " << node->valueGet() << std::endl;
+        BOOST_LOG(lg) << "Battery voltage is: " << node->valueGet() << std::endl;
     
         return SUCCESS;
     }
@@ -1249,11 +1249,11 @@ retcode_t
 Msgs::pvAmpsProcess(XMLNode &node) {
     DEBUGLOG_REPORT_FUNCTION;
   
-    dbglogfile << "Node is \"" << node->nameGet()
+    BOOST_LOG(lg) << "Node is \"" << node->nameGet()
                << "\" with a value of " << node->valueGet() << std::endl;
       
     if (node->valueGet() <= 0) {
-        dbglogfile << "ERROR: no value in messages!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
         return ERROR;
     }
       
@@ -1264,11 +1264,11 @@ retcode_t
 Msgs::pvVoltsProcess(XMLNode &node) {
     DEBUGLOG_REPORT_FUNCTION;
   
-    dbglogfile << "Node is \"" << node->nameGet()
+    BOOST_LOG(lg) << "Node is \"" << node->nameGet()
                << "\" with a value of " << node->valueGet() << std::endl;
       
     if (node->valueGet() <= 0) {
-        dbglogfile << "ERROR: no value in messages!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
         return ERROR;
     }
       
@@ -1279,11 +1279,11 @@ retcode_t
 Msgs::dailyKwhProcess(XMLNode &node) {
     DEBUGLOG_REPORT_FUNCTION;
   
-    dbglogfile << "Node is \"" << node->nameGet()
+    BOOST_LOG(lg) << "Node is \"" << node->nameGet()
                << "\" with a value of " << node->valueGet() << std::endl;
       
     if (node->valueGet() <= 0) {
-        dbglogfile << "ERROR: no value in messages!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
         return ERROR;
     }
       
@@ -1294,11 +1294,11 @@ retcode_t
 Msgs::hertzProcess(XMLNode &node) {
     DEBUGLOG_REPORT_FUNCTION;
   
-    dbglogfile << "Node is \"" << node->nameGet()
+    BOOST_LOG(lg) << "Node is \"" << node->nameGet()
                << "\" with a value of " << node->valueGet() << std::endl;
       
     if (node->valueGet() <= 0) {
-        dbglogfile << "ERROR: no value in messages!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
         return ERROR;
     }
       
@@ -1309,16 +1309,16 @@ retcode_t
 Msgs::batteryVoltsProcess(XMLNode &node) {
     DEBUGLOG_REPORT_FUNCTION;
   
-//   dbglogfile << "Node is \"" << node->nameGet()
+//   BOOST_LOG(lg) << "Node is \"" << node->nameGet()
 //              << "\" with a value of " << node->valueGet() << std::endl;
       
     if (node->valueGet() <= 0) {
-        dbglogfile << "ERROR: no value in messages!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
         //    return ERROR;
     }
 
     if (_net_mode == CLIENT) {
-        dbglogfile << "Battery voltage is: " << node->valueGet() << std::endl;
+        BOOST_LOG(lg) << "Battery voltage is: " << node->valueGet() << std::endl;
     
         return SUCCESS;
     }
@@ -1338,11 +1338,11 @@ retcode_t
 Msgs::buyAmpsProcess(XMLNode &node) {
     DEBUGLOG_REPORT_FUNCTION;
   
-    dbglogfile << "Node is \"" << node->nameGet()
+    BOOST_LOG(lg) << "Node is \"" << node->nameGet()
                << "\" with a value of " << node->valueGet() << std::endl;
       
     if (node->valueGet() <= 0) {
-        dbglogfile << "ERROR: no value in messages!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
         return ERROR;
     }
       
@@ -1353,11 +1353,11 @@ retcode_t
 Msgs::sellAmpsProcess(XMLNode &node) {
     DEBUGLOG_REPORT_FUNCTION;
   
-    dbglogfile << "Node is \"" << node->nameGet()
+    BOOST_LOG(lg) << "Node is \"" << node->nameGet()
                << "\" with a value of " << node->valueGet() << std::endl;
       
     if (node->valueGet() <= 0) {
-        dbglogfile << "ERROR: no value in messages!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
         return ERROR;
     }
       
@@ -1368,11 +1368,11 @@ retcode_t
 Msgs::acVoltsOutProcess(XMLNode &node) {
     DEBUGLOG_REPORT_FUNCTION;
   
-    dbglogfile << "Node is \"" << node->nameGet()
+    BOOST_LOG(lg) << "Node is \"" << node->nameGet()
                << "\" with a value of " << node->valueGet() << std::endl;
       
     if (node->valueGet() <= 0) {
-        dbglogfile << "ERROR: no value in messages!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
         return ERROR;
     }
       
@@ -1383,11 +1383,11 @@ retcode_t
 Msgs::ac1InProcess(XMLNode &node) {
     DEBUGLOG_REPORT_FUNCTION;
   
-    dbglogfile << "Node is \"" << node->nameGet()
+    BOOST_LOG(lg) << "Node is \"" << node->nameGet()
                << "\" with a value of " << node->valueGet() << std::endl;
       
     if (node->valueGet() <= 0) {
-        dbglogfile << "ERROR: no value in messages!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
         return ERROR;
     }
       
@@ -1398,11 +1398,11 @@ retcode_t
 Msgs::ac2InProcess(XMLNode &node) {
     DEBUGLOG_REPORT_FUNCTION;
   
-    dbglogfile << "Node is \"" << node->nameGet()
+    BOOST_LOG(lg) << "Node is \"" << node->nameGet()
                << "\" with a value of " << node->valueGet() << std::endl;
       
     if (node->valueGet() <= 0) {
-        dbglogfile << "ERROR: no value in messages!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
         return ERROR;
     }
       
@@ -1431,18 +1431,18 @@ Msgs::commandProcess(XMLNode &node)
     DEBUGLOG_REPORT_FUNCTION;
     std::string str;
   
-    dbglogfile << "Node is \"" << node->nameGet()
+    BOOST_LOG(lg) << "Node is \"" << node->nameGet()
                << "\" with a value of " << node->valueGet() << std::endl;
       
     if (node->valueGet() <= 0) {
-        dbglogfile << "ERROR: no value in messages!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
         return ERROR;
     }
 
     _body.str("");
     _body << _version;
 
-    // dbglogfile <<  node->valueGet() << std::endl;
+    // BOOST_LOG(lg) <<  node->valueGet() << std::endl;
 
     if (_net_mode == DAEMON) {
         if (strcmp(node->valueGet(), "auxilary") == 0) {
@@ -1454,7 +1454,7 @@ Msgs::commandProcess(XMLNode &node)
         } else if (strcmp(node->valueGet(), "") == 0) {
             str = responseCreate(COMMAND, node->valueGet(), "charger");
         } else {
-            dbglogfile << "VALUEGET: " << node->valueGet() << std::endl;
+            BOOST_LOG(lg) << "VALUEGET: " << node->valueGet() << std::endl;
             str = responseCreate(RESPONSE, node->valueGet(), "foobar");
         }
         if (writeNet(str + "\r\n")) {
@@ -1469,7 +1469,7 @@ Msgs::commandProcess(XMLNode &node)
             return SUCCESS;
         }
         cacheAdd(node->nameGet(), node->valueGet());
-        dbglogfile << "tag \"" << node->nameGet() << "\" has a value of: " << node->valueGet() << std::endl;
+        BOOST_LOG(lg) << "tag \"" << node->nameGet() << "\" has a value of: " << node->valueGet() << std::endl;
     
         return SUCCESS;
     }

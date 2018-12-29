@@ -38,9 +38,6 @@
 #include "tcputil.h"
 #include "tcpip.h"
 #include "log.h"
-#include "err.h"
-
-extern LogFile dbglogfile;
 
 Tcputil::Tcputil(void) : Tcputil("localhost", DEFAULTPORT)
 {
@@ -68,9 +65,9 @@ Tcputil::Tcputil(const std::string &host, short port)
     // Chances are we don't have an entry in the /etc/services file.
     _service = getservbyport(htons(port), _proto->p_name);
     if (_service) {
-        dbglogfile <<  "Found service file entry for " << _service->s_name << std::endl;
+        BOOST_LOG(lg) <<  "Found service file entry for " << _service->s_name;
     } else {
-        dbglogfile << "Services file entry for port " << DEFAULTPORT << " was not found, using defaults" << std::endl;
+        BOOST_LOG(lg) << "Services file entry for port " << DEFAULTPORT << " was not found, using defaults";
     }
 #endif
 }
@@ -116,7 +113,7 @@ Tcputil::getAddrInfo(const std::string& hostname, std::uint16_t port)
     }
     while (addr->ai_next != 0) {
         std::string str;
-        dbglogfile << "The IP number for this connection is " << printIP(addr, str) << std::endl;
+        BOOST_LOG(lg) << "The IP number for this connection is " << printIP(addr, str);
         _addrinfo.push_back(addr);
         addr = addr->ai_next;
     }
@@ -168,9 +165,9 @@ Tcputil::lookupService(const std::string &name, const std::string &protocol)
     struct servent *serv = getservbyname(name.c_str(), protocol.c_str());
 
     if (serv) {
-        dbglogfile <<  "Found service file entry for " << name << std::endl;
+        BOOST_LOG(lg) <<  "Found service file entry for " << name;
     } else {
-        dbglogfile << "Services file entry " << name << " was not found!" << std::endl;
+        BOOST_LOG(lg) << "Services file entry " << name << " was not found!";
     }
 
     return serv;

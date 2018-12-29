@@ -20,7 +20,6 @@
 #include <unistd.h>
 
 #include "log.h"
-#include "err.h"
 #include "fakeuart.h"
 
 #include <sys/types.h>
@@ -44,7 +43,7 @@ FakeUart::FakeUart(void)
 
 FakeUart::~FakeUart(void)
 {
-    dbglogfile << "Closing fake uart " << name << std::endl;
+    BOOST_LOG(lg) << "Closing fake uart " << name << std::endl;
 
   // Don't try to close a device that isn't open
   if (state == OPEN) {
@@ -53,8 +52,8 @@ FakeUart::~FakeUart(void)
 }
 
 retcode_t
-//FakeUart::Open(string &filespec, ErrCond &err)
-FakeUart::Open(ErrCond &err)
+//FakeUart::Open(string &filespec)
+FakeUart::Open(void)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
@@ -66,28 +65,30 @@ FakeUart::Open(ErrCond &err)
     const char *numberpart = "0123456789abcdef";
 
     filespec = "/dev/ptmx";
-    dbglogfile << "Looking for a pty: " << filespec.c_str() << std::endl;
+    BOOST_LOG(lg) << "Looking for a pty...";
     if ((master = open(filespec.c_str(), O_RDWR | O_NONBLOCK)) < 0) {
         if (errno == ENOENT) {
             std::cerr << "ERROR: no more pty's available";
             return ERROR;
         }
     } else {
-        dbglogfile << "Opening pty master: " << filespec << std::endl; 
+        BOOST_LOG(lg) << "found pty master: " << filespec << std::endl; 
     }
     
     // Search for a free pty
     for(i=0; i<16 && master <= 0; i++) {
         for(j=0; j<16 && master <= 0; j++) {
-            filespec[8] = letterpart[i];
-            filespec[9] = numberpart[j];
-            dbglogfile << "Opening pty: " << filespec.c_str() << std::endl;
+            //filespec[8] = letterpart[i];
+            //filespec[9] = numberpart[j];
+            filespec += letterpart[i];
+            filespec += numberpart[j];
+            BOOST_LOG(lg) << "Opening pty: " << filespec << std::endl;
             if ((master = open(filespec.c_str(), O_RDWR | O_NONBLOCK)) < 0) {
                 if (errno == ENOENT) {
                     std::cerr << "ERROR: no more pty's available";
                     return ERROR;
                 } else {
-                    dbglogfile << "Opened pty: " << filespec << std::endl;
+                    BOOST_LOG(lg) << "Opened pty: " << filespec << std::endl;
                 }
             }
         } // for j loop
@@ -105,7 +106,7 @@ FakeUart::Open(ErrCond &err)
     //filespec[5] = 't';
     filespec = ptsname(master);
 
-    dbglogfile << "Opened " << ptsname(master) << " with file descriptor " << master << std::endl;
+    BOOST_LOG(lg) << "Opened " << ptsname(master) << " with file descriptor " << master << std::endl;
 
     grantpt(master);
     unlockpt(master);
@@ -132,7 +133,7 @@ FakeUart::Open(ErrCond &err)
 }
 
 retcode_t
-FakeUart::Close(std::string &filespec, ErrCond &err)
+FakeUart::Close(const std::string &filespec)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
@@ -145,38 +146,37 @@ FakeUart::Close(std::string &filespec, ErrCond &err)
 }
 
 int
-FakeUart::Read(unsigned char *buf, int nbytes, ErrCond &err)
+FakeUart::Read(unsigned char *buf, int nbytes)
 {
-    DEBUGLOG_REPORT_FUNCTION;
+//    DEBUGLOG_REPORT_FUNCTION;
 
     return read (_uartfd, buf, nbytes);
 }
 
-#if 0
 int
-FakeUart::Write(std::string &str, ErrCond &err)
+FakeUart::Write(const std::string &str)
 {
-    DEBUGLOG_REPORT_FUNCTION;
+//    DEBUGLOG_REPORT_FUNCTION;
 
     if (!str.empty()) {
-        dbglogfile << "Writing " << str << " to uart FD: " << _uartfd << std::endl;
-        //write(4, str.c_str(), str.size());
+        //BOOST_LOG(lg) << "Writing data to uart FD: " << _uartfd << std::endl;
+        //BOOST_LOG(lg) << "Writing " << str << " to uart FD: " << _uartfd << std::endl;
+        write(4, str.c_str(), str.size());
         //write (_uartfd, str.c_str(), str.size());
     }
 }
 
-int
-FakeUart::Write(const unsigned char *buf, int nbytes, ErrCond &err)
-{
-    DEBUGLOG_REPORT_FUNCTION;
-
-    //write (_uartfd, buf, nbytes);
-}
-#endif
-
 #if 0
 int
-FakeUart::GetChar(char *buf, ErrCond &err)
+FakeUart::Write(const unsigned char *buf, int nbytes)
+{
+//    DEBUGLOG_REPORT_FUNCTION;
+
+    write (_uartfd, buf, nbytes);
+}
+
+int
+FakeUart::GetChar(char *buf)
 {
     //  DEBUGLOG_REPORT_FUNCTION;
 
@@ -184,23 +184,24 @@ FakeUart::GetChar(char *buf, ErrCond &err)
   
     return (int)*buf;
 }
+#endif
 
-ostream &operator<<(ostream &os, FakeUart &l) {
+std::ostream &operator<<(std::ostream &os, FakeUart &l) {
     return os << l.GetName();
 }
 
 FakeUart&
 FakeUart::operator << (int x) {
 
-    dbglogfile << x;
+    BOOST_LOG(lg) << x;
 
     if (state == OPEN)
         write (_uartfd, (char *)&x, sizeof(int)); 
 }
 
 FakeUart& 
-FakeUart::operator << (std::string &s) {
-    dbglogfile << s;
+FakeUart::operator << (const std::string &s) {
+    BOOST_LOG(lg) << s;
   
     if (state == OPEN)
         *this << s.c_str();
@@ -208,17 +209,16 @@ FakeUart::operator << (std::string &s) {
 
 FakeUart& 
 FakeUart::operator << (const char *c) {
-    dbglogfile << c;
+    BOOST_LOG(lg) << c;
   
     if (state == OPEN) {
         write (_uartfd, c, strlen(c));
     }
 }
-#endif
 
 // Accessors
 inline void
-FakeUart::SetName (std::string &newname)
+FakeUart::SetName (const std::string &newname)
 {
     name = newname;
 }

@@ -43,7 +43,6 @@
 #include "tcpip.h"
 #include "ownet.h"
 
-extern LogFile dbglogfile;
 static void usage (const char *);
 
 const int INBUFSIZE = 1024;
@@ -58,6 +57,7 @@ main(int argc, char *argv[])
     std::string pserver = "localhost:" + DEFAULTPORT;
     retcode_t   ret;
 
+    log_init("pguru");
     // scan for the two main standard GNU options
     for (c=0; c<argc; c++) {
         if (strcmp("--help", argv[c]) == 0) {
@@ -77,7 +77,7 @@ main(int argc, char *argv[])
               break;
         
           case 'v':
-              dbglogfile.set_verbosity();
+              //dbglogfile.set_verbosity();
               break;
         
           case 'd':
@@ -104,10 +104,10 @@ main(int argc, char *argv[])
     Ownet ownet(pserver + ":4304");
     if (ownet.isConnected()) {
         if (ownet.hasSensors()) {
-            dbglogfile << "and has sensors attached" << std::endl;
+            BOOST_LOG(lg) << "and has sensors attached" << std::endl;
             ownet.dump();
         } else {
-            dbglogfile << "and has no sensors attached" << std::endl;
+            BOOST_LOG(lg) << "and has no sensors attached" << std::endl;
         }
     }
 #endif

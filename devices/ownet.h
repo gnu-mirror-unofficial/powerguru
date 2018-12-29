@@ -28,8 +28,6 @@
 #include "onewire.h"
 #include "log.h"
 
-extern LogFile dbglogfile;
-
 // Default host and port for the owserver
 extern const int OWPORT;
 extern const char *OWHOST;

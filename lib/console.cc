@@ -169,7 +169,7 @@ Console::sendEOL (void) {
 void
 signal_handler (int sig)
 {
-    dbglogfile << "Got a " << sig << " from the console" << endl;
+    BOOST_LOG(lg) << "Got a " << sig << " from the console" << endl;
     exit(sig);
 }
 

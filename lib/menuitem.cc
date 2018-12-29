@@ -249,61 +249,61 @@ MenuItem::Dump(void)
 #endif
 
     if (type <= ENUM) {
-        dbglogfile << " Label is: \"" << label << "\"" << endl;
+        BOOST_LOG(lg) << " Label is: \"" << label << "\"" << endl;
     }
-    dbglogfile << "\tHeader Index: "   << headidx;
-    dbglogfile << ", Item Index: " << itemidx;
+    BOOST_LOG(lg) << "\tHeader Index: "   << headidx;
+    BOOST_LOG(lg) << ", Item Index: " << itemidx;
 
     if (cmdname.size() > 0)
-        dbglogfile << ", Alias is: \"" << cmdname << "\"";
-    dbglogfile << endl;
+        BOOST_LOG(lg) << ", Alias is: \"" << cmdname << "\"";
+    BOOST_LOG(lg) << endl;
   
     switch (type) {
       case NONE:
-          dbglogfile << "\tUnitialized data type." << endl;
+          BOOST_LOG(lg) << "\tUnitialized data type." << endl;
           break;
       case INFO:
-          dbglogfile << "\tInformational Message." << endl;
+          BOOST_LOG(lg) << "\tInformational Message." << endl;
           break;
       case MENUHEAD:
-          dbglogfile << "\tMenu Heading" << endl;
+          BOOST_LOG(lg) << "\tMenu Heading" << endl;
           break;
       case MENUITEM:
-          dbglogfile << "\tMenu Item: "<< endl;
+          BOOST_LOG(lg) << "\tMenu Item: "<< endl;
           break;
       case BOOL:
           if (value.boolval == false)
-              dbglogfile << "\tBoolean value is: " << "OFF" ;
+              BOOST_LOG(lg) << "\tBoolean value is: " << "OFF" ;
           else
-              dbglogfile << "\tBoolean value is: " << "ON" ;      
-          dbglogfile << endl;
+              BOOST_LOG(lg) << "\tBoolean value is: " << "ON" ;      
+          BOOST_LOG(lg) << endl;
           break;
       case INT:
-          dbglogfile << "\tInteger value is: " << value.intval << endl;
+          BOOST_LOG(lg) << "\tInteger value is: " << value.intval << endl;
           break;
       case FLOAT:
-          dbglogfile << "\tFIXME: Float value is: " << (int)value.floatval << endl;
+          BOOST_LOG(lg) << "\tFIXME: Float value is: " << (int)value.floatval << endl;
           break;
       case TIME:
-          dbglogfile << "\tFIXME: Time value is: " << (int)value.timeval << endl;
+          BOOST_LOG(lg) << "\tFIXME: Time value is: " << (int)value.timeval << endl;
           break;
       case EOL:
       case CLOCK:
       case ENUM:
       case DATE:
-          dbglogfile << "\tERROR: unsupported type! " << value.intval << endl;
+          BOOST_LOG(lg) << "\tERROR: unsupported type! " << value.intval << endl;
           break;
       default:
-          dbglogfile << "Data Type out of range";
+          BOOST_LOG(lg) << "Data Type out of range";
           break;
     };
   
   
 #if 0
     if (type == BOOL)
-        dbglogfile << "\tBoolean Value is: " << value.intval << " and is: " << str0[type] << "\r" << endl;
+        BOOST_LOG(lg) << "\tBoolean Value is: " << value.intval << " and is: " << str0[type] << "\r" << endl;
     else
-        dbglogfile << "BOOL shit!\r\n";
+        BOOST_LOG(lg) << "BOOL shit!\r\n";
 #endif
 }
 

@@ -50,8 +50,6 @@ extern char *optarg;
 #include "commands.h"
 #include "ownet.h"
 
-extern LogFile dbglogfile;
-
 using namespace std::chrono_literals;
 
 // This queue is used to pass data between the threads.
@@ -63,11 +61,17 @@ void
 onewire_handler(Onewire &onewire)
 {
     DEBUGLOG_REPORT_FUNCTION;
-    dbglogfile << "PowerGuru - 1 Wire Mode" << std::endl;
+    BOOST_LOG(lg) << "PowerGuru - 1 Wire Mode";
+
+    if (!onewire.isMounted()) {
+        BOOST_LOG(lg) << "WARNING: Couldn't open 1wire file system!";
+        return;        
+    }
+    
 #ifdef HAVE_LIBPQ
     Database pdb;
     if (!pdb.openDB()) {
-        dbglogfile << "ERROR: Couldn't open database!" << std::endl;
+        BOOST_LOG(lg) << "ERROR: Couldn't open database!";
         exit(1);
     }
 #endif
@@ -127,7 +131,7 @@ client_handler(Tcpip &net)
             data.clear();
             size_t pos = net.readNet(data).size();
             if (pos < 0) {
-                dbglogfile << "ERROR: Got error from socket " << std::endl;
+                BOOST_LOG(lg) << "ERROR: Got error from socket ";
                 //loop = false;
             } else {
                 if (data.data() == 0) {
@@ -161,8 +165,8 @@ client_handler(Tcpip &net)
                     if (xml[0]->nameGet() == "helo") {
                         hostname = xml[0]->childGet(0)->valueGet();
                         user =  xml[0]->childGet(1)->valueGet();
-                        dbglogfile << "Incoming connection from user " << user
-                                   << " on host " << hostname << std::endl;
+                        BOOST_LOG(lg) << "Incoming connection from user " << user
+                                   << " on host " << hostname;
                     } else {
                         cmd.execCommand(xml, str);
                         std::lock_guard<std::mutex> guard(queue_lock);
@@ -183,13 +187,18 @@ void
 ownet_handler(Ownet &ownet)
 {
     DEBUGLOG_REPORT_FUNCTION;
-    dbglogfile << "PowerGuru - 1 Wire Mode" << std::endl;
-    bool poll = true;
+    BOOST_LOG(lg) << "PowerGuru - 1 Wire Mode";
+
+    if (!ownet.isConnected()) {
+        BOOST_LOG(lg) << "WARNING: Not connected to owserver!";
+        return;        
+    }
+    
 #ifdef HAVE_LIBPQ
     Database pdb;
     if (!pdb.openDB()) {
-        dbglogfile << "ERROR: Couldn't open database!" << std::endl;
-        exit(1);
+        BOOST_LOG(lg) << "ERROR: Couldn't open database!";
+        return;
     }
 #endif
 
@@ -198,13 +207,14 @@ ownet_handler(Ownet &ownet)
     query += "";
     query += ");";
 
-    std::map<std::string, ownet_t *> sensors = ownet.getSensors();
-    std::map<std::string, ownet_t *>::iterator it;
+    std::map<std::string, boost::shared_ptr<ownet_t>> sensors(ownet.getSensors());
+    std::map<std::string, boost::shared_ptr<ownet_t>>::iterator it;
     while (ownet.getPollSleep() > 0) {
         for (it = sensors.begin(); it != sensors.end(); it++) {
             if ((it->second->family == "10") | (it->second->family == "28")) {
-                boost::shared_ptr<temperature_t> temp = ownet.getTemperature(it->first.c_str());
+                boost::shared_ptr<temperature_t> temp(ownet.getTemperature(it->first.c_str()));
                 if (temp == 0) {
+                    BOOST_LOG(lg) << "ZERO!!!!";
                     continue;
                 }
 #ifdef HAVE_LIBPQ
@@ -283,11 +293,11 @@ outback_handler(Ownet &ownet)
         while (loop) {
             ret = msg.anydata(messages);
             if (ret == ERROR) {
-                dbglogfile << "ERROR: Got error from socket " << endl;
+                BOOST_LOG(lg) << "ERROR: Got error from socket " << endl;
                 msg.closeNet();
                 // wait for the next connection
                 if ((ret = msg.newNetConnection(true))) {
-                    dbglogfile << "New connection started for remote client."
+                    BOOST_LOG(lg) << "New connection started for remote client."
                                << msg.remoteIP().c_str()
                                << msg.remoteName().c_str() << endl;
                     ret = SUCCESS;        // the error has been handled
@@ -295,7 +305,7 @@ outback_handler(Ownet &ownet)
                 }
             }
             if (messages.size() == 0) {
-                dbglogfile << "ERROR: client socket shutdown! " << endl;
+                BOOST_LOG(lg) << "ERROR: client socket shutdown! " << endl;
             }
             for (i=0; i < messages.size(); i++) {
                 cerr << "Got (" << messages.size() << ") messages " << messages[i] << endl;
@@ -313,7 +323,7 @@ outback_handler(Ownet &ownet)
     }
 #endif
 
-    dbglogfile << "FIXME: outback_handler() unimplemented"<< std::endl;
+    BOOST_LOG(lg) << "FIXME: outback_handler() unimplemented"<< std::endl;
     // Don't eat up all the cpu cycles!
     std::this_thread::sleep_for(std::chrono::seconds(ownet.getPollSleep()));
 }
@@ -334,7 +344,7 @@ xantrex_handler(Ownet &ownet)
     hostname = "localhost";
 #endif
 
-    dbglogfile << "FIXME: xantrext_handler() unimplemented"<< std::endl;
+    BOOST_LOG(lg) << "FIXME: xantrext_handler() unimplemented"<< std::endl;
     // Don't eat up all the cpu cycles!
     std::this_thread::sleep_for(std::chrono::seconds(ownet.getPollSleep()));
 }

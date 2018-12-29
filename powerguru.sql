@@ -61,7 +61,8 @@ CREATE TABLE onewire (
   "timestamp" timestamp without time zone,
   temphigh float NOT NULL default '0',
   templow float NOT NULL default '0',
-  temperature float NOT NULL default '0'
+  temperature float NOT NULL default '0',
+  scale char(1) NOT NULL default 'F'
 );
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

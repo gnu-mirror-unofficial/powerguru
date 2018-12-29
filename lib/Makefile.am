@@ -36,10 +36,10 @@ libpguru_la_CPPFLAGS =	-I$(top_srcdir)/devices
 libpguru_la_LIBDADD =
 
 #	err.cc err.h
-#	log.cc log.h
 libpguru_la_SOURCES = \
 	proc.cc proc.h \
 	rc.cc rc.h \
+	log.cc log.h \
 	console.cc console.h \
 	database.h \
 	tcputil.cc tcputil.h \
@@ -74,7 +74,6 @@ endif
 
 include_HEADERS = \
 	proc.h \
-	serial.h \
 	menuitem.h \
 	database.h \
 	console.h \

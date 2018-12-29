@@ -27,12 +27,16 @@
 #include <unistd.h>
 #include <cstring>
 #include <vector>
+#include <thread>
 #include "xml.h"
 #include "log.h"
 #include "commands.h"
-#include <thread>
 
-extern LogFile dbglogfile;
+//    <NOP></NOP>
+//    <LIST><DEVICES></DEVICES></LIST>
+//    <POLL><DEVICE>name</DEVICE></POLL>
+//    <POLL><INTERVAL>seconds</INTERVAL></POLL>
+//    <HELO></HELO>
 
 Commands::Commands()
 {
@@ -50,30 +54,28 @@ Commands::~Commands()
 }
 
 std::string &
-Commands::createCommand(cmd_t cmd, const std::string &args,
-                        std::string &str)
+Commands::createNode(cmd_t cmd, const std::string &args,
+                               std::string &str)
 {
     //DEBUGLOG_REPORT_FUNCTION;
-    
-    str.clear();
-    str = "<command>";
+
     switch (cmd) {
       case LIST:
-          dbglogfile << "create LIST command" << std::endl;
+          BOOST_LOG(lg) << "create LIST command" << std::endl;
           str += "<list>" + args + "</list>";
           break;
       case POLL:
-          dbglogfile << "create POLL command" << std::endl;  
+          BOOST_LOG(lg) << "create POLL command" << std::endl;  
           str += "<poll>" + args + "</poll>";
           break;
       case NOP:
-          dbglogfile << "create NOP command" << std::endl;  
+          BOOST_LOG(lg) << "create NOP command" << std::endl;  
           str += "<nop>" + args + "</nop>";
           break;
       case HELO:
           // This takes two optional arguments, the first one
           // is the hostname, the second the user name.
-          dbglogfile << "create HELO command" << std::endl;
+          BOOST_LOG(lg) << "create HELO command" << std::endl;
           std::string data = "<hostname>";
           size_t pos = args.find(' ');
           if (pos == std::string::npos) {
@@ -92,7 +94,19 @@ Commands::createCommand(cmd_t cmd, const std::string &args,
           break;
     };
     
-    str += "</command>\n";
+    return str;
+}
+
+std::string &
+Commands::createCommand(cmd_t cmd, const std::string &args,
+                        std::string &str)
+{
+    //DEBUGLOG_REPORT_FUNCTION;
+    
+    std::string newstr = "<command>";
+    newstr += str;
+    newstr += "</command>\n";
+    str = newstr;
 
     return str;
 }
@@ -104,7 +118,7 @@ Commands::execCommand(XML &xml, std::string &str)
 
     std::string cmd = xml.nameGet();
     
-    dbglogfile << "Executing remote command " << cmd << std::endl;
+    BOOST_LOG(lg) << "Executing remote command " << cmd << std::endl;
 
     // The first child node is the top level command
     if (xml[0]->nameGet() == "list") {

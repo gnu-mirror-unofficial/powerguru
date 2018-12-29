@@ -139,7 +139,7 @@ powerGuruErrorMode OBJECT-TYPE
     STATUS	current
     DESCRIPTION
 	"This is the current Error mode. A table lookup must be
-        done to get the vaue. This is currently unimplemented on the
+        done to get the value. This is currently unimplemented on the
         MX series."
     ::= { powerguru 9 }
 
