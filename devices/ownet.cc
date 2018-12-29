@@ -52,7 +52,7 @@ Ownet::Ownet(std::string &host)
     // but always does on the second.
     while (retries-- > 0) {
         if (OW_init(argv.c_str()) < 0) {
-            BOOST_LOG(lg) << "WARNING: Couldn't connect to owserver with " << argv;
+            BOOST_LOG_SEV(lg, severity_level::warning) << "Couldn't connect to owserver with " << argv;
             //return;
         } else {
             BOOST_LOG(lg) << "Connected to owserver on host " << host;

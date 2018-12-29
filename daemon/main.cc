@@ -192,7 +192,8 @@ main(int argc, char *argv[])
     BOOST_LOG(lg) << "PowerGuru - 1 Wire Mode" << std::endl;
     Tcpip net;
     if (net.createNetServer(DEFAULTPORT) == ERROR) {
-        std::cerr << "ERROR: Couldn't create a network server!" << std::endl;
+        BOOST_LOG_SEV(lg, severity_level::error)
+            << "ERROR: Couldn't create a network server!";
         exit(-1);
     }
 
@@ -230,7 +231,8 @@ main(int argc, char *argv[])
     }
 
     // synchronize threads:
-    BOOST_LOG(lg) << "Killing all threads..." << std::endl;
+    BOOST_LOG(lg) << "Killing all threads...";
+
     onewire_thread.join();      // pauses until first finishes
     client_thread.join();       // pauses until first finishes
 #ifdef BUILD_OWNET

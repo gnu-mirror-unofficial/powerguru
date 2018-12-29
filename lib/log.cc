@@ -31,14 +31,21 @@ src::logger lg;
 void
 log_init(const std::string &name)
 {
+    // Change the default timestamp to be less long than the commom_attributes
     logging::formatter formatter = expr::stream
         << expr::format_date_time< boost::posix_time::ptime >
         ("TimeStamp", "[%Y-%m-%d %H:%M:%S] ") << expr::message;
-    
-    logging::add_file_log(name + ".log")->set_formatter(formatter);
+
+    logging::add_file_log (
+        keywords::file_name = name + ".log",
+        keywords::rotation_size = 10 * 1024 * 1024,
+        keywords::time_based_rotation = sinks::file::rotation_at_time_point(0, 0, 0),
+        keywords::format = "[%TimeStamp%]: %Message%",
+        keywords::auto_flush = true
+        )->set_formatter(formatter);
+
     logging::add_console_log()->set_formatter(formatter);
 
-    // Register common attributes
     logging::add_common_attributes();
 }
 

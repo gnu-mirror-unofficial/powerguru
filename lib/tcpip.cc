@@ -108,21 +108,23 @@ Tcpip::createNetServer(short port, const std::string &protocol)
         // Get a file descriptor for this socket connection
         _sockIOfd = ::socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
         if (_sockIOfd < 0) {
-            std::cerr << "ERROR: unable to create socket: " << strerror(errno) << std::endl;
+            BOOST_LOG_SEV(lg, severity_level::error)
+                << "unable to create socket: " << strerror(errno);
             return ERROR;
         }
     } else {
-        std::cerr << "ERROR: unable to get address! " << gai_strerror(errno) << std::endl;
+        BOOST_LOG_SEV(lg, severity_level::error)
+            << "unable to get address! " << gai_strerror(errno);
         return ERROR;
     }
     
     if (bind(_sockIOfd, addr->ai_addr, addr->ai_addrlen) == -1) {
-        BOOST_LOG(lg) << "WARNING: unable to bind to"
+        BOOST_LOG_SEV(lg, severity_level::warning) << "unable to bind to"
                    << inet_ntoa(sock_in.sin_addr)
                    << " port!" << strerror(errno);
         if (errno == EADDRINUSE) {
-            std::cerr << "ERROR: There is another process already bound to this port!"
-                      << std::endl;
+            BOOST_LOG_SEV(lg, severity_level::error)
+                << "ERROR: There is another process already bound to this port!";
             return ERROR;
         }
     }
@@ -132,8 +134,9 @@ Tcpip::createNetServer(short port, const std::string &protocol)
                    << " using fd #" << _sockIOfd;
     
     if (listen(_sockIOfd, 5) < 0) {
-        BOOST_LOG(lg) << "ERROR: unable to listen on port: "
-                   << port << ": " <<  strerror(errno); 
+        BOOST_LOG_SEV(lg, severity_level::error)
+            << "ERROR: unable to listen on port: "
+            << port << ": " <<  strerror(errno); 
         return ERROR;
     }
     
@@ -200,14 +203,15 @@ Tcpip::newNetConnection(bool block)
         }
     
         if (ret == -1) {
-            BOOST_LOG(lg) << "ERROR: The accept() socket for fd " << _sockIOfd
+            BOOST_LOG_SEV(lg, severity_level::error)
+                << "ERROR: The accept() socket for fd " << _sockIOfd
                        << " never was available for writing!";
             return ERROR;
         }
     
         if (ret == 0) {
-            BOOST_LOG(lg) <<
-                "ERROR: The accept() socket for fd #%d timed out waiting to write!"
+            BOOST_LOG_SEV(lg, severity_level::error)
+                << "The accept() socket for fd #%d timed out waiting to write!"
                        << _sockIOfd;
         }
         if (ret >= 1) {
@@ -221,7 +225,8 @@ Tcpip::newNetConnection(bool block)
     _sockfd = ::accept(_sockIOfd, &fsin, &alen);
   
     if (_sockfd < 0) {
-        BOOST_LOG(lg) << "ERROR: unable to accept : " << strerror(errno);
+        BOOST_LOG_SEV(lg, severity_level::error)
+            << "unable to accept : " << strerror(errno);
         return ERROR;
     } else {
         BOOST_LOG(lg) << "Accepting tcp/ip connection on fd #" << _sockfd;
@@ -259,14 +264,16 @@ Tcpip::createNetClient(const std::string &hostname, short port,
     if (addr) {
         _sockfd = ::socket(addr->ai_family, addr->ai_socktype, _proto->p_proto);
         if (_sockfd < 0) {
-            BOOST_LOG(lg) << "WARNING: unable to create socket: "
+            BOOST_LOG_SEV(lg, severity_level::warning)
+                << "WARNING: unable to create socket: "
                        << ::strerror(errno);
             return ERROR;
         }
 
         BOOST_LOG(lg) << "Trying to connect to: " << hostname << ":" << port;
         if (::connect(_sockfd, addr->ai_addr, addr->ai_addrlen) < 0) {
-            BOOST_LOG(lg) << "ERROR: Couldn't connect to: " << hostname << " "
+            BOOST_LOG_SEV(lg, severity_level::error)
+                << "ERROR: Couldn't connect to: " << hostname << " "
                        << strerror(errno);
             retries = 1;
             while (retries-- > 0) {
@@ -293,23 +300,23 @@ Tcpip::createNetClient(const std::string &hostname, short port,
                     return ERROR;
                 }
                 if (ret == 0) {
-                    BOOST_LOG(lg) <<
+                    BOOST_LOG_SEV(lg, severity_level::warning) <<
                         "WARNING: The connect() socket for fd #%d timed out waiting to write!"
                                << _sockfd;
                 }
             }
             ret = ::connect(_sockfd, addr->ai_addr, addr->ai_addrlen);
             if (ret <= 0) {
-                BOOST_LOG(lg) << "unable to connect to "
-                           << hostname
+                BOOST_LOG_SEV(lg, severity_level::warning)
+                    << "unable to connect to " << hostname
                            << ", port " << port
                            << ": " << strerror(errno);
                 close(_sockfd);
                 return ERROR;
             }
             if (ret <= 0) {
-                BOOST_LOG(lg) << "unable to connect to "
-                           << hostname
+                BOOST_LOG_SEV(lg, severity_level::warning)
+                    << "unable to connect to " << hostname
                            << ", port " << port
                            << ": " << strerror(errno);
                 close(_sockfd);
@@ -368,7 +375,8 @@ Tcpip::closeNet(void)
 #if 0
             if (shutdown(_sockfd, SHUT_RDWR) < 0) {
                 if (errno != ENOTCONN) {
-                    BOOST_LOG(lg) << "WARNING: Unable to shutdown socket for fd #"
+                    BOOST_LOG_SEV(lg, severity_level::warning)
+                        << "WARNING: Unable to shutdown socket for fd #"
                                << _sockfd << strerror(errno);
                 } else {
                     BOOST_LOG(lg) << "The socket using fd #" << _sockfd
@@ -378,8 +386,8 @@ Tcpip::closeNet(void)
             }
 #endif 
             if (close(_sockfd) < 0) {
-                BOOST_LOG(lg) <<
-                    "WARNING: Unable to close the socket for fd "
+                BOOST_LOG_SEV(lg, severity_level::warning) <<
+                    "Unable to close the socket for fd "
                            <<	_sockfd << strerror(errno);
                 sleep(1);
                 retries++;
@@ -545,7 +553,8 @@ Tcpip::anydata(int fd, std::vector<const unsigned char *> &msgs)
                     break;
                 } else { 
                     //BOOST_LOG(lg) << "WARNING: Throwing out partial packet " << std::endl;
-                    BOOST_LOG(lg) << "WARNING: Throwing out partial packet " << packet;
+                    BOOST_LOG_SEV(lg, severity_level::warning)
+                        << "Throwing out partial packet " << packet;
                     break;
                 }
             }
@@ -588,8 +597,8 @@ Tcpip::readNet(std::vector<unsigned char> &buf)
         FD_ZERO(&fdset);
         FD_SET(_sockfd, &fdset);
     } else {
-        BOOST_LOG(lg) << "WARNING: Can't do anything with socket fd #"
-                   << _sockfd;
+        BOOST_LOG_SEV(lg, severity_level::warning)
+            << "WARNING: Can't do anything with socket fd #" << _sockfd;
         buf.clear();
         buf.push_back(255);
         return buf;
@@ -614,7 +623,8 @@ Tcpip::readNet(std::vector<unsigned char> &buf)
     if (ret == -1 && errno == EINTR) {
         BOOST_LOG(lg) <<
             "The socket for fd #" << _sockfd << " we interupted by a system call!";
-        BOOST_LOG(lg) << "WARNING: error is " << strerror(errno);
+        BOOST_LOG_SEV(lg, severity_level::warning)
+            << "error is " << strerror(errno);
     }
   
     if (ret == -1) {
@@ -669,8 +679,8 @@ Tcpip::writeNet(const std::vector<unsigned char> &buffer)
             FD_ZERO(&fdset);
             FD_SET(_sockfd, &fdset);
         } else {
-            BOOST_LOG(lg) << "WARNING: Can't do anything with socket fd #!"
-                       << _sockfd;
+            BOOST_LOG_SEV(lg, severity_level::warning)
+                << "Can't do anything with socket fd #!" << _sockfd;
             return -1;
         }
     
@@ -702,12 +712,14 @@ Tcpip::writeNet(const std::vector<unsigned char> &buffer)
     
     
         if (ret == 0) {
-            BOOST_LOG(lg) << "Couldn't write any bytes to fd #" << _sockfd;
+            BOOST_LOG_SEV(lg, severity_level::error)
+                << "Couldn't write any bytes to fd #" << _sockfd;
             return ret;
         }
     
         if (ret < 0) {
-            BOOST_LOG(lg) << "Couldn't write " << nbytes << " bytes to fd #"
+            BOOST_LOG_SEV(lg, severity_level::error)
+                << "Couldn't write " << nbytes << " bytes to fd #"
                        << _sockfd;
             return ret;
         }

@@ -63,6 +63,7 @@ namespace src = boost::log::sources;
 namespace sinks = boost::log::sinks;
 namespace expr = boost::log::expressions;
 namespace keywords = boost::log::keywords;
+namespace severity_level = boost::log::trivial;
 
 extern src::logger lg;
 

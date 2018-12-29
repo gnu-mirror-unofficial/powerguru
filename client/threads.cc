@@ -100,17 +100,13 @@ daemon_handler(Tcpip &net)
     retcode_t ret;
     int retries = 10;
 
-    //net.createNetClient(DEFAULTPORT);
-
-    //net.writeNet("Hello World!\r\n");
-
     while (retries-- > 0) {
         bool loop = true;
         std::vector<unsigned char> data;
         while (loop) {
             data.clear();
             if (net.readNet(data).size() < 0) {
-                BOOST_LOG(lg) << "ERROR: Got error from socket ";
+                BOOST_LOG_SEV(lg, severity_level::error) << "ERROR: Got error from socket ";
                 loop = false;
             } else {
                 if (data.data() == 0) {
@@ -120,7 +116,7 @@ daemon_handler(Tcpip &net)
                 std::string buffer = (char *)data.data();
                 // Check to see if the socket was closed, so the read failed.
                 if (buffer[0] == 255) {
-                    std::cerr << "Done!!!!" << std::endl;
+                    //std::cerr << "Done!!!!" << std::endl;
                     loop = false;
                     retries = 0;
                     break;

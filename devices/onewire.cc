@@ -48,7 +48,7 @@ Onewire::Onewire(void)
                 }
             }
         } else {
-            std::cerr << "ERROR: " << _rootdir << " doesn't exist" << std::endl;
+            BOOST_LOG_SEV(lg, severity_level::error) << _rootdir << " doesn't exist!";
             _mounted = false;
         }
     } catch (const boost::filesystem::filesystem_error& ex) {

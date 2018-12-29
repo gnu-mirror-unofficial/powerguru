@@ -101,8 +101,8 @@ Tcputil::getAddrInfo(const std::string& hostname, std::uint16_t port)
         ret = ::getaddrinfo(hostname.c_str(), portstr.c_str(), &hints, &ans);
     }
     if (ret != 0) {
-        std::cerr << "ERROR: getaddrinfo(" << hostname << ") failed! "
-                  << gai_strerror(ret) << std::endl;
+        BOOST_LOG_SEV(lg, severity_level::error) << "getaddrinfo(" << hostname << ") failed! "
+                  << gai_strerror(ret);
         return nullptr;
     }
 
