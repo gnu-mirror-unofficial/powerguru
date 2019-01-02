@@ -31,28 +31,28 @@ TTYS=@TTYS@
 # include_HEADERS = log.h err.h proc.h serial.h xantrex.h outback.h serial.h
 
 libpdev_la_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/lib -I..
-libpdev_la_LIBDADD = -lboost_filesystem
+libpdev_la_LIBDADD = 
 
 libpdev_la_SOURCES = onewire.cc
 if BUILD_XANTREX
-libpdev_la_SOURCES += xantrex-trace.cc xantrex-trace.h xanbus.cc xanbus.h
+libpdev_la_SOURCES += xantrex-trace.cc xanbus.cc
 endif
 if BUILD_OUTBACK
-libpdev_la_SOURCES += outbackpower.cc outbackpower.h
+libpdev_la_SOURCES += outbackpower.cc
 endif
 
 if BUILD_SERIAL
-SERIAL_FILES = serial.cc serial.h
+SERIAL_FILES = serial.cc
 endif
 
 if BUILD_SNMP
-SNMP_FILES = snmp.cc snmp.h
+SNMP_FILES = snmp.cc
 libpdev_la_CPPFLAGS += -I$(top_srcdir)/snmp
 libpdev_la_LIBDADD +=  $(SNMP_LIBS) ../snmp/libpgsnmp.la
 endif
 
 if BUILD_OWNET
-libpdev_la_SOURCES += ownet.cc ownet.h
+libpdev_la_SOURCES += ownet.cc
 libpdev_la_LIBDADD += $(OWNET_LIBS)
 endif
 
@@ -61,7 +61,7 @@ libpdev_la_CPPFLAGS += $(PQ_CPPFLAGS)
 libpdev_la_LIBDADD +=  $(PQ_LIBS)
 endif
 
-include_HEADERS = \
+noinst_HEADERS = \
 	xantrex-trace.h \
 	outbackpower.h \
 	xanbus.h \

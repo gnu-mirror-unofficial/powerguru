@@ -71,7 +71,7 @@ libpguru_la_CPPFLAGS += $(PQ_CPPFLAGS)
 libpguru_la_LIBDADD +=  $(PQ_LIBS)
 endif
 
-include_HEADERS = \
+noinst_HEADERS = \
 	proc.h \
 	menuitem.h \
 	database.h \
