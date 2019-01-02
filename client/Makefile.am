@@ -23,6 +23,7 @@ AUTOMAKE_OPTIONS =
 bin_PROGRAMS = pguru 
 
 pguru_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_srcdir)/devices
+pguru_CXXFLAGS = $(SYSROOT)
 
 pguru_SOURCES = cmd.cc threads.cc
 pguru_LDADD = ../lib/libpguru.la -lpthread -ldl

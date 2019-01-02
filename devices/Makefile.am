@@ -20,7 +20,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 #DL_LIB = @DL_LIB@
 #LIBLTDL = @LIBLTDL@
 # __USLC__ makes MySQL++ use the std namespace
-AM_CXXFLAGS = -g -D__USLC__
+AM_CXXFLAGS = -g -D__USLC__ $(SYSROOT)
 
 noinst_LTLIBRARIES = libpdev.la
 

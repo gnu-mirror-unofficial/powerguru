@@ -178,12 +178,14 @@ if test x"${cross_compiling}" = xyes; then
   dnl If the user specifies a sysroot that isn't the default, add it to
   dnl the compilation
   if test x"${gcc_sysroot}" != x"${sysroot}" -a x"${sysroot}" != x; then
-    CXXFLAGS+=" --sysroot=${sysroot}"
+    SYSROOT+=" --sysroot=${sysroot}"
     CFLAGS+=" --sysroot=${sysroot}"
     LDFLAGS+=" -Wl,-rpath=${sysroot}/usr/lib/${host_alias}"
     LDFLAGS+=" -Wl,-rpath=${sysroot}/lib/${host_alias}"
-  fi
-  AC_SUBST(sysroot)
+  else
+    SYSROOT=""
+fi
+  AC_SUBST(SYSROOT)
 fi
 AM_CONDITIONAL(BUILD_CROSS, [ test x"${cross_compiling}" == xyes ])
 

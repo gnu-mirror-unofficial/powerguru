@@ -22,6 +22,7 @@
 AUTOMAKE_OPTIONS = # dejagnu
 
 pgd_CPPFLAGS = -Wall -I$(top_srcdir)/lib -I$(top_srcdir)/devices
+pgd_CXXFLAGS = $(SYSROOT)
 pgd_LDADD = ../devices/libpdev.la ../lib/libpguru.la -lboost_filesystem \
 	 -lboost_regex -lboost_system -lboost_log -lboost_log_setup \
 	-lpthread -lresolv -ldl

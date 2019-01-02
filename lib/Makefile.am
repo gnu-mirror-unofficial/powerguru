@@ -33,9 +33,8 @@ TTYS=@TTYS@
 # include_HEADERS = log.h err.h proc.h serial.h xantrex.h outback.h
 
 libpguru_la_CPPFLAGS =	-I$(top_srcdir)/devices
+libpguru_la_CXXFLAGS = $(SYSROOT)
 libpguru_la_LIBDADD =
-
-#	err.cc err.h
 libpguru_la_SOURCES = \
 	proc.cc proc.h \
 	rc.cc rc.h \
