@@ -82,17 +82,17 @@ class Onewire {
 private:
     std::mutex _mutex;
     // How long to delay between reading the sensor
-    int _poll_sleep;
-    char _scale;                // 'C' or 'F'
+    int _poll_sleep;            ///< Delay time in seconds
+    char _scale;                ///< 'C' or 'F'
     std::map<std::string, boost::shared_ptr<temperature_t>> _temps;
     // Is _rootdir (usually /mnt/1wire) mounted ?
-    std::string _rootdir;
-    bool _mounted = true;
-    // Table of family types of supported sensors
-    std::map<const std::string, family_t> _family;    
-    void initTable(void);
-    // All the currently installed sensors
+    std::string _rootdir;       ///< Root directory for 1wire sensors
+    bool _mounted = true;       ///< Whether the data is in owfs or /sys
+    ///< Table of family types of supported sensors
+    std::map<const std::string, family_t> _family;
+    ///< All the currently installed sensors
     std::map<std::string, boost::shared_ptr<onewire_t>> _sensors;
+    void initTable(void);       ///< Initialize table of 1wire family data
 public:
     Onewire(void);
     ~Onewire(void) {};
