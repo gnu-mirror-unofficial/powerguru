@@ -22,10 +22,11 @@
 #include "ownet.h"
 #include "log.h"
 
-// Default host and port for the owserver
-const int OWPORT = 4304;
-const char *OWHOST = "localhost";
+const int OWPORT = 4304;        ///< TCP/IP port for owserver
+const char *OWHOST = "localhost"; ///< Remote hostname for owserver
 
+/// \class Ownet
+/// Consruct a class for OWNet support
 Ownet::Ownet(void)
     : _poll_sleep(300),
       _scale('F'),
@@ -34,6 +35,9 @@ Ownet::Ownet(void)
 //    DEBUGLOG_REPORT_FUNCTION;
 }
 
+///
+/// Consruct a class for OWNet support connected to a remote host
+/// @param host Hostname of the remote owserver
 Ownet::Ownet(std::string &host)
     : Ownet()
 {
@@ -89,9 +93,10 @@ Ownet::Ownet(std::string &host)
     std::vector<std::string>::iterator it;
     for(it = results.begin(); it != results.end(); it++,i++ ) {
         boost::shared_ptr<ownet_t> data(new ownet_t);
-        data->family = getValue(it->c_str(), "family");
-        data->type = getValue(it->c_str(), "type");
-        data->id = getValue(it->c_str(), "id");
+        std::string result;
+        data->family = getValue(it->c_str(), "family", result);
+        data->type = getValue(it->c_str(), "type", result);
+        data->id = getValue(it->c_str(), "id", result);
         if (data->type.length() == 0 || data->id.length() == 0) {
             break;
         }
@@ -108,26 +113,32 @@ Ownet::Ownet(std::string &host)
     dump();
 }
 
+///
+/// Get the temperature(s) via ownet from a temperature sensor
+/// @param device The full device name including the family, ie... "28.021316A4D6AA"
+/// @return The temerature(s) from a temperature sensor
 const boost::shared_ptr<temperature_t>
 Ownet::getTemperature(const std::string &device)
 {
     // DEBUGLOG_REPORT_FUNCTION;
     
-    std::string family = getValue(device, "family");
-    std::string id = getValue(device, "id");
-    std::string type = getValue(device, "type");
+    std::string result;
+    std::string family = getValue(device, "family", result);
+    std::string id = getValue(device, "id", result);
+    std::string type = getValue(device, "type", result);
     
     if (family == "10" | family == "28") {
         // BOOST_LOG(lg) << device << " is a thermometer";
         // boost::shared_ptr<temperature_t> temp = boost::make_shared<temperature_t>(1);
         boost::shared_ptr<temperature_t> temp(new temperature_t);
-        temp->family = getValue(device, "family");
-        temp->id = getValue(device, "id");
-        temp->type = getValue(device, "type");
+        std::string result;
+        temp->family = getValue(device, "family", result);
+        temp->id = getValue(device, "id", result);
+        temp->type = getValue(device, "type", result);
         try {
-            temp->temp = std::stof(getValue(device, "temperature"));
-            temp->lowtemp =std::stof(getValue(device, "templow"));
-            temp->hightemp = std::stof(getValue(device, "temphigh"));
+            temp->temp = std::stof(getValue(device, "temperature", result));
+            temp->lowtemp =std::stof(getValue(device, "templow", result));
+            temp->hightemp = std::stof(getValue(device, "temphigh", result));
         } catch (const std::exception& e) {
             temp->temp = 0;
             temp->lowtemp = 0;
@@ -146,6 +157,10 @@ Ownet::getTemperature(const std::string &device)
     return temp;
 }
 
+///
+/// Get a list of all connected sensor devices
+/// @param an array to hold the device list
+/// @return a list of all sensors 
 const std::vector<std::string>
 Ownet::listDevices(std::vector<std::string> &list)
 {
@@ -159,8 +174,15 @@ Ownet::listDevices(std::vector<std::string> &list)
     return list;
 }
 
-std::string
-Ownet::getValue(const std::string &device, std::string file)
+///
+/// Get the value from a 1wire file
+/// @param device The full device name including the family, ie... "28.021316A4D6AA"
+/// @param file The base name of the file to read
+/// @param result String to hold the returned value
+/// @return the value from the file
+///
+std::string &
+Ownet::getValue(const std::string &device, std::string file, std::string &result)
 {
 //    DEBUGLOG_REPORT_FUNCTION;
 
@@ -171,17 +193,20 @@ Ownet::getValue(const std::string &device, std::string file)
     //std::cout << "Looking for: " << data;
     int ret = OW_get(data.c_str(), &buf, &s);
     if (ret <= 0) {
-        return std::string();
+        return result;
         //} else {
         //std::cout << ", Got(" << s << "): " <<  buf;
     }
     
-    std::string value = (buf);
+    result = (buf);
     free(buf);
     
-    return value;
+    return result;
 }
 
+///
+/// Dump data about the sensors
+///
 void
 Ownet::dump(void)
 {

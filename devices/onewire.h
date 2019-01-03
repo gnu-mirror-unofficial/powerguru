@@ -1,5 +1,5 @@
 // 
-// Copyright (C) 2018 Free Software Foundation, Inc.
+// Copyright (C) 2018, 2019 Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,6 +15,10 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+//
+// \brief Class for 1wire sensors
+// \copyright GNU Public License.
+//
 #ifndef __ONEWIRE_H__
 #define __ONEWIRE_H__
 
@@ -27,40 +31,52 @@
 #include <boost/filesystem.hpp>
 #include "log.h"
 
-struct onewire {
-    std::string family;
-    std::string id;
-    std::string type;
-    std::string device;
-    bool bus;
-} typedef onewire_t;
+///
+/// \typedef onewire_t
+/// Contains data about each 1 wire sensor
+///
+typedef struct onewire {
+    std::string family;         ///< The family type, a 2 digit code
+    std::string id;             ///< The device ID of the sensor
+    std::string type;           ///< The type of 1wire sensor
+    std::string device;         ///< The full device name
+    bool bus;                   ///< Whether the data is in owfs or not
+} onewire_t;
 
-struct temperature {
-    std::string family;
-    std::string id;
-    std::string type;
-    float temp;
-    float lowtemp;
-    float hightemp;
-    char scale;
-} typedef temperature_t;
+///
+/// \struct temperature_t
+/// Contains data from a 1 wire temperature sensor
+///
+typedef struct temperature {
+    std::string family;         ///< The family type, a 2 digit code
+    std::string id;             ///< The device ID of the sensor
+    std::string type;           ///< The type of 1wire sensor
+    float temp;                 ///< The current temperature
+    float lowtemp;              ///< The lowest temperature seen
+    float hightemp;             ///< The highest temperature seen
+    char scale;                 ///< The scale, 'C' or 'F'
+} temperature_t;
 
-enum { ACVOLTAGE,
-       DCVOLTAGE,
-       AUTH,
-       BATTERY,
-       CLOCK,
-       TEMPERATURE,
-       THERMCOUPLE,
-       MOISTURE,
-       UNSUPPORTED
-} typedef family_e;
+/// \enum family_e
+/// Represents all possible 1wire sensors types
+typedef enum { ACVOLTAGE,
+               DCVOLTAGE,
+               AUTH,
+               BATTERY,
+               CLOCK,
+               TEMPERATURE,
+               THERMCOUPLE,
+               MOISTURE,
+               UNSUPPORTED
+} family_e;
 
-struct family {
-    std::string desription;
-    std::string chips;
-    family_e    type;
-} typedef family_t;
+/// \typedef family_t
+/// Base Data for all 1wire sensors
+typedef struct family {
+    std::string description;    ///< The description of this sensor
+    std::string chips;          ///< The Dallas Semiconductor chip used for this sensor
+    family_e    type;           ///< The type of 1wire sensor
+} family_t;
 
 class Onewire {
 private:
@@ -115,11 +131,7 @@ public:
                           const std::string &value);
 
     // get all the temperature fields for a device.
-    std::map<std::string, boost::shared_ptr<temperature_t>> &getTemperatures(void);
-
-    std::string &
-    readBus(const std::string &device, std::string &data);
-               
+    std::map<std::string, boost::shared_ptr<temperature_t>> &getTemperatures(void);               
     void dump(void);
     
     std::vector<std::string> &

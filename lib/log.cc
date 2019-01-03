@@ -26,8 +26,12 @@
 #include <time.h>
 #include "log.h"
 
-src::logger lg;
+src::logger lg;                 ///< Global handle to the logger
 
+/// \function log_init
+///
+/// Write a logfile to the disk and the console
+/// @param The name of the log file to write
 void
 log_init(const std::string &name)
 {

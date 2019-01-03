@@ -74,6 +74,8 @@ extern void log_init(const std::string &name);
 #define TIMESTAMP_LENGTH 24             // timestamp length
 #define TIMESTAMP_FORMAT "%Y-%m-%d %H:%M:%S     " // timestamp format
 
+/// \struct __Host_Function_Report__
+/// Struct/class to print an enter/return for a method
 struct __Host_Function_Report__ {
     const char *func;
     src::logger lg;
@@ -100,9 +102,6 @@ struct __Host_Function_Report__ {
     __Host_Function_Report__ __host_function_report__( __PRETTY_FUNCTION__)
 
 #define DEBUGLOG_REPORT_RETURN
-
-unsigned char *
-ascify_buffer (unsigned char *p, const unsigned char *s, int x);
 
 #else
 # define DEBUGLOG_REPORT_FUNCTION printf("%s entered\n", __FUNCTION__)

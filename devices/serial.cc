@@ -68,7 +68,8 @@ const char *serial_speeds[] = {
 };
 
 
-// Translate baud rates from integers to damn B_codes.
+/// \struct damnbaud
+/// Translate baud rates from integers to damn B_codes.
 struct damnbaud {
     int rate;
     int code;
@@ -98,6 +99,10 @@ struct damnbaud baudtab[] = {
     {-1, -1},
 };
 
+///
+/// \function rate_to_code
+/// @param The baud rate as a number
+/// @return The constant for this baud rate
 int
 rate_to_code(int rate) {
     int i;
@@ -109,6 +114,8 @@ rate_to_code(int rate) {
     return -1;
 }
 
+/// \class
+/// Construct a class for handing serial port communication
 Serial::Serial(void)
 {
     // DEBUGLOG_REPORT_FUNCTION;
@@ -125,8 +132,10 @@ Serial::~Serial(void)
     //Close();
 }
 
-// Open the serial port. This function must initialize the serial port so that
-// it can be read/write in raw mode.
+/// Open the serial port. This function must initialize the serial port so that
+/// it can be read/write in raw mode.
+/// @param The full path to the serial port to open
+/// @return Whether the file could be opened or not
 retcode_t
 Serial::Open(std::string &filespec)
 {
@@ -176,7 +185,8 @@ Serial::Open(std::string &filespec)
     return SUCCESS;
 }
 
-// Close the serial port
+/// Close the serial port
+/// @return Whether the file could be closed or not
 retcode_t
 Serial::Close(void)
 {
@@ -195,6 +205,9 @@ Serial::Close(void)
     return ERROR;
 }
 
+/// Flush data in the serial port so it gets out
+///
+/// @return Whether the file could be closed or not
 retcode_t
 Serial::Flush  (void)
 {
@@ -203,6 +216,12 @@ Serial::Flush  (void)
     return SUCCESS;               // FIXME: this should be a real check
 }
 
+
+/// Read data from the serial port
+///
+/// @param buf A buffer to hold the data that is read
+/// @param nbytes The size of the buffer
+/// @return The number of bytes read
 int
 Serial::Read(char *buf, int nbytes)
 {
@@ -332,6 +351,11 @@ if ((sret == 0) && (ret <= 0)) {
 return ret;
 }
 
+/// Write data to the serial port
+///
+/// @param buf A buffer holding the data to write
+/// @param nbytes The size of the buffer
+/// @return The number of bytes written or -1 for an error
 int
 Serial::Write(const char *buf, int nbytes) const
 {
@@ -358,6 +382,10 @@ Serial::Write(const char *buf, int nbytes) const
     }
 }
 
+/// Set the baud rate
+///
+/// @param The baud rate code as returned by rate_to_code()
+/// @return Whether the baud rate could be set
 retcode_t
 Serial::SetBaud (int baudcode)
 {
@@ -395,6 +423,7 @@ Serial::SetBaud (int baudcode)
 }
 
 #if 0
+/// @return Whether the file could be closed or not
 retcode_t
 Serial::send_break (struct errcond *err) const
 {
@@ -406,6 +435,10 @@ Serial::send_break (struct errcond *err) const
 }
 #endif
 
+/// Set whether the serial port shoul duse blocking or nonblocking I/O
+///
+/// @param 
+/// @return Whether the blocking mode could be changed
 retcode_t
 Serial::SetBlocking(bool mode)
 {
@@ -425,12 +458,19 @@ Serial::SetBlocking(bool mode)
 // TIOCM_LE, TIOCM_DTR, TIOCM_RTS, TIOCM_ST, TIOCM_SR, TIOCM_CTS,
 // TIOCM_CAR, TIOCM_RNG, TIOCM_DSR, TIOCM_CD, TIOCM_RI,
 // TIOCM_OUT1,IOCM_OUT2, TIOCM_LOOP
+
+/// Set the DTR for the serial port
+/// @return Whether the DTR could be set
 retcode_t
 Serial::SetDTR (void)
 {
     return SetDTR(true);
 }
 
+/// Set the DTR for the serial port
+///
+/// @param What to set the DTR to
+/// @return Whether the DTR could be set
 retcode_t
 Serial::SetDTR (bool value)
 {
@@ -455,6 +495,8 @@ Serial::SetDTR (bool value)
     return SUCCESS;               // FIXME: this should be a real check
 }
 
+/// Set Raw mode for th serial port
+/// @return Whether the serial port could be set to raw mode
 retcode_t
 Serial::SetRaw (void)
 {

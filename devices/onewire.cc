@@ -25,6 +25,10 @@
 #include "onewire.h"
 #include "log.h"
 
+///
+/// \class Onewire
+/// Construct a class for 1wire sensors
+///
 Onewire::Onewire(void)
     : _scale('F'),
       _poll_sleep(300),
@@ -89,6 +93,12 @@ Onewire::Onewire(void)
     dump();
 }
 
+///
+/// Set the value in a 1wire file
+/// @param device The full device name including the family, ie... "28.021316A4D6AA"
+/// @param file The base name of the file to read
+/// @param value The value to set the file to
+///
 void
 Onewire::setValue(const std::string &device, const std::string &file,
                   const std::string &value)
@@ -113,7 +123,13 @@ Onewire::setValue(const std::string &device, const std::string &file,
     entry.close();
 }
 
-// extract a value from an owfs file
+///
+/// Get the value from a 1wire file
+/// @param device The full device name including the family, ie... "28.021316A4D6AA"
+/// @param file The base name of the file to read
+/// @param result String to hold the returned value
+/// @return the value from the file
+///
 std::string &
 Onewire::getValue(const std::string &device, std::string file, std::string &result)
 {
@@ -146,6 +162,10 @@ Onewire::getValue(const std::string &device, std::string file, std::string &resu
     return result;
 }
 
+///
+/// Get all the temperatures from all the temperture sensors
+/// @return The temperatures from all temperature sensors
+///
 std::map<std::string, boost::shared_ptr<temperature_t>> &
 Onewire::getTemperatures(void)
 {
@@ -201,6 +221,9 @@ Onewire::getTemperatures(void)
     return _temps;
 }
 
+///
+/// Initialize the table of 1wire sensor data
+///
 void
 Onewire::initTable(void)
 {
@@ -277,17 +300,9 @@ Onewire::initTable(void)
     _family["20"] = {"Voltage", "DS2450", UNSUPPORTED};
 }
 
-std::string &
-Onewire::readBus(const std::string &device, std::string &data)
-{
-    DEBUGLOG_REPORT_FUNCTION;
-
-    ///sys/bus/w1/devices/28-021316a4d6aa/w1_slave
-
-    return data;
-}
-               
-
+///
+/// Dump data about the sensors
+///
 void
 Onewire::dump(void)
 {

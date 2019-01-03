@@ -32,14 +32,19 @@
 extern const int OWPORT;
 extern const char *OWHOST;
 
-// Data for each sensor
-struct ownet {
+/// \typedef ownet_t
+/// Holds data for an ownet connection
+typedef struct ownet {
     std::string family;
     std::string id;
     std::string type;
     std::string device;
-} typedef ownet_t;
+} ownet_t;
 
+///
+/// \class Ownet
+/// Construct a class for the ownet protocol
+///
 class Ownet
 {
 private:
@@ -75,7 +80,7 @@ public:
     bool hasSensors(void) { return (_sensors.size() > 0) ? true : false; };
 
     // extract a value from an owfs file
-    std::string getValue(const std::string &device, std::string file);
+    std::string &getValue(const std::string &device, std::string file, std::string &result);
 
     // return a handle to all the sensors
     const boost::shared_ptr<ownet_t> &getSensor(const std::string &device) {
