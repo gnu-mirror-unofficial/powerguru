@@ -18,13 +18,13 @@
 #ifndef __OWNET_H__
 #define __OWNET_H__
 
+#include <owcapi.h>
+#include <boost/algorithm/string.hpp>
+#include <boost/shared_ptr.hpp>
 #include <mutex>
 #include <string>
 #include <vector>
 #include <map>
-#include <owcapi.h>
-#include <boost/algorithm/string.hpp>
-#include <boost/shared_ptr.hpp>
 #include "onewire.h"
 #include "log.h"
 
@@ -41,6 +41,8 @@ typedef struct ownet {
     std::string device;
 } ownet_t;
 
+void initTable(std::map<std::string, family_t> &result);
+
 ///
 /// \class Ownet
 /// Construct a class for the ownet protocol
@@ -48,12 +50,12 @@ typedef struct ownet {
 class Ownet
 {
 private:
-    enum family_t {CONTROL = 05, THERMOMETER = 10, THERMOMETER2 = 28};
     std::map<std::string, boost::shared_ptr<ownet_t>> _sensors;
     bool        _owserver;
     std::mutex  _mutex;
     int         _poll_sleep;
     char        _scale;
+    std::map<std::string, family_t> _family;
 public:
     Ownet(void);
     Ownet(std::string &host);
@@ -91,7 +93,8 @@ public:
         return _sensors;
     };
     
-    // get all the temperature fields for a device.
+    std::map<std::string, boost::shared_ptr<battery_t>> &getBatteries(void);
+
     const boost::shared_ptr<temperature_t> getTemperature(const std::string &device);
     
     void dump(void);

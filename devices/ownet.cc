@@ -15,10 +15,12 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#include <string>
 #include <boost/algorithm/string.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
+#include <string>
+#include <map>
+#include "onewire.h"
 #include "ownet.h"
 #include "log.h"
 
@@ -33,6 +35,9 @@ Ownet::Ownet(void)
       _owserver(false)
 {
 //    DEBUGLOG_REPORT_FUNCTION;
+    
+    // Initialize the table of family types
+    initTable(_family);
 }
 
 ///
@@ -42,7 +47,6 @@ Ownet::Ownet(std::string &host)
     : Ownet()
 {
 //    DEBUGLOG_REPORT_FUNCTION;
-
     int retries = 2;
     if (host.find(':') == std::string::npos) {
         host += ":" + std::to_string(OWPORT);

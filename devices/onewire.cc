@@ -15,15 +15,18 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#include <string>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 #include <iostream>
-#include <cstdio>
+#include <string>
+#include <map>
 #include <streambuf>
 #include "onewire.h"
 #include "log.h"
+
+//std::map<const std::string, family_t> initTable(
+//    std::map<const std::string, family_t> &result);
 
 ///
 /// \class Onewire
@@ -38,7 +41,7 @@ Onewire::Onewire(void)
 //    DEBUGLOG_REPORT_FUNCTION;
 
     // Initialize the table of family types
-    initTable();
+    initTable(_family);
 
 #if 0
     boost::filesystem::path p(_rootdir);
@@ -81,10 +84,8 @@ Onewire::Onewire(void)
                     owire->id = owire->device.substr(3, owire->device.size());
                     owire->bus = true;
                     owire->type =  _family[owire->family].chips;
-                    std::cerr << "BUS path found: " << result <<  std::endl;
                     _sensors[x.path().string()] = owire;
                 }
-                //readBus()
             }  
         }
     }
@@ -92,6 +93,11 @@ Onewire::Onewire(void)
     setValue("", "/settings/units/temperature_scale", "F");
     dump();
 }
+
+Onewire::~Onewire(void)
+{
+//    DEBUGLOG_REPORT_FUNCTION;
+};
 
 ///
 /// Set the value in a 1wire file
@@ -222,85 +228,6 @@ Onewire::getTemperatures(void)
 }
 
 ///
-/// Initialize the table of 1wire sensor data
-///
-void
-Onewire::initTable(void)
-{
-//    DEBUGLOG_REPORT_FUNCTION;
-
-    // This is a complete chart of all supported 1 wire sensors from
-    // http://owfs.org/index.php?page=family-code-list. This is
-    // mostly used for identifying the type of sensor, and display
-    // purposes.
-    _family["A2"] = {"AC Voltage", "mCM001", ACVOLTAGE};
-    _family["82"] = {"Authorization", "DS1425", AUTH};
-    _family["30"] = {"Battery", "DS2760", BATTERY};
-    _family["32"] = {"Battery", "DS2780", BATTERY};
-    _family["35"] = {"Battery", "DS2755", BATTERY};
-    _family["2E"] = {"Battery", "DS2770", BATTERY};
-    _family["3D"] = {"Battery", "DS2781", BATTERY};
-    _family["31"] = {"Battery ID", "DS2720", BATTERY};
-    _family["26"] = {"Battery monitor", "DS2438", BATTERY};
-    _family["51"] = {"Battery monitor", "DS2751", BATTERY};
-    _family["1B"] = {"Battery monitor", "DS2436", BATTERY};
-    _family["1E"] = {"Battery monitor", "DS2437", BATTERY};
-    _family["24"] = {"Clock", "DS2415", CLOCK};
-    _family["27"] = {"Clock + interrupt", "DS2417", CLOCK};
-    _family["36"] = {"Coulomb counter", "DS2740", UNSUPPORTED};
-    _family["1D"] = {"Counter", "DS2423", UNSUPPORTED};
-    _family["16"] = {"crypto-ibutton", "DS1954 DS1957", UNSUPPORTED};
-    _family["B2"] = {"DC Current or Voltage", "mAM001", DCVOLTAGE};
-    _family["04"] = {"EconoRam Time chi", "DS2404", UNSUPPORTED};
-    _family["7E"] = {"Envoronmental Monitors", "EDS00xx", UNSUPPORTED};
-    _family["41"] = {"Hygrocron", "DS1923", UNSUPPORTED};
-    _family["81"] = {"ID found in DS2490R and DS2490B USB adapters", "USB id", UNSUPPORTED};
-    _family["01"] = {"ID-only", "DS2401 DS2411 DS1990R DS2490A", UNSUPPORTED};
-    _family["A6"] = {"IR Temperature", "mTS017", UNSUPPORTED};
-    _family["06"] = {"Memory", "DS1993", UNSUPPORTED};
-    _family["08"] = {"Memory", "DS1992", UNSUPPORTED};
-    _family["09"] = {"Memory", "DS2502 DS2703 DS2704", UNSUPPORTED};
-    _family["14"] = {"Memory", "DS2430A", UNSUPPORTED};
-    _family["23"] = {"Memory", "DS2433 DS1973", UNSUPPORTED};
-    _family["43"] = {"Memory", "DS28EC20", UNSUPPORTED};
-    _family["0B"] = {"Memory", "DS2505", UNSUPPORTED};
-    _family["0F"] = {"Memory", "DS2506", UNSUPPORTED};
-    _family["2D"] = {"Memory", "DS2431 DS1972", UNSUPPORTED};
-    _family["1F"] = {"Microhub", "DS2409", UNSUPPORTED};
-    _family["EF"] = {"Moisture meter.4 Channel Hub 1A", "DS1963L Monetary iButton", UNSUPPORTED};
-    _family["02"] = {"Multikey", "DS1991", UNSUPPORTED};
-    _family["37"] = {"password EEPROM", "DS1977", UNSUPPORTED};
-    _family["FC"] = {"Moisture Hub", "BAE0910 BAE0911", UNSUPPORTED};
-    _family["00"] = {"Provide location information", "Link locator", UNSUPPORTED};
-    _family["A0"] = {"Rotation Sensor", "mRS001", UNSUPPORTED};
-    _family["18"] = {"SHA iButton", "DS1963S DS1962", UNSUPPORTED};
-    _family["44"] = {"SHA-1 Authenticator", "DS28E10", UNSUPPORTED};
-    _family["34"] = {"SHA-1 Battery", "DS2703", UNSUPPORTED};
-    _family["33"] = {"SHA-1 ibutton", "DS1961s DS2432", UNSUPPORTED};
-    _family["FF"] = {"Swart LCD", "LCD", UNSUPPORTED};
-    _family["05"] = {"Switch", "Ds2405", UNSUPPORTED};
-    _family["12"] = {"Switch", "DS2406", UNSUPPORTED};
-    _family["29"] = {"Switch", "DS2408", UNSUPPORTED};
-    _family["1C"] = {"Switch", "DS28E04-100", UNSUPPORTED};
-    _family["3A"] = {"Switch", "DS2413", UNSUPPORTED};
-    _family["10"] = {"Temperature", "DS18S20", TEMPERATURE};
-    _family["22"] = {"Temperature", "DS1922", TEMPERATURE};
-    _family["28"] = {"Temperature", "DS18B20", TEMPERATURE};
-    _family["3B"] = {"Temperature/memory", "DS1825 X31826", UNSUPPORTED};
-    _family["42"] = {"Temperature/IO", "DS28EA00", UNSUPPORTED};
-    _family["B1"] = {"Thermocouple Converter", "mTC001", UNSUPPORTED};  
-    _family["B3"] = {"Thermocouple Converter", "mTC002", UNSUPPORTED};
-    _family["21"] = {"Thermocron", "DS1921", UNSUPPORTED};
-    _family["EE"] = {"Ultra Violet Index", "UVI", UNSUPPORTED};
-    _family["89"] = {"Uniqueware", "DS1982U", UNSUPPORTED};
-    _family["8B"] = {"Uniqueware", "DS1985U", UNSUPPORTED};
-    _family["8F"] = {"Uniqueware", "DS1986U", UNSUPPORTED};
-    _family["2C"] = {"Varible Resitor", "DS2890", UNSUPPORTED};
-    _family["A1"] = {"Vibratio", "mVM001", UNSUPPORTED};
-    _family["20"] = {"Voltage", "DS2450", UNSUPPORTED};
-}
-
-///
 /// Dump data about the sensors
 ///
 void
@@ -323,6 +250,85 @@ Onewire::dump(void)
     }
 }
 
+///
+/// Initialize the table of 1wire sensor data
+///
+void
+initTable(std::map<std::string, family_t> &result)
+{
+//    DEBUGLOG_REPORT_FUNCTION;
+
+    // This is a complete chart of all supported 1 wire sensors from
+    // http://owfs.org/index.php?page=family-code-list. This is
+    // mostly used for identifying the type of sensor, and display
+    // purposes.
+    result["A2"] = {"AC Voltage", "mCM001", ACVOLTAGE};
+    result["82"] = {"Authorization", "DS1425", AUTH};
+    result["30"] = {"Battery", "DS2760", BATTERY};
+    result["32"] = {"Battery", "DS2780", BATTERY};
+    result["35"] = {"Battery", "DS2755", BATTERY};
+    result["2E"] = {"Battery", "DS2770", BATTERY};
+    result["3D"] = {"Battery", "DS2781", BATTERY};
+    result["31"] = {"Battery ID", "DS2720", BATTERY};
+    result["26"] = {"Battery monitor", "DS2438", BATTERY};
+    result["51"] = {"Battery monitor", "DS2751", BATTERY};
+    result["1B"] = {"Battery monitor", "DS2436", BATTERY};
+    result["1E"] = {"Battery monitor", "DS2437", BATTERY};
+    result["24"] = {"Clock", "DS2415", CLOCK};
+    result["27"] = {"Clock + interrupt", "DS2417", CLOCK};
+    result["36"] = {"Coulomb counter", "DS2740", UNSUPPORTED};
+    result["1D"] = {"Counter", "DS2423", UNSUPPORTED};
+    result["16"] = {"crypto-ibutton", "DS1954 DS1957", UNSUPPORTED};
+    result["B2"] = {"DC Current or Voltage", "mAM001", DCVOLTAGE};
+    result["04"] = {"EconoRam Time chi", "DS2404", UNSUPPORTED};
+    result["7E"] = {"Envoronmental Monitors", "EDS00xx", UNSUPPORTED};
+    result["41"] = {"Hygrocron", "DS1923", UNSUPPORTED};
+    result["81"] = {"ID found in DS2490R and DS2490B USB adapters", "USB id", UNSUPPORTED};
+    result["01"] = {"ID-only", "DS2401 DS2411 DS1990R DS2490A", UNSUPPORTED};
+    result["A6"] = {"IR Temperature", "mTS017", UNSUPPORTED};
+    result["06"] = {"Memory", "DS1993", UNSUPPORTED};
+    result["08"] = {"Memory", "DS1992", UNSUPPORTED};
+    result["09"] = {"Memory", "DS2502 DS2703 DS2704", UNSUPPORTED};
+    result["14"] = {"Memory", "DS2430A", UNSUPPORTED};
+    result["23"] = {"Memory", "DS2433 DS1973", UNSUPPORTED};
+    result["43"] = {"Memory", "DS28EC20", UNSUPPORTED};
+    result["0B"] = {"Memory", "DS2505", UNSUPPORTED};
+    result["0F"] = {"Memory", "DS2506", UNSUPPORTED};
+    result["2D"] = {"Memory", "DS2431 DS1972", UNSUPPORTED};
+    result["1F"] = {"Microhub", "DS2409", UNSUPPORTED};
+    result["EF"] = {"Moisture meter.4 Channel Hub 1A", "DS1963L Monetary iButton", UNSUPPORTED};
+    result["02"] = {"Multikey", "DS1991", UNSUPPORTED};
+    result["37"] = {"password EEPROM", "DS1977", UNSUPPORTED};
+    result["FC"] = {"Moisture Hub", "BAE0910 BAE0911", UNSUPPORTED};
+    result["00"] = {"Provide location information", "Link locator", UNSUPPORTED};
+    result["A0"] = {"Rotation Sensor", "mRS001", UNSUPPORTED};
+    result["18"] = {"SHA iButton", "DS1963S DS1962", UNSUPPORTED};
+    result["44"] = {"SHA-1 Authenticator", "DS28E10", UNSUPPORTED};
+    result["34"] = {"SHA-1 Battery", "DS2703", UNSUPPORTED};
+    result["33"] = {"SHA-1 ibutton", "DS1961s DS2432", UNSUPPORTED};
+    result["FF"] = {"Swart LCD", "LCD", UNSUPPORTED};
+    result["05"] = {"Switch", "Ds2405", UNSUPPORTED};
+    result["12"] = {"Switch", "DS2406", UNSUPPORTED};
+    result["29"] = {"Switch", "DS2408", UNSUPPORTED};
+    result["1C"] = {"Switch", "DS28E04-100", UNSUPPORTED};
+    result["3A"] = {"Switch", "DS2413", UNSUPPORTED};
+    result["10"] = {"Temperature", "DS18S20", TEMPERATURE};
+    result["22"] = {"Temperature", "DS1922", TEMPERATURE};
+    result["28"] = {"Temperature", "DS18B20", TEMPERATURE};
+    result["3B"] = {"Temperature/memory", "DS1825 X31826", UNSUPPORTED};
+    result["42"] = {"Temperature/IO", "DS28EA00", UNSUPPORTED};
+    result["B1"] = {"Thermocouple Converter", "mTC001", UNSUPPORTED};  
+    result["B3"] = {"Thermocouple Converter", "mTC002", UNSUPPORTED};
+    result["21"] = {"Thermocron", "DS1921", UNSUPPORTED};
+    result["EE"] = {"Ultra Violet Index", "UVI", UNSUPPORTED};
+    result["89"] = {"Uniqueware", "DS1982U", UNSUPPORTED};
+    result["8B"] = {"Uniqueware", "DS1985U", UNSUPPORTED};
+    result["8F"] = {"Uniqueware", "DS1986U", UNSUPPORTED};
+    result["2C"] = {"Varible Resitor", "DS2890", UNSUPPORTED};
+    result["A1"] = {"Vibratio", "mVM001", UNSUPPORTED};
+    result["20"] = {"Voltage", "DS2450", UNSUPPORTED};
+}
+    
 // local Variables:
 // mode: C++
 // indent-tabs-mode: nil

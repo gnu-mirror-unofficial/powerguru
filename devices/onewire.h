@@ -31,10 +31,8 @@
 #include <boost/filesystem.hpp>
 #include "log.h"
 
-///
 /// \typedef onewire_t
 /// Contains data about each 1 wire sensor
-///
 typedef struct onewire {
     std::string family;         ///< The family type, a 2 digit code
     std::string id;             ///< The device ID of the sensor
@@ -43,10 +41,8 @@ typedef struct onewire {
     bool bus;                   ///< Whether the data is in owfs or not
 } onewire_t;
 
-///
 /// \struct temperature_t
 /// Contains data from a 1 wire temperature sensor
-///
 typedef struct temperature {
     std::string family;         ///< The family type, a 2 digit code
     std::string id;             ///< The device ID of the sensor
@@ -56,6 +52,14 @@ typedef struct temperature {
     float hightemp;             ///< The highest temperature seen
     char scale;                 ///< The scale, 'C' or 'F'
 } temperature_t;
+
+/// \typedef battery_t
+/// Contains data from a 1 wire battery monitor
+typedef struct battery {
+    float current;
+    float volts;
+    bool  DC;
+} battery_t;
 
 /// \enum family_e
 /// Represents all possible 1wire sensors types
@@ -71,12 +75,15 @@ typedef enum { ACVOLTAGE,
 } family_e;
 
 /// \typedef family_t
-/// Base Data for all 1wire sensors
+/// Base Data for all 1 wire sensors
 typedef struct family {
     std::string description;    ///< The description of this sensor
     std::string chips;          ///< The Dallas Semiconductor chip used for this sensor
     family_e    type;           ///< The type of 1wire sensor
 } family_t;
+
+///< Initialize table of 1 wire family data
+extern void initTable(std::map<std::string, ::family_t> &result);
 
 class Onewire {
 private:
@@ -89,26 +96,21 @@ private:
     std::string _rootdir;       ///< Root directory for 1wire sensors
     bool _mounted = true;       ///< Whether the data is in owfs or /sys
     ///< Table of family types of supported sensors
-    std::map<const std::string, family_t> _family;
+    std::map<std::string, family_t> _family;
     ///< All the currently installed sensors
     std::map<std::string, boost::shared_ptr<onewire_t>> _sensors;
-    void initTable(void);       ///< Initialize table of 1wire family data
 public:
     Onewire(void);
-    ~Onewire(void) {};
+    ~Onewire(void);
 
     char setScale(char scale);
     bool isMounted() { return _mounted; };
 
     // Thread have a polling frequency to avoid eating up all the cpu cycles
     // by polling to quickly.
-    int getPollSleep(void) {
-        return _poll_sleep;
-    }
+    int getPollSleep(void) { return _poll_sleep; }
 
-    void setPollSleep(int x) {
-        _poll_sleep = x;
-    }
+    void setPollSleep(int x) { _poll_sleep = x; }
 
     // see if any 1 wire sensors were found during scanning
     bool hasSensors(void) {
@@ -119,9 +121,7 @@ public:
         }
     }
 
-    float convertScale(float inc) {
-        return (inc * 1.8) + 32.0;
-    }
+    float convertScale(float inc) { return (inc * 1.8) + 32.0; }
     
     // extract a value from an owfs file
     std::string &getValue(const std::string &device, std::string file,
@@ -130,8 +130,8 @@ public:
     void setValue(const std::string &device, const std::string &file,
                           const std::string &value);
 
-    // get all the temperature fields for a device.
-    std::map<std::string, boost::shared_ptr<temperature_t>> &getTemperatures(void);               
+    std::map<std::string, boost::shared_ptr<temperature_t>> &getTemperatures(void);
+    //std::map<std::string, boost::shared_ptr<battery_t>> &getBatteries(void);
     void dump(void);
     
     std::vector<std::string> &
