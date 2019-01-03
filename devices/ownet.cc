@@ -27,7 +27,7 @@ const int OWPORT = 4304;
 const char *OWHOST = "localhost";
 
 Ownet::Ownet(void)
-    : _poll_sleep(60),
+    : _poll_sleep(300),
       _scale('F'),
       _owserver(false)
 {
@@ -52,7 +52,8 @@ Ownet::Ownet(std::string &host)
     // but always does on the second.
     while (retries-- > 0) {
         if (OW_init(argv.c_str()) < 0) {
-            BOOST_LOG_SEV(lg, severity_level::warning) << "Couldn't connect to owserver with " << argv;
+            BOOST_LOG_SEV(lg, severity_level::warning)
+                << "Couldn't connect to owserver with " << argv;
             //return;
         } else {
             BOOST_LOG(lg) << "Connected to owserver on host " << host;
@@ -103,6 +104,8 @@ Ownet::Ownet(std::string &host)
         std::lock_guard<std::mutex> guard(_mutex);
         _sensors[*it] = data;
     }
+
+    dump();
 }
 
 const boost::shared_ptr<temperature_t>
@@ -121,9 +124,16 @@ Ownet::getTemperature(const std::string &device)
         temp->family = getValue(device, "family");
         temp->id = getValue(device, "id");
         temp->type = getValue(device, "type");
-        temp->temp = std::stof(getValue(device, "temperature"));
-        temp->lowtemp =std::stof(getValue(device, "templow"));
-        temp->hightemp = std::stof(getValue(device, "temphigh"));
+        try {
+            temp->temp = std::stof(getValue(device, "temperature"));
+            temp->lowtemp =std::stof(getValue(device, "templow"));
+            temp->hightemp = std::stof(getValue(device, "temphigh"));
+        } catch (const std::exception& e) {
+            temp->temp = 0;
+            temp->lowtemp = 0;
+            temp->hightemp = 0;
+        }
+
         char *buffer;
         size_t blen;
         OW_get("/settings/units/temperature_scale", &buffer, &blen);

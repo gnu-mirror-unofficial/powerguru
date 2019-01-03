@@ -69,11 +69,12 @@ Onewire::Onewire(void)
                 if (boost::regex_match(x.path().string(), boost::regex(_rootdir + "/[a-z0-9-]*"))) {
                     _mounted = true;
                     boost::shared_ptr<onewire_t> owire(new onewire_t);
-                    owire->device = x.path().string();
+                    std::cerr << x.path().string().size() << std::endl;
                     std::string result;
+                    owire->device = x.path().filename().string();
                     getValue(owire->device, "name", result);
-                    owire->family = result.substr(0,2);
-                    owire->id = result.substr(3,result.size());
+                    owire->family = owire->device.substr(0,2);
+                    owire->id = owire->device.substr(3, owire->device.size());
                     owire->bus = true;
                     owire->type =  _family[owire->family].chips;
                     std::cerr << "BUS path found: " << result <<  std::endl;
@@ -131,12 +132,10 @@ Onewire::getValue(const std::string &device, std::string file, std::string &resu
     }
     filespec += file;
     try {
-        BOOST_LOG_SEV(lg, severity_level::debug) << "Opening " << filespec;
         std::ifstream entry(filespec);
         entry.rdbuf()->pubsetbuf(0, 0);
         std::stringstream buffer;
         buffer << entry.rdbuf();
-        //entry >> result;
         result = buffer.str();
         entry.close();
     } catch (const std::exception& e) {
@@ -163,15 +162,15 @@ Onewire::getTemperatures(void)
         std::string result;
         if (sit->second->bus == true) {
             getValue(sit->first, "w1_slave", result);
-            std::cerr << "POS: " << result.find('t=') << std::endl;
+            // FIXME: calculate the position value
             std::string value = result.substr(69, result.size());
-            //std::string value = result.substr(result.find('t='), result.size());
             temp->scale = _scale;
             temp->temp = std::stof(value)/1000;
+            temp->lowtemp = 0;
+            temp->hightemp = 0;
             if (_scale == 'F') {
                 temp->temp = convertScale(temp->temp);
             }
-            
             _temps[sit->first] = temp;
         } else {
             getValue(sit->first, "temperature", result);
