@@ -65,6 +65,17 @@ CREATE TABLE onewire (
   scale char(1) NOT NULL default 'F'
 );
 
+DROP TABLE IF EXISTS battery;
+CREATE TABLE battery (
+  family integer NOT NULL default '0',
+  id char(16) NOT NULL default '0',
+  alias char(16) NOT NULL default '0',
+  type char(12) NOT NULL default '0',
+  "timestamp" timestamp without time zone,
+  current float NOT NULL default '0',
+  volts float NOT NULL default '0'
+);
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
