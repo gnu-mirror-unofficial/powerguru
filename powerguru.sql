@@ -34,6 +34,10 @@
 --
 -- Name: data; Type: TYPE; Schema: public; Owner: rob
 --
+CREATE TYPE public.volt_type AS ENUM (
+    'AC',
+    'DC'
+);
 
 CREATE TYPE public.wire_type AS ENUM (
     'ACVOLTAGE',
@@ -93,6 +97,7 @@ CREATE TABLE battery (
   id char(16) NOT NULL default '0',
   current float NOT NULL default '0',
   volts float NOT NULL default '0',
+  type volt_type NOT NULL default 'DC',
   "timestamp" timestamp without time zone
 );
 
