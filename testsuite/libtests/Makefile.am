@@ -20,9 +20,14 @@
 
 AUTOMAKE_OPTIONS = dejagnu subdir-objects
 
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/lib $(LIBXML_CPPFLAGS) $(PQ_CPPFLAGS) -DSRCDIR=\"$(srcdir)\"
+AM_CPPFLAGS = -I$(top_srcdir) \
+	-I$(top_srcdir)/lib \
+	-I$(top_srcdir)/devices \
+	$(LIBXML_CPPFLAGS) \
+	$(PQ_CPPFLAGS) \
+	-DSRCDIR=\"$(srcdir)\"
 
-check_PROGRAMS =  tcpip tutil childtcpip
+check_PROGRAMS =  tcpip tutil childtcpip db
 TESTS = $(check_PROGRAMS)
 
 if BUILD_LIBXML
@@ -45,6 +50,10 @@ tcpip_DEPENDENCIES = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG)
 tutil_SOURCES = tcputil-test.cc
 tutil_LDADD = ../../lib/tcputil.lo  $(LOG)
 tutil_DEPENDENCIES = ../../lib/tcputil.lo $(LOG)
+
+db_SOURCES = db-test.cc
+db_LDADD =  $(LOG) -lpthread
+db_DEPENDENCIES = $(LOG)
 
 childtcpip_SOURCES = childtcpip.cc
 childtcpip_LDADD = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG)
