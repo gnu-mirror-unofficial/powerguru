@@ -21,12 +21,15 @@
 # include "config.h"
 #endif
 
-#include <unistd.h>
+#include <string>
 #include <vector>
+#include <boost/shared_ptr.hpp>
+#include <boost/regex.hpp>
+#include <boost/algorithm/string.hpp>
 #include "dejagnu.h"
 #include "database.h"
 #include "log.h"
-#include <boost/regex.hpp>
+#include "onewire.h"
 
 int verbosity;
 static void usage (void);
@@ -49,15 +52,74 @@ public:
     Test() {
         DEBUGLOG_REPORT_FUNCTION;
 
-        // Test creating commands
         std::string result;
+        // Test creating commands
         std::cerr << gettime(result) << std::endl;
         
-        if (boost::regex_match(result, boost::regex("[0-9 :\-]*"))) {
+        if (boost::regex_match(result, boost::regex("[0-9 :-]*"))) {
             runtest.pass("gettime()");
         } else {
             runtest.fail("gettime())");
         }
+
+        // Reset the output buffer and test formatting a temperature entry
+        result.clear();
+        boost::shared_ptr<temperature_t> temp(new temperature_t);
+        temp->wire.family = "28";
+        temp->wire.id = "67C6697351FF";
+        temp->wire.chips = "DS18B20";
+        temp->wire.device = "10.67C6697351FF";
+        temp->wire.type = TEMPERATURE;
+        temp->wire.bus = false;
+        temp->temp = 50.0;
+        temp->lowtemp = 51.1;
+        temp->hightemp = 52.2;
+        temp->scale = 'F';
+        formatQuery(temp, result);
+
+        // Split the string cause it's easier to match than a complex regex
+        std::vector<std::string> items;
+        boost::split(items, result, boost::is_any_of(","));        
+        if (items[0] == "28"
+            && items[1] == " '67C6697351FF'"
+            && items[2] == " '5'"
+            && items[4] == " 51.099998"
+            && items[5] == " 52.200001"
+            && items[6] == " 50.000000" && items[7] == " 'F'") {
+            runtest.pass("formatQuery(temperature_t)");
+        } else {
+            runtest.fail("formatQuery(temperature_t)");
+        }        
+        
+        // Reset the output buffer and test formatting a temperature entry
+        result.clear();
+        
+        boost::shared_ptr<battery_t> batt(new battery_t);
+        batt->wire.family = "B2";
+        batt->wire.id = "4AEC29CDBAAB";
+        batt->wire.chips = "mAM001";
+        batt->wire.device = "B2.4AEC29CDBAAB";
+        batt->wire.type = BATTERY;
+        batt->wire.bus = false;
+        batt->current = 2.3;
+        batt->volts = 14.3;
+        batt->DC = true;
+
+        formatQuery(batt, result);
+
+        // Split the string cause it's easier to match than a complex regex
+        items.clear();
+        boost::split(items, result, boost::is_any_of(","));
+        if (items[0] == "B2"
+            && items[1] == " '4AEC29CDBAAB'"
+            && items[3] == " '3'"
+            && items[5] == " 2.300000"
+            && items[6] == " 14.300000"
+        ) {
+            runtest.pass("formatQuery(battery_t)");
+        } else {
+            runtest.fail("formatQuery(battery_t)");
+        }        
     };
     
     ~Test() {};
