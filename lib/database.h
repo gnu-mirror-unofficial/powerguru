@@ -24,12 +24,20 @@
 #include "config.h"
 #endif
 
-#include <iostream> 
+#include <boost/date_time.hpp>
+#include <boost/date_time/date_facet.hpp>
+#include "boost/date_time/gregorian/gregorian.hpp"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include "boost/date_time/local_time/local_time.hpp"
+#include <iostream>
+#include <sstream>
 #include <cstring>
 #include <list>
+#include <map>
 #include <iomanip> 
 #include <vector>
 #include <sys/time.h>
+#include "onewire.h"
 
 #ifdef HAVE_MARIADB
 # include <mysql/errmsg.h>
@@ -77,23 +85,29 @@ typedef struct
 }  meter_data_t ;
 #endif
 
+/// \class Database
+/// This is the base class for database access
 class Database
 {
 public:
     Database();
     ~Database();
-  
+
+    /// \function gettime
+    /// Return a timestamp field
+    /// @param a string to hold the formatted result
+    /// @return returns a timestamp as a string
+    // 2019-01-04 08:34:34
     std::string &gettime(std::string &time) {
-        struct timeval tp;
-        struct tm *tm, result;
-        char tmpbuf[30];  
-        gettimeofday(&tp, 0);
-        tm = localtime_r(&(tp.tv_sec), &result);
-        asctime(tm);
-        memset(tmpbuf, 0, 20);
-        strftime(tmpbuf, 20, "%Y-%m-%d %H:%M:%S", tm);
-//    DBG_MSG(DBG_INFO, "TIMESTAMP is %s\n", tmpbuf);
-        time = tmpbuf;
+        DEBUGLOG_REPORT_FUNCTION;
+        using namespace boost::posix_time;
+        boost::posix_time::ptime localtime = boost::posix_time::second_clock::local_time();
+        static std::locale loc(std::cout.getloc(), new time_facet("%Y-%m-%d %H:%M:%S"));
+        std::stringstream ss;
+        ss.imbue(loc);
+        ss << localtime;
+        time = ss.str();
+        std::cerr << "Time is: " << time << std::endl;
         return time;
     }
 
@@ -112,8 +126,46 @@ public:
     void dbPasswdSet(std::string passwd);
     void dbNameSet(std::string name);
     void dbHostSet(std::string host);
+
+    // family | id | type | timestamp | temphigh | templow | temperature | scale
+    std::string formatQuery(boost::shared_ptr<temperature_t> &temp,
+                            std::string &result) {
+        DEBUGLOG_REPORT_FUNCTION;
+        std::string stamp;
+        result = temp->wire.family;
+        result += ", \'" + temp->wire.id + "\'";
+        result += ", \'" + std::to_string(temp->wire.type) + "\'";
+        result += ", \'" + gettime(stamp) + "\'";
+        result += ", " + std::to_string(temp->lowtemp);
+        result +=  ", " + std::to_string(temp->hightemp);
+        result += ", " + std::to_string(temp->temp) + ", \'";
+        result += temp->scale;
+        result += "\'";
+
+        std::cerr << "Formatted Query is: " << result << std::endl;
+        return result;
+    }
+
+    // family | id | alias | type | timestamp | current | volts
+    std::string formatQuery(const boost::shared_ptr<battery_t> &batt,
+                            std::string &result) {
+        DEBUGLOG_REPORT_FUNCTION;
+
+        std::string stamp;
+        result = batt->wire.family;
+        result += ", \'" + batt->wire.id + "\'";
+        result += ", \'" + batt->wire.alias + "\'";
+        result += ", \'" + std::to_string(batt->wire.type) + "\'";
+        result += ", \'" + gettime(stamp) + "\'";
+        result += ", " + std::to_string(batt->current);
+        result += ", " + std::to_string(batt->volts);
+
+        std::cerr << "Formtted Query is: " << result << std::endl;
+        return result;
+    }
 private:
     enum {CLOSED, OPENED} state;
+    std::map<std::string, family_t> _family;
     dbtype          _dbtype;
     int             _dbport;
     std::string     _dbuser;
