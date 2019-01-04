@@ -32,6 +32,21 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE="NO_AUTO_VALUE_ON_ZERO" */;
 
 --
+-- Name: data; Type: TYPE; Schema: public; Owner: rob
+--
+
+CREATE TYPE public.wire_type AS ENUM (
+    'ACVOLTAGE',
+    'DCVOLTAGE',
+    'AUTH',
+    'BATTERY',
+    'CLOCK',
+    'TEMPERATURE',
+    'MOISTURE',
+    'UNSUPPORTED'
+);
+
+--
 -- Table structure for table `meters`
 --
 DROP TABLE IF EXISTS meters;
@@ -55,25 +70,30 @@ CREATE TABLE meters (
 
 DROP TABLE IF EXISTS onewire;
 CREATE TABLE onewire (
-  family integer NOT NULL default '0',
-  id char(16) NOT NULL default '0',
-  type char(12) NOT NULL default '0',
-  "timestamp" timestamp without time zone,
+  family char(2) NOT NULL default '0',
+  id varchar(12) NOT NULL default '0',
+  alias varchar(12) NOT NULL default '0',
+  chips varchar(24) NOT NULL default '0',
+  type  wire_type NOT NULL default 'UNSUPPORTED',
+  "timestamp" timestamp without time zone
+);
+
+DROP TABLE IF EXISTS temperature;
+CREATE TABLE temperature (
+  id varchar(12) NOT NULL default '0',
+  temperature float NOT NULL default '0',
   temphigh float NOT NULL default '0',
   templow float NOT NULL default '0',
-  temperature float NOT NULL default '0',
-  scale char(1) NOT NULL default 'F'
+  scale char(1) NOT NULL default 'F',
+  "timestamp" timestamp without time zone
 );
 
 DROP TABLE IF EXISTS battery;
 CREATE TABLE battery (
-  family integer NOT NULL default '0',
   id char(16) NOT NULL default '0',
-  alias char(16) NOT NULL default '0',
-  type char(12) NOT NULL default '0',
-  "timestamp" timestamp without time zone,
   current float NOT NULL default '0',
-  volts float NOT NULL default '0'
+  volts float NOT NULL default '0',
+  "timestamp" timestamp without time zone
 );
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
