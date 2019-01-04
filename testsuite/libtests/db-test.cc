@@ -37,10 +37,6 @@ bool waitforgdb = false;
 
 TestState runtest;
 
-Database::Database() {
-    DEBUGLOG_REPORT_FUNCTION;
-};
-
 Database::~Database() {
         DEBUGLOG_REPORT_FUNCTION;
 };
@@ -62,15 +58,35 @@ public:
             runtest.fail("gettime())");
         }
 
+        std::vector<std::string> items;
+
+        // family | id | alias | chips | type | timestamp 
+        result.clear();
+        boost::shared_ptr<onewire_t> one(new onewire_t);
+        one->family = "24";
+        one->id = "97C6697351AB";
+        one->alias = "";
+        one->chips = "DS2415";
+        one->type = CLOCK;
+        formatQuery(one, result);
+
+        boost::split(items, result, boost::is_any_of(","));        
+        std::cerr << items[1] << std::endl;        
+        if (items[0] == "'24'"
+            && items[1] == " '97C6697351AB'"
+            && items[3] == " 'DS2415'"
+            && items[4] == " CLOCK"
+        ) {
+            runtest.pass("formatQuery(onewire_t)");
+        } else {
+            runtest.fail("formatQuery(onewire_t)");
+        }        
+        
         // Reset the output buffer and test formatting a temperature entry
+        //  id | temperature | temphigh | templow | scale | timestamp
         result.clear();
         boost::shared_ptr<temperature_t> temp(new temperature_t);
-        temp->wire.family = "28";
-        temp->wire.id = "67C6697351FF";
-        temp->wire.chips = "DS18B20";
-        temp->wire.device = "10.67C6697351FF";
-        temp->wire.type = TEMPERATURE;
-        temp->wire.bus = false;
+        temp->id = "67C6697351FF";
         temp->temp = 50.0;
         temp->lowtemp = 51.1;
         temp->hightemp = 52.2;
@@ -78,14 +94,13 @@ public:
         formatQuery(temp, result);
 
         // Split the string cause it's easier to match than a complex regex
-        std::vector<std::string> items;
-        boost::split(items, result, boost::is_any_of(","));        
-        if (items[0] == "28"
-            && items[1] == " '67C6697351FF'"
-            && items[2] == " '5'"
-            && items[4] == " 51.099998"
-            && items[5] == " 52.200001"
-            && items[6] == " 50.000000" && items[7] == " 'F'") {
+        boost::split(items, result, boost::is_any_of(","));
+        if (items[0] == "'67C6697351FF'"
+            && items[1] == " 50.000000"
+            && items[2] == " 52.200001"
+            && items[3] == " 51.099998"
+            && items[4] == " 'F'"
+        ) {
             runtest.pass("formatQuery(temperature_t)");
         } else {
             runtest.fail("formatQuery(temperature_t)");
@@ -94,13 +109,9 @@ public:
         // Reset the output buffer and test formatting a temperature entry
         result.clear();
         
+        // id | current | volts | timestamp
         boost::shared_ptr<battery_t> batt(new battery_t);
-        batt->wire.family = "B2";
-        batt->wire.id = "4AEC29CDBAAB";
-        batt->wire.chips = "mAM001";
-        batt->wire.device = "B2.4AEC29CDBAAB";
-        batt->wire.type = BATTERY;
-        batt->wire.bus = false;
+        batt->id = "4AEC29CDBAAB";
         batt->current = 2.3;
         batt->volts = 14.3;
         batt->DC = true;
@@ -110,11 +121,10 @@ public:
         // Split the string cause it's easier to match than a complex regex
         items.clear();
         boost::split(items, result, boost::is_any_of(","));
-        if (items[0] == "B2"
-            && items[1] == " '4AEC29CDBAAB'"
-            && items[3] == " '3'"
-            && items[5] == " 2.300000"
-            && items[6] == " 14.300000"
+        if (items[0] == "'4AEC29CDBAAB'"
+            && items[1] == " 2.300000"
+            && items[2] == " 14.300000"
+            && items[3] == " 'DC'"
         ) {
             runtest.pass("formatQuery(battery_t)");
         } else {
