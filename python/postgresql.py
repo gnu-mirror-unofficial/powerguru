@@ -21,23 +21,19 @@ import pdb
 import glob
 import psycopg2
 import subprocess
-import config
 import logging
 
-## \class pgdb
-# A class to work with a postgresql database
-class pgdb(object):
-    """PostgreSQL database class."""
-    def __init__(self, config):
-        self.config = config
+
+class postgresql(object):
+    """A class to work with a postgresql database"""
+    def __init__(self):
         self.dbname = ""
         self.result = ""
-        # self.config.dump()
 
     def connect(self, dbname):
-        '''Connect to a postgresql server'''
+        """Connect to a postgresql server"""
         logging.debug("plotcalls.connect(" + dbname + ")")
-        self.config.set('dbname', dbname)
+        self.dbname = "";
         connect = " dbname=" + dbname
         
         try:
@@ -54,8 +50,8 @@ class pgdb(object):
             print("Couldn't connect to database: %r" % e)
 
     def query(self, query, nores=""):
-        '''Query a postgresql database'''
-        logging.debug("plotcalls.query(" + query + ")")
+        """Query a postgresql database"""
+        logging.debug("pgdb.query(" + query + ")")
         try:
             self.dbcursor.execute(query)
             self.result = self.dbcursor.fetchall()
@@ -64,22 +60,6 @@ class pgdb(object):
         #logging.debug("FIXME: query(%r)" % len(self.result))
         nores = self.result
         return self.result
-
-    def shell(self, cmd):
-        cmdline = list()
-        cmdline.append("psql")
-        if len(self.config.get('dbname')) > 0:
-            cmdline.append("--dbname=" + str(self.config.get('dbname')))
-        cmdline.append("--command=" + cmd)
-        self.verbose.log(cmdline)
-        try:
-            subprocess.call(cmdline, stdout=subprocess.DEVNULL)
-            out = True
-        except:
-            self.verbose.warning("Couldn't list function: %r" % func)
-            out = False
-            
-        return out
 
     def dump(self):
         print("Dumping data from pgdb class")
