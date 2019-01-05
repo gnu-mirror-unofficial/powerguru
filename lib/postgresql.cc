@@ -29,6 +29,7 @@
 #include <sstream>
 
 #include "database.h"
+#include "onewire.h"
 #include "log.h"
 
 #ifdef HAVE_LIBPQ
@@ -39,19 +40,6 @@
 
 const int LINELEN = 80;
 const int QUERYLEN = 10000;
-
-Database::Database()
-    : _dbtype(NODB), _dbport(0)
-{
-
-    // These values may be replaced on the command line. These are the
-    // default behaviour.
-    _tblname  = DBTABLE;
-    _dbname   = DBNAME;
-    _dbuser   = DBUSER;
-    _dbpasswd = DBPASS;
-    _dbhost   = DBHOST;
-}
 
 Database::~Database()
 {
@@ -117,15 +105,15 @@ Database::closeDB (void)
 }
 
 bool
-Database::queryInsert(const std::string &query)
+Database::queryInsert(const std::string &query, const std::string &db)
 {
     //DEBUGLOG_REPORT_FUNCTION;
 
     int retries, result;
-    std::string str = "INSERT INTO onewire VALUES(";
+    std::string str = "INSERT INTO " + db + "  VALUES(";
     str += query + ");";
 
-    BOOST_LOG(lg) << "Query is: " << query;
+    BOOST_LOG_SEV(lg, severity_level::debug) << "Query is: " << str;
     
     if (PQexec(_connection, str.c_str()) == nullptr) {
         std::cerr << "Lost connection to the database server, shutting down...";
