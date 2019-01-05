@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
+// 2013, 2014, 205, 206, 2017, 2018, 2019
 //      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
@@ -90,7 +91,26 @@ typedef struct
 class Database
 {
 public:
-    Database();
+    Database() : _dbtype(NODB), _dbport(0) {
+        _ftable[ACVOLTAGE] = "ACVOLTAGE";
+        _ftable[DCVOLTAGE] = "DCVOLTAGE";
+        _ftable[AUTH] = "AUTHENTICATIN";
+        _ftable[BATTERY] = "BATTERY";
+        _ftable[CLOCK] = "CLOCK";
+        _ftable[TEMPERATURE] = "TEMPERATURE";
+        _ftable[THERMCOUPLE] = "THERMOCOUPLE";
+        _ftable[MOISTURE] = "MOISTURE";
+        _ftable[UNSUPPORTED] = "UNSUPORTED";
+
+        // These values may be replaced on the command line. These are the
+        // default behaviour.
+        _tblname  = DBTABLE;
+        _dbname   = DBNAME;
+        _dbuser   = DBUSER;
+        _dbpasswd = DBPASS;
+        _dbhost   = DBHOST;
+    };
+
     ~Database();
 
     /// \function gettime
@@ -99,7 +119,7 @@ public:
     /// @return returns a timestamp as a string
     // 2019-01-04 08:34:34
     std::string &gettime(std::string &time) {
-        DEBUGLOG_REPORT_FUNCTION;
+        //DEBUGLOG_REPORT_FUNCTION;
         using namespace boost::posix_time;
         boost::posix_time::ptime localtime = boost::posix_time::second_clock::local_time();
         static std::locale loc(std::cout.getloc(), new time_facet("%Y-%m-%d %H:%M:%S"));
@@ -107,7 +127,6 @@ public:
         ss.imbue(loc);
         ss << localtime;
         time = ss.str();
-        std::cerr << "Time is: " << time << std::endl;
         return time;
     }
 
@@ -116,7 +135,7 @@ public:
     bool queryInsert(std::vector<meter_data_t *> data);
     //bool queryInsert(temperature_t &data);
     bool queryInsert(meter_data_t *data);
-    bool queryInsert(const std::string &query);
+    bool queryInsert(const std::string &query, const std::string &db);
     void *queryResults(const char *query);
     //bool deleteDB(etamsg_t *data);
     //bool insertDB(etamsg_t *data);
@@ -127,44 +146,61 @@ public:
     void dbNameSet(std::string name);
     void dbHostSet(std::string host);
 
-    // family | id | type | timestamp | temphigh | templow | temperature | scale
-    std::string formatQuery(boost::shared_ptr<temperature_t> &temp,
+    // family | id | alias | type | timestamp 
+    std::string formatQuery(boost::shared_ptr<onewire_t> &one,
                             std::string &result) {
-        DEBUGLOG_REPORT_FUNCTION;
-        std::string stamp;
-        result = temp->wire.family;
-        result += ", \'" + temp->wire.id + "\'";
-        result += ", \'" + std::to_string(temp->wire.type) + "\'";
-        result += ", \'" + gettime(stamp) + "\'";
-        result += ", " + std::to_string(temp->lowtemp);
-        result +=  ", " + std::to_string(temp->hightemp);
-        result += ", " + std::to_string(temp->temp) + ", \'";
-        result += temp->scale;
-        result += "\'";
+        //DEBUGLOG_REPORT_FUNCTION;
 
-        std::cerr << "Formatted Query is: " << result << std::endl;
+        result.clear();
+        result = "\'" + one->family + "\'";
+        result += ", \'" + one->id + "\'";
+        result += ", \'" + one->alias + "\'";
+        result += ", " +  _ftable[one->type];
+        std::string stamp;
+        result += ", \'" + gettime(stamp) + "\'";
+
+        //BOOST_LOG_SEV(lg, severity_level::debug) << "Formatted Query is: " << result;
         return result;
     }
 
-    // family | id | alias | type | timestamp | current | volts
+    //  id | temperature | temphigh | templow | scale | timestamp
+    std::string formatQuery(boost::shared_ptr<temperature_t> &temp,
+                            std::string &result) {
+        //DEBUGLOG_REPORT_FUNCTION;
+        result.clear();
+        result = "\'" + temp->id + "\'";
+        result += ", " + std::to_string(temp->temp);
+        result += ", " + std::to_string(temp->hightemp);
+        result += ", " + std::to_string(temp->lowtemp);
+        result += ", \'";
+        result += temp->scale;
+        std::string stamp;
+        result += "\', \'" + gettime(stamp) + "\'";
+
+        //BOOST_LOG_SEV(lg, severity_level::debug) << "Formatted Query is: " << result;
+        return result;
+    }
+
+    // id | current | volts | type | timestamp
     std::string formatQuery(const boost::shared_ptr<battery_t> &batt,
                             std::string &result) {
-        DEBUGLOG_REPORT_FUNCTION;
+        //DEBUGLOG_REPORT_FUNCTION;
 
-        std::string stamp;
-        result = batt->wire.family;
-        result += ", \'" + batt->wire.id + "\'";
-        result += ", \'" + batt->wire.alias + "\'";
-        result += ", \'" + std::to_string(batt->wire.type) + "\'";
-        result += ", \'" + gettime(stamp) + "\'";
+        result.clear();
+        result = "\'" + batt->id + "\'";
         result += ", " + std::to_string(batt->current);
         result += ", " + std::to_string(batt->volts);
+        result += ", \'";
+        result += (batt->DC == true ? "DC\'" : "AC\'");
+        std::string stamp;
+        result += ", \'" + gettime(stamp) + "\'";
 
-        std::cerr << "Formtted Query is: " << result << std::endl;
+        //BOOST_LOG_SEV(lg, severity_level::debug) << "Formatted Query is: " << result;
         return result;
     }
 private:
     enum {CLOSED, OPENED} state;
+    std::map<family_e, std::string> _ftable;
     std::map<std::string, family_t> _family;
     dbtype          _dbtype;
     int             _dbport;
