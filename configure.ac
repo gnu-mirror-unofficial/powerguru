@@ -29,6 +29,7 @@ AC_CONFIG_MACRO_DIR([macros])
 
 dnl Use the DMalloc library, if specified.
 AM_WITH_DMALLOC
+AC_PROG_LN_S
 
 dnl Use the Dom parser from libxml2, not the xmlReader one
 dnl The default is to use the Dom parser
@@ -464,7 +465,10 @@ AC_ARG_WITH(tty,
 
 dnl link to the images so we can browse the HTML output before
 dnl installing it.
+dnl Link to the python code so it's easier to use from the builddir.
 AC_LINK_FILES(doc/C/images,doc/C/images)
+AC_LINK_FILES(python,python)
+
 
 AC_OUTPUT([
 Makefile
