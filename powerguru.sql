@@ -77,7 +77,6 @@ CREATE TABLE onewire (
   family char(2) NOT NULL default '0',
   id varchar(12) NOT NULL default '0',
   alias varchar(12) NOT NULL default '0',
-  chips varchar(24) NOT NULL default '0',
   type  wire_type NOT NULL default 'UNSUPPORTED',
   "timestamp" timestamp without time zone
 );
