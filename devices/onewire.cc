@@ -43,7 +43,6 @@ Onewire::Onewire(void)
     // Initialize the table of family types
     initTable(_family);
 
-#if 0
     boost::filesystem::path p(_rootdir);
     try {
         if (boost::filesystem::exists(p) & boost::filesystem::is_directory(p)) {
@@ -53,8 +52,13 @@ Onewire::Onewire(void)
                     owire->device = x.path().string();
                     std::string result;
                     owire->family = getValue(owire->device, "family", result);
-                    owire->type = getValue(owire->device, "type", result);
-                    owire->id = getValue(owire->device, "id", result);
+                    if (owire->family.empty()) { // not a sensor
+                        continue;
+                    }
+                    owire->id = getValue(owire->id, "id", result);
+                    owire->id = getValue(owire->alias, "alias", result);
+                    owire->type = _family[owire->family].type;
+                    owire->device = owire->family + "." + owire->id;
                     owire->bus = false;
                     _sensors[x.path().string()] = owire;
                 }
@@ -66,7 +70,6 @@ Onewire::Onewire(void)
     } catch (const boost::filesystem::filesystem_error& ex) {
         std::cout << ex.what() << std::endl;
     }
-#endif
     
     if (_sensors.size() == 0) {
         _rootdir  = "/sys/bus/w1/devices";
@@ -83,7 +86,7 @@ Onewire::Onewire(void)
                     owire->family = owire->device.substr(0,2);
                     owire->id = owire->device.substr(3, owire->device.size());
                     owire->bus = true;
-                    owire->type =  _family[owire->family].chips;
+                    owire->type = _family[owire->family].type;
                     _sensors[x.path().string()] = owire;
                 }
             }  
@@ -172,59 +175,75 @@ Onewire::getValue(const std::string &device, std::string file, std::string &resu
 /// Get all the temperatures from all the temperture sensors
 /// @return The temperatures from all temperature sensors
 ///
-std::map<std::string, boost::shared_ptr<temperature_t>> &
-Onewire::getTemperatures(void)
+
+const boost::shared_ptr<battery_t>
+Onewire::getBattery(const std::string &device)
+{
+    //DEBUGLOG_REPORT_FUNCTION;
+    // boost::shared_ptr<temperature_t> temp = boost::make_shared<temperature_t>(1);
+    std::string family = _sensors[device]->family;
+    if (_sensors[device]->type == BATTERY) {
+        boost::shared_ptr<battery_t> batt(new battery_t);
+        std::string result;
+        batt->id = getValue(device, "id", result);
+        batt->current = std::stof(getValue(device, "current", result));
+        batt->volts = std::stof(getValue(device, "volts", result));
+        batt->DC = true;
+        return batt;
+    } else {
+        BOOST_LOG_SEV(lg, severity_level::warning) << device << " is not a battery!";
+    }
+
+    boost::shared_ptr<battery_t> batt;
+    return batt;
+}
+
+const boost::shared_ptr<temperature_t>
+Onewire::getTemperature(const std::string &device)
 {
     //DEBUGLOG_REPORT_FUNCTION;
 
-    _temps.clear();
-
-    std::map<std::string, boost::shared_ptr<onewire_t>>::iterator sit;
-    for (sit = _sensors.begin(); sit != _sensors.end(); sit++) {
-        boost::shared_ptr<temperature_t> temp(new temperature_t);
-        temp->family = sit->second->family;
-        temp->id = sit->second->id;
-        temp->type = sit->second->type;
-        std::string result;
-        if (sit->second->bus == true) {
-            getValue(sit->first, "w1_slave", result);
-            // FIXME: calculate the position value
-            std::string value = result.substr(69, result.size());
-            temp->scale = _scale;
-            temp->temp = std::stof(value)/1000;
-            temp->lowtemp = 0;
-            temp->hightemp = 0;
-            if (_scale == 'F') {
-                temp->temp = convertScale(temp->temp);
-            }
-            _temps[sit->first] = temp;
-        } else {
-            getValue(sit->first, "temperature", result);
-            if (result.size() == 0) {
-                temp->temp = 0;
-            } else {
-                temp->temp = std::stof(result);
-            }
-            getValue(sit->first, "temphigh", result);
-            if (result.size() == 0) {
-                temp->hightemp = 0;
-            } else {
-                temp->hightemp = std::stof(result);
-            }
-            getValue(sit->first, "templow", result);
-            if (result.size() == 0) {
-                temp->lowtemp = 0;
-            } else {
-                temp->lowtemp = std::stof(result);
-            }
-            
-            getValue("", "/settings/units/temperature_scale", result);
-            temp->scale = result[0];
-            _temps[sit->first] = temp;
+    std::string family = _sensors[device]->family;
+    bool bus = _sensors[device]->bus;
+    boost::shared_ptr<temperature_t> temp(new temperature_t);
+    temp->id = _sensors[device]->id;
+    std::string result;
+    if (bus) {
+        getValue(device, "w1_slave", result);
+        // FIXME: calculate the position value
+        std::string value = result.substr(69, result.size());
+        temp->scale = _scale;
+        temp->temp = std::stof(value)/1000;
+        temp->lowtemp = 0;
+        temp->hightemp = 0;
+        if (_scale == 'F') {
+            temp->temp = convertScale(temp->temp);
         }
+    } else {
+        getValue(device, "temperature", result);
+        if (result.size() == 0) {
+            temp->temp = 0;
+        } else {
+            temp->temp = std::stof(result);
+        }
+        getValue(device, "temphigh", result);
+        if (result.size() == 0) {
+            temp->hightemp = 0;
+        } else {
+            temp->hightemp = std::stof(result);
+        }
+        getValue(device, "templow", result);
+        if (result.size() == 0) {
+            temp->lowtemp = 0;
+        } else {
+            temp->lowtemp = std::stof(result);
+        }
+
+        getValue("", "/settings/units/temperature_scale", result);
+        temp->scale = result[0];
     }
-    
-    return _temps;
+
+    return temp;
 }
 
 ///
@@ -279,7 +298,7 @@ initTable(std::map<std::string, family_t> &result)
     result["36"] = {"Coulomb counter", "DS2740", UNSUPPORTED};
     result["1D"] = {"Counter", "DS2423", UNSUPPORTED};
     result["16"] = {"crypto-ibutton", "DS1954 DS1957", UNSUPPORTED};
-    result["B2"] = {"DC Current or Voltage", "mAM001", DCVOLTAGE};
+    result["B2"] = {"DC Current or Voltage", "mAM001", BATTERY};
     result["04"] = {"EconoRam Time chi", "DS2404", UNSUPPORTED};
     result["7E"] = {"Envoronmental Monitors", "EDS00xx", UNSUPPORTED};
     result["41"] = {"Hygrocron", "DS1923", UNSUPPORTED};

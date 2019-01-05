@@ -31,36 +31,6 @@
 #include <boost/filesystem.hpp>
 #include "log.h"
 
-/// \typedef onewire_t
-/// Contains data about each 1 wire sensor
-typedef struct onewire {
-    std::string family;         ///< The family type, a 2 digit code
-    std::string id;             ///< The device ID of the sensor
-    std::string type;           ///< The type of 1wire sensor
-    std::string device;         ///< The full device name
-    bool bus;                   ///< Whether the data is in owfs or not
-} onewire_t;
-
-/// \struct temperature_t
-/// Contains data from a 1 wire temperature sensor
-typedef struct temperature {
-    std::string family;         ///< The family type, a 2 digit code
-    std::string id;             ///< The device ID of the sensor
-    std::string type;           ///< The type of 1wire sensor
-    float temp;                 ///< The current temperature
-    float lowtemp;              ///< The lowest temperature seen
-    float hightemp;             ///< The highest temperature seen
-    char scale;                 ///< The scale, 'C' or 'F'
-} temperature_t;
-
-/// \typedef battery_t
-/// Contains data from a 1 wire battery monitor
-typedef struct battery {
-    float current;
-    float volts;
-    bool  DC;
-} battery_t;
-
 /// \enum family_e
 /// Represents all possible 1wire sensors types
 typedef enum { ACVOLTAGE,
@@ -73,6 +43,36 @@ typedef enum { ACVOLTAGE,
                MOISTURE,
                UNSUPPORTED
 } family_e;
+
+/// \typedef onewire_t
+/// Contains data about each 1 wire sensor
+typedef struct onewire {
+    std::string family;         ///< The family type, a 2 digit code
+    std::string id;             ///< The device ID of the sensor
+    std::string alias;          ///< Alternate name for this sensor
+    std::string device;         ///< The full device name
+    family_e    type;           ///< The type of 1wire sensor
+    bool bus;                   ///< Whether the data is in owfs or not
+} onewire_t;
+
+/// \struct temperature_t
+/// Contains data from a 1 wire temperature sensor
+typedef struct temperature {
+    std::string id;             ///< The unique ID used for this sensor
+    float temp;                 ///< The current temperature
+    float lowtemp;              ///< The lowest temperature seen
+    float hightemp;             ///< The highest temperature seen
+    char scale;                 ///< The scale, 'C' or 'F'
+} temperature_t;
+
+/// \typedef battery_t
+/// Contains data from a 1 wire battery monitor
+typedef struct battery {
+    std::string id;             ///< The unique ID used for this sensor
+    float current;
+    float volts;
+    bool  DC;
+} battery_t;
 
 /// \typedef family_t
 /// Base Data for all 1 wire sensors
@@ -91,7 +91,7 @@ private:
     // How long to delay between reading the sensor
     int _poll_sleep;            ///< Delay time in seconds
     char _scale;                ///< 'C' or 'F'
-    std::map<std::string, boost::shared_ptr<temperature_t>> _temps;
+    // std::map<std::string, boost::shared_ptr<temperature_t>> _temps;
     // Is _rootdir (usually /mnt/1wire) mounted ?
     std::string _rootdir;       ///< Root directory for 1wire sensors
     bool _mounted = true;       ///< Whether the data is in owfs or /sys
@@ -112,6 +112,10 @@ public:
 
     void setPollSleep(int x) { _poll_sleep = x; }
 
+    const std::map<std::string, boost::shared_ptr<onewire_t>> getSensors(void) {
+        return _sensors;
+    };
+
     // see if any 1 wire sensors were found during scanning
     bool hasSensors(void) {
         if (_sensors.size() >0) {
@@ -130,8 +134,8 @@ public:
     void setValue(const std::string &device, const std::string &file,
                           const std::string &value);
 
-    std::map<std::string, boost::shared_ptr<temperature_t>> &getTemperatures(void);
-    //std::map<std::string, boost::shared_ptr<battery_t>> &getBatteries(void);
+    const boost::shared_ptr<battery_t> getBattery(const std::string &device);
+    const boost::shared_ptr<temperature_t> getTemperature(const std::string &device);
     void dump(void);
     
     std::vector<std::string> &

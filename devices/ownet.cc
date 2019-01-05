@@ -18,6 +18,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/regex.hpp>
+#include <string>
+#include <string>
 #include <string>
 #include <map>
 #include "onewire.h"
@@ -96,50 +99,95 @@ Ownet::Ownet(std::string &host)
     int i = 0;
     std::vector<std::string>::iterator it;
     for(it = results.begin(); it != results.end(); it++,i++ ) {
-        boost::shared_ptr<ownet_t> data(new ownet_t);
+        boost::shared_ptr<onewire_t> data(new onewire_t);
         std::string result;
         data->family = getValue(it->c_str(), "family", result);
-        data->type = getValue(it->c_str(), "type", result);
+        if (data->family.empty()) { // not a sensor
+            continue;
+        }
         data->id = getValue(it->c_str(), "id", result);
-        if (data->type.length() == 0 || data->id.length() == 0) {
-            break;
-        }
-        std::string dev = *it + "temperature";
-        if (OW_present(dev.c_str()) == 0) {
-            BOOST_LOG(lg) << "Temperature sensor found: " << *it;
-        } else {
-            BOOST_LOG(lg) << "Temperature sensor not found!";
-        }
+        data->alias = getValue(it->c_str(), "alias", result);
+        data->device = data->family + "." + data->id;
+        data->type = _family[data->family].type;
         std::lock_guard<std::mutex> guard(_mutex);
         _sensors[*it] = data;
+        std::string device = *it;
+        switch (data->type) {
+          case TEMPERATURE:
+          {
+              BOOST_LOG(lg) << device << " is a thermometer";
+              boost::shared_ptr<temperature_t> temp(getTemperature(device));
+              if (temp) {
+                  try {
+                      temp->id = data->id;
+                      temp->temp = std::stof(getValue(device, "temperature", result));
+                      temp->lowtemp =std::stof(getValue(device, "templow", result));
+                      temp->hightemp = std::stof(getValue(device, "temphigh", result));
+                  } catch (const std::exception& e) {
+                      temp->temp = 0;
+                      temp->lowtemp = 0;
+                      temp->hightemp = 0;
+                  }
+              }
+              break;
+          }
+          case BATTERY:
+          {
+              BOOST_LOG(lg) << device << " is a battery";
+              boost::shared_ptr<battery_t> power(getBattery(device));
+              power->id = data->id;
+              try {
+                  power->volts = std::stof(getValue(device, "volts", result));
+                  power->current = std::stof(getValue(device, "current", result));
+                  power->DC = true; // FIXME: this shouldn't be hardcoded
+              } catch (const std::exception& e) {
+                  power->volts = 0;
+                  power->current = 0;
+              }
+              break;
+          }
+        };
+
     }
 
     dump();
 }
 
-///
+const boost::shared_ptr<battery_t>
+Ownet::getBattery(const std::string &device)
+{
+    //DEBUGLOG_REPORT_FUNCTION;
+    // boost::shared_ptr<temperature_t> temp = boost::make_shared<temperature_t>(1);
+    std::string result;
+    if (_sensors[device]->type == BATTERY) {
+        boost::shared_ptr<battery_t> batt(new battery_t);
+        batt->id = _sensors[device]->id;
+        batt->current = std::stof(getValue(device, "current", result));
+        batt->volts = std::stof(getValue(device, "volts", result));
+        batt->DC = true;
+        return batt;
+    } else {
+        BOOST_LOG_SEV(lg, severity_level::warning) << device << " is not a battery!";
+    }
+
+    boost::shared_ptr<battery_t> batt;
+    return batt;
+}
+
 /// Get the temperature(s) via ownet from a temperature sensor
 /// @param device The full device name including the family, ie... "28.021316A4D6AA"
 /// @return The temerature(s) from a temperature sensor
 const boost::shared_ptr<temperature_t>
 Ownet::getTemperature(const std::string &device)
 {
-    // DEBUGLOG_REPORT_FUNCTION;
+    //DEBUGLOG_REPORT_FUNCTION;
     
     std::string result;
-    std::string family = getValue(device, "family", result);
-    std::string id = getValue(device, "id", result);
-    std::string type = getValue(device, "type", result);
-    
-    if (family == "10" | family == "28") {
-        // BOOST_LOG(lg) << device << " is a thermometer";
-        // boost::shared_ptr<temperature_t> temp = boost::make_shared<temperature_t>(1);
+    if (_sensors[device]->type == TEMPERATURE) {
         boost::shared_ptr<temperature_t> temp(new temperature_t);
-        std::string result;
-        temp->family = getValue(device, "family", result);
-        temp->id = getValue(device, "id", result);
-        temp->type = getValue(device, "type", result);
         try {
+            std::string result;
+            temp->id = _sensors[device]->id;
             temp->temp = std::stof(getValue(device, "temperature", result));
             temp->lowtemp =std::stof(getValue(device, "templow", result));
             temp->hightemp = std::stof(getValue(device, "temphigh", result));
@@ -155,7 +203,7 @@ Ownet::getTemperature(const std::string &device)
         temp->scale = buffer[0];
         return temp;
     } else {
-        BOOST_LOG(lg) << device << " is not a thermometer";
+        BOOST_LOG_SEV(lg, severity_level::warning) << device << " is not a thermometer";
     }
     boost::shared_ptr<temperature_t> temp;
     return temp;
@@ -170,7 +218,7 @@ Ownet::listDevices(std::vector<std::string> &list)
 {
 //    DEBUGLOG_REPORT_FUNCTION;
     
-    std::map<std::string, boost::shared_ptr<ownet_t>>::iterator sit;
+    std::map<std::string, boost::shared_ptr<onewire_t>>::iterator sit;
     for (sit = _sensors.begin(); sit != _sensors.end(); sit++) {
         std::string dev = sit->first.substr(sit->first.size()-1);
         list.push_back(sit->first);
@@ -216,12 +264,23 @@ Ownet::dump(void)
 {
 //    DEBUGLOG_REPORT_FUNCTION;
 
-    std::map<std::string, boost::shared_ptr<ownet_t>>::iterator sit;
+    std::map<family_e, std::string> table;
+    table[ACVOLTAGE] = "ACVOLTAGE";
+    table[DCVOLTAGE] = "DCVOLTAGE";
+    table[AUTH] = "AUTHENTICATIN";
+    table[BATTERY] = "BATTERY";
+    table[CLOCK] = "CLOCK";
+    table[TEMPERATURE] = "TEMPERATURE";
+    table[THERMCOUPLE] = "THERMOCOUPLE";
+    table[MOISTURE] = "MOISTURE";
+    table[UNSUPPORTED] = "UNSUPORTED";
+
+    std::map<std::string, boost::shared_ptr<onewire_t>>::iterator sit;
     for (sit = _sensors.begin(); sit != _sensors.end(); sit++) {
         std::cout << "Data for device: " << sit->first << std::endl;
         std::cout << "\tfamily: " << sit->second->family << std::endl;
-        std::cout << "\ttype: " << sit->second->type << std::endl;
         std::cout << "\tid: " << sit->second->id << std::endl;
+        std::cout << "\ttype: " << table[sit->second->type] << std::endl;
     }
     // std::map<std::string, boost::shared_ptr<temperature_t>>::iterator tit;
     // for (tit = _temperatures.begin(); tit != _temperatures.end(); tit++) {

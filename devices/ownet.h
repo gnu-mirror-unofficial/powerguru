@@ -32,17 +32,6 @@
 extern const int OWPORT;
 extern const char *OWHOST;
 
-/// \typedef ownet_t
-/// Holds data for an ownet connection
-typedef struct ownet {
-    std::string family;
-    std::string id;
-    std::string type;
-    std::string device;
-} ownet_t;
-
-void initTable(std::map<std::string, family_t> &result);
-
 ///
 /// \class Ownet
 /// Construct a class for the ownet protocol
@@ -50,7 +39,7 @@ void initTable(std::map<std::string, family_t> &result);
 class Ownet
 {
 private:
-    std::map<std::string, boost::shared_ptr<ownet_t>> _sensors;
+    std::map<std::string, boost::shared_ptr<onewire_t>> _sensors;
     bool        _owserver;
     std::mutex  _mutex;
     int         _poll_sleep;
@@ -85,15 +74,15 @@ public:
     std::string &getValue(const std::string &device, std::string file, std::string &result);
 
     // return a handle to all the sensors
-    const boost::shared_ptr<ownet_t> &getSensor(const std::string &device) {
+    const boost::shared_ptr<onewire_t> &getSensor(const std::string &device) {
         return _sensors[device];
     };
 
-    const std::map<std::string, boost::shared_ptr<ownet_t>> getSensors(void) {
+    const std::map<std::string, boost::shared_ptr<onewire_t>> getSensors(void) {
         return _sensors;
     };
     
-    std::map<std::string, boost::shared_ptr<battery_t>> &getBatteries(void);
+    const boost::shared_ptr<battery_t> getBattery(const std::string &device);
 
     const boost::shared_ptr<temperature_t> getTemperature(const std::string &device);
     
