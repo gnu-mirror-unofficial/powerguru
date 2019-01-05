@@ -393,7 +393,7 @@ if (test x"${has_boost_filesystem}" = x"no" \
    -o x"${has_boost_regex}" = x"no" -o x"${has_boost_system}" = x"np"); then
   AC_MSG_ERROR([You need all the boost libraries!])
 fi
-LIBS="-lboost_filesystem -lboost_system -lboost_regex -lboost_log -lboost_log_setup -lboost_thread"
+LIBS="-lboost_filesystem -lboost_system -lboost_regex -lboost_log -lboost_log_setup -lboost_thread -lboost_date_time"
 AC_DEFINE([BOOST_LOG_DYN_LINK], [1], [Force Boost::logging to be dynamically linked])
 dnl AC_DEFINE(]BOOST_ALL_DYN_LINK], [1], [Fo ])
 
