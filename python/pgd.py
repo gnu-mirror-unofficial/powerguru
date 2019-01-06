@@ -58,10 +58,19 @@ options['dbserver'] = val
 logging.basicConfig(
     filename='pgdpy.log',
     filemode='w',
-    level=logging.INFO,
+    level=logging.DEBUG,
     format= '[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
      datefmt='%Y-%m-%d %H:%M:%S'
 )
+# By default, print nothing to the console
+root = logging.getLogger()
+ch = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter('%(message)s')
+#formatter = logging.Formatter('{%(filename)s:%(lineno)d} - %(message)s')
+ch.setLevel(logging.CRITICAL)
+ch.setFormatter(formatter)
+root.addHandler(ch)
+verbosity = logging.CRITICAL
 for (opt, val) in opts:
     if opt == '--help' or opt == '-h':
         usage(argv)
@@ -70,15 +79,12 @@ for (opt, val) in opts:
     elif opt == "--dbserver" or opt == '-d':
         options['dbserver'] = val
     elif opt == "--verbose" or opt == '-v':
-        root = logging.getLogger()
-        root.setLevel(logging.DEBUG)
+        if verbosity == logging.INFO:
+            verbosity = logging.DEBUG
+        if verbosity == logging.CRITICAL:
+            verbosity = logging.INFO
 
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('{%(filename)s:%(lineno)d} - %(levelname)s - %(message)s')
-        ch.setFormatter(formatter)
-        root.addHandler(ch)
-
+ch.setLevel(verbosity)
 #
 # Start the I/O threads
 #
