@@ -2,3 +2,5 @@ subprocess
 psycopg2
 logging
 glob
+pyownet
+pyowfs
