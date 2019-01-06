@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # 
-#   Copyright (C) 2019   Free Software Foundation, Inc.
+#   Copyright (C) 2019 Free Software Foundation, Inc.
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,33 +28,39 @@ from threading import Thread
 from time import sleep
 from sys import argv
 
-# Get the path to this script
-#import os
-#import sys
-#sys.path.append(os.path.dirname(argv[0]))
+# Setup default command line options
+options = dict()
+options['interval'] = "300"  # time interval to delay when polling for data
+options['owserver'] = "localhost"  # hostname of the owserver
+options['dbserver'] = "localhost"  # hostname of the database
+options['scale'] = "F"             # The scale, 'C' or 'F'
 
-
+# menu for --help
 def usage(argv):
     print(argv[0] + ": options: ")
     print("""\t--help(-h)   Help
-\t--owserver(-w)        OW server
-\t--dbserver(-d)        Database server
-\t--verbose(-v)         Enable verbosity
-        """)
+    \t--owserver(-w)    OW server [host[:port]], default '%s'
+    \t--dbserver(-d)    Database server [host]:port]], default '%s'
+    \t--interval(-i)    Set the time interval for device polling, default '%s'
+    \t--verbose(-v)     Enable verbosity
+    \t--scale(-s)       Set the temperature scale, 'F' or 'C', default '%s'
+    """ % (options['owserver'],
+           options['dbserver'],
+           options['interval'],
+           options['scale']))
     quit()
 
+# Check command line arguments
 try:
-    (opts, val) = getopt.getopt(argv[1:], "h,w:,d:,v,",
-           ["help", "owserver", "dbserver", "verbose"])
+    (opts, val) = getopt.getopt(argv[1:], "h,w:,d:,s:,i:v,",
+           ["help", "owserver", "dbserver", "scale", "interval", "verbose"])
 except getopt.GetoptError as e:
     logging.error('%r' % e)
-    self.usage(argv)
+    usage(argv)
     quit()
 
-# Store command line options
-options = dict()
-options['owserver'] = val
-options['dbserver'] = val
+# Setup a disk space log filemode. By default, everything
+# gets logged to the disk file
 logging.basicConfig(
     filename='pgdpy.log',
     filemode='w',
@@ -62,7 +68,11 @@ logging.basicConfig(
     format= '[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
      datefmt='%Y-%m-%d %H:%M:%S'
 )
-# By default, print nothing to the console
+
+# Setup console logging, useful for debugging
+# By default, print nothing to the console. There
+# re two versosity levels, the first just informational
+# messages, the second all debugging messages as well.
 root = logging.getLogger()
 ch = logging.StreamHandler(sys.stdout)
 ch.setLevel(logging.CRITICAL)
@@ -70,12 +80,17 @@ formatter = logging.Formatter('%(message)s')
 #formatter = logging.Formatter('{%(filename)s:%(lineno)d} - %(message)s')
 ch.setFormatter(formatter)
 root.addHandler(ch)
+terminator = ch.terminator
 verbosity = logging.CRITICAL
+
+# process command line arguments, will override the defaults
 for (opt, val) in opts:
     if opt == '--help' or opt == '-h':
         usage(argv)
     elif opt == "--owserver" or opt == '-w':
         options['owserver'] = val
+    elif opt == "--interval" or opt == '-i':
+        options['interval'] = val
     elif opt == "--dbserver" or opt == '-d':
         options['dbserver'] = val
     elif opt == "--verbose" or opt == '-v':
@@ -87,11 +102,16 @@ for (opt, val) in opts:
             verbosity = logging.INFO
 
 ch.setLevel(verbosity)
+
 #
 # Start the I/O threads
 #
-ownet_thread = Thread(target = ownet.ownet_handler, args = (options['owserver'], ))
+
+# OWFS network protocol
+ownet_thread = Thread(target=ownet.ownet_handler, args=(options, ))
 ownet_thread.start()
+
+# OWFS filesystem
 onewire_thread = Thread(target = onewire.onewire_handler, args = (10, ))
 onewire_thread.start()
 
