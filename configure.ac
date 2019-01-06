@@ -230,6 +230,19 @@ save_CXXFLAGS="${CXXFLAGS}"
 save_CPPFLAGS="${CPPFLAGS}"
 save_CFLAGS="${CFLAGS}"
 
+CFLAGS="--std=c++11"
+AC_MSG_CHECKING([For C++11 support])
+AC_TRY_COMPILE([#include <time.h>], [
+  int foo = CLOCKS_PER_SEC;
+  ],
+  has_c11=yes,
+  has_c11=no
+)
+AC_MSG_RESULT([${has_c11}])
+if test x"${has_c11}" = x"no"; then
+  AC_MSG_ERROR([You need a C++ compiler that support the C++11 standard])
+fi
+
 dnl Force warningto cause an error for compile tests
 CFLAGS="${save_CFLAGS} -Wall -Werror"
 
