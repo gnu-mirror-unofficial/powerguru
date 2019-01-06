@@ -1,39 +1,46 @@
-struct servent {
-     char  *s_name;       /* official service name */
-     char **s_aliases;    /* alias list */
-     int    s_port;       /* port number */
-     char  *s_proto;      /* protocol to use */
-}
+  PowerGuru is a program that does data logging of sensor data,
+primarily focued on renewable energy and environmental monitoring. It
+was part of a larger projet that handled power management of off-grid
+systems.
 
-The members of the servent structure are:
-     s_name The official name of the service.
-     s_aliases A NULL-terminated list of alternative names for the service.
-     s_port The port number for the service given in network byte order.
-     s_proto The name of the protocol to use with this service.
+  The original implementation was designed for what's now 20 year old
+hardware. The host was an S-100 based systems with hardwired remote
+controls running over serial ports. It worked with my Xantex (was
+Trace) and Outback Power based inverter and charge controllers. At the
+time, there was no software solution for this, but over time the
+manufacturers developed their own. I even had to revese engineer the
+protocols.
 
+  Jumping forward 20 years, the availablity of inexpensive hardware
+like the Rapberry PI or Aurdino, and many inexpensive GPIO, i2C, or
+USB sensors have changed everything.
 
-struct protoent {
-     char  *p_name;       /* official protocol name */
-     char **p_aliases;    /* alias list */
-     int    p_proto;      /* protocol number */
-}
+  If you've never done it, refactoring an od project is interesting. I
+hope I writ better C++ code now. In the years since this code was left
+to bit-rot, there are new C++ standards, better libraries, and
+different protocols. For one thing, the Boost libraries are awesome,
+and allowed me to drop lots of old crufty C++ wrappers around a C
+API.
 
-       The members of the protoent structure are:
-       p_name The official name of the protocol.
-       p_aliases A NULL-terminated list of alternative names for the protocol.
-       p_proto The protocol number.
+  I needed some simple C++ code for an IOT workshop I'm teaching, so
+decided to bring it back to life. Since I no longer own the off-grid
+house, but do have solar panels on my truck, I decided to focus the
+new version on power and weather monitoring that system in my pickup
+truck.
 
-The  addrinfo  structure  used  by getaddrinfo() contains the following fields:
+  For those interested, there were several huge changes, basically
+replacing the old code that handled the C APIs for system level tasks
+like networking, logging, posix threading, using newer C++ containers
+for data, and adopting smart pointers, 
 
-struct addrinfo {
-       int              ai_flags;
-       int              ai_family;
-       int              ai_socktype;
-       int              ai_protocol;
-       socklen_t        ai_addrlen;
-       struct sockaddr *ai_addr;
-       char            *ai_canonname;
-       struct addrinfo *ai_next;
-}
+  The other big change was depreciating the older Xantrex and Outback
+protocols, because I have nothing to test it against anymore. Then I
+had to add support for 1 wire sensors, which has good library
+support. The final change was switching from Mysql to Postgresql,
+primarily because I used Posgresql for other projects/
 
-getaddrinfo() is an excellent function that will return information on a particular host name (such as its IP address) and load up a struct sockaddr for you, taking care of the gritty details (like if it's IPv4 or IPv6.) It replaces the old functions gethostbyname() and getservbyname().T
+  Since the workshop needs to also cover using Python, I added a
+Python version that does the same things. While developing Python on a
+Raspberry PI is pretty easy, most large IOT appliction are written in
+C++, and learning how to cross compile and remote debug is an
+important skill set to know.
