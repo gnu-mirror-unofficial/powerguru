@@ -65,9 +65,9 @@ logging.basicConfig(
 # By default, print nothing to the console
 root = logging.getLogger()
 ch = logging.StreamHandler(sys.stdout)
+ch.setLevel(logging.CRITICAL)
 formatter = logging.Formatter('%(message)s')
 #formatter = logging.Formatter('{%(filename)s:%(lineno)d} - %(message)s')
-ch.setLevel(logging.CRITICAL)
 ch.setFormatter(formatter)
 root.addHandler(ch)
 verbosity = logging.CRITICAL
@@ -81,6 +81,8 @@ for (opt, val) in opts:
     elif opt == "--verbose" or opt == '-v':
         if verbosity == logging.INFO:
             verbosity = logging.DEBUG
+            formatter = logging.Formatter('{%(filename)s:%(lineno)d} %(levelname)s - %(message)s')
+            ch.setFormatter(formatter)
         if verbosity == logging.CRITICAL:
             verbosity = logging.INFO
 
