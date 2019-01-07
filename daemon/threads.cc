@@ -48,9 +48,19 @@ extern char *optarg;
 #include "tcpip.h"
 #include "xml.h"
 #include "commands.h"
-#include "ownet.h"
+#include "onewire.h"
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/write.hpp>
+#include <boost/asio/buffer.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio.hpp>
+#include <string>
+#include <ctime>
 
+using namespace boost::asio;
+using namespace boost::asio::ip;
 using namespace std::chrono_literals;
+using boost::asio::ip::tcp;
 
 // This queue is used to pass data between the threads.
 extern std::mutex queue_lock;
@@ -62,6 +72,9 @@ onewire_handler(Onewire &onewire)
 {
     DEBUGLOG_REPORT_FUNCTION;
     BOOST_LOG(lg) << "PowerGuru - 1 Wire Mode";
+
+    std::map<std::string, family_t> table;
+    initTable(table);
 
     if (!onewire.isMounted()) {
         BOOST_LOG(lg) << "WARNING: Couldn't open 1wire file system!";
@@ -81,30 +94,34 @@ onewire_handler(Onewire &onewire)
     query += "";
     query += ");";
 
-    std::map<std::string, boost::shared_ptr<temperature_t>>::iterator it;
+    std::map<std::string, boost::shared_ptr<onewire_t>> sensors = onewire.getSensors();
+    std::map<std::string, boost::shared_ptr<onewire_t>>::iterator it;
     while (onewire.getPollSleep() > 0) {
-        std::map<std::string, boost::shared_ptr<temperature_t>> temps = onewire.getTemperatures();
-        for (it = temps.begin(); it != temps.end(); it++) {
-            if ((it->second->family == "10") | (it->second->family == "28")) {
-#ifdef HAVE_LIBPQ
-                std::string stamp;
-                stamp = pdb.gettime(stamp);
-                std::string query = it->second->family;
-                query += ",\'" + it->second->id + "\'";
-                query += ", \'" + it->second->type + "\'";
-                query += ", \'" + stamp + "\'";
-                query += ", " + std::to_string(it->second->lowtemp);
-                query +=  ", " + std::to_string(it->second->hightemp);
-                query += ", " + std::to_string(it->second->temp) + ", \'";
-                query += it->second->scale;
-                query += "\'";
-                pdb.queryInsert(query);
-#endif
-                //ownet.dump();
+        std::string query;
+        for (it = sensors.begin(); it != sensors.end(); it++) {
+            if (it->second->type == TEMPERATURE) {
+                boost::shared_ptr<temperature_t> temp(onewire.getTemperature(it->first));
+                if (temp == 0) {
+                    continue;
+                }
+                if (temp) {
+                    pdb.formatQuery(temp, query);
+                    pdb.queryInsert(query, "temperature");
+                    continue;
+                }
             }
-            // Don't eat up all the cpu cycles!
-            std::this_thread::sleep_for(std::chrono::seconds(onewire.getPollSleep()));
+            if (it->second->type == BATTERY) {   
+                boost::shared_ptr<battery_t> batt(onewire.getBattery(it->first));
+                if (batt) {
+                    pdb.formatQuery(batt, query);
+                    pdb.queryInsert(query, "battery");
+                    continue;
+                }
+            }
         }
+            
+        // Don't eat up all the cpu cycles!
+        std::this_thread::sleep_for(std::chrono::seconds(onewire.getPollSleep()));
     }
 }
 
@@ -115,71 +132,51 @@ client_handler(Tcpip &net)
 
     retcode_t ret;
     Commands cmd;
-    int retries = 10;
+    int retries = 3;
     std::string hostname;
     std::string user;
+    io_service ioservice;
+    tcp::endpoint tcp_endpoint{tcp::v4(), 7654};
+    tcp::acceptor tcp_acceptor{ioservice, tcp_endpoint};
+    tcp::socket tcp_socket{ioservice};
+    std::string data;
+    tcp::resolver resolv{ioservice};
+    //tcp::socket tcp_socket{ioservice};
+    std::array<char, 4096> bytes;
 
-    while (retries-- <= 10) {
-        if (net.newNetConnection(true) == ERROR) {
-            std::cerr << "ERROR: new connection failed!" << std::endl;
-            return;
-        }
-
-        bool loop = true;
-        std::vector<unsigned char> data;
-        while (loop) {
-            data.clear();
-            size_t pos = net.readNet(data).size();
-            if (pos < 0) {
-                BOOST_LOG(lg) << "ERROR: Got error from socket ";
-                //loop = false;
+    tcp_acceptor.listen();
+    //tcp_acceptor.async_accept(tcp_socket, accept_handler);
+    tcp_acceptor.accept(tcp_socket);
+    ioservice.run();
+    //std::array<char, 4096> bytes;
+    //tcp_socket.async_read_some(buffer(bytes), read_handler);
+    bool loop = true;
+    while (loop) {
+        boost::system::error_code error;
+        boost::asio::write(tcp_socket, buffer("Hello World!\n"), error);
+        tcp_socket.read_some(buffer(bytes), error);
+        std::cerr << bytes.data();
+        // Client dropped connection
+        if (error == boost::asio::error::eof)
+            break;
+        // if the first character is a <, assume it's in XML formst.
+        XML xml;
+        if (bytes[0] == '<') {
+            std::string str(std::begin(bytes), std::end(bytes));
+            xml.parseMem(str);
+            if (xml[0]->nameGet() == "helo") {
+                hostname = xml[0]->childGet(0)->valueGet();
+                user = "foo";// xml[data]->childGet(1)->valueGet();
+                BOOST_LOG(lg) << "Incoming connection from user " << user
+                              << " on host " << hostname;
             } else {
-                if (data.data() == 0) {
-                    continue;  
-                }
-                std::string buffer = (char *)data.data();
-                if (data.size() == 1 && buffer[0] == 0) {
-                    net.closeConnection();
-                    // loop = false;
-                    break;
-                }
-                if (data.size() == 0) {
-                    sleep(1);
-                    continue;
-                }
-                // this assumes all packets from the client are terminated
-                // with a newline, which text input from the console is.
-                size_t pos = buffer.find('\n');
-                if (pos == 0 || pos == std::string::npos) {
-                    data.clear();
-                    buffer.clear();
-                    loop = false;
-                    continue;
-                }
-                buffer.erase(pos);
-                std::string str;
-                // if the first character is a <, assume it's in XML formst.
-                XML xml;
-                if (buffer[0] == '<') {
-                    xml.parseMem(buffer);
-                    if (xml[0]->nameGet() == "helo") {
-                        hostname = xml[0]->childGet(0)->valueGet();
-                        user =  xml[0]->childGet(1)->valueGet();
-                        BOOST_LOG(lg) << "Incoming connection from user " << user
-                                   << " on host " << hostname;
-                    } else {
-                        cmd.execCommand(xml, str);
-                        std::lock_guard<std::mutex> guard(queue_lock);
-                        tqueue.push(xml);
-                        queue_cond.notify_one();
-                    }
-                }
-                buffer.clear();
+                cmd.execCommand(xml, str);
+                std::lock_guard<std::mutex> guard(queue_lock);
+                tqueue.push(xml);
+                queue_cond.notify_one();
             }
         }
     }
-
-    net.closeConnection();
 }
 
 #ifdef BUILD_OWNET
@@ -201,42 +198,42 @@ ownet_handler(Ownet &ownet)
         return;
     }
 #endif
+    std::map<std::string, family_t> table;
+    initTable(table);
 
     // Open the network connection to the database.
     std::string query = "INSERT INTO onewire VALUES(";
     query += "";
     query += ");";
 
-    std::map<std::string, boost::shared_ptr<ownet_t>> sensors(ownet.getSensors());
-    std::map<std::string, boost::shared_ptr<ownet_t>>::iterator it;
+    std::map<std::string, boost::shared_ptr<onewire_t>> sensors = ownet.getSensors();
+    std::map<std::string, boost::shared_ptr<onewire_t>>::iterator it;
     while (ownet.getPollSleep() > 0) {
+        std::string query;
         for (it = sensors.begin(); it != sensors.end(); it++) {
-            if ((it->second->family == "10") | (it->second->family == "28")) {
-                boost::shared_ptr<temperature_t> temp(ownet.getTemperature(it->first.c_str()));
+            if (it->second->type == TEMPERATURE) {
+                boost::shared_ptr<temperature_t> temp(ownet.getTemperature(it->first));
                 if (temp == 0) {
-                    BOOST_LOG(lg) << "ZERO!!!!";
                     continue;
                 }
-#ifdef HAVE_LIBPQ
-                std::string stamp;
-                stamp = pdb.gettime(stamp);
-                std::string query = temp->family;
-                query += ",\'" + temp->id + "\'";
-                query += ", \'" + temp->type + "\'";
-                query += ", \'" + stamp + "\'";
-                query += ", " + std::to_string(temp->lowtemp);
-                query +=  ", " + std::to_string(temp->hightemp);
-                query += ", " + std::to_string(temp->temp) + ", \'";
-                query += temp->scale;
-                query += "\'";
-                pdb.queryInsert(query);
-#endif
-                //ownet.dump();
+                if (temp) {
+                    pdb.formatQuery(temp, query);
+                    pdb.queryInsert(query, "temperature");
+                    continue;
+                }
             }
-        
-            // Don't eat up all the cpu cycles!
-            std::this_thread::sleep_for(std::chrono::seconds(ownet.getPollSleep()));
+            if (it->second->type == BATTERY) {   
+                boost::shared_ptr<battery_t> batt(ownet.getBattery(it->first));
+                if (batt) {
+                    pdb.formatQuery(batt, query);
+                    pdb.queryInsert(query, "battery");
+                    continue;
+                }
+            }
         }
+            
+        // Don't eat up all the cpu cycles!
+        std::this_thread::sleep_for(std::chrono::seconds(ownet.getPollSleep()));
     }
 }
 #endif
