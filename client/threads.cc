@@ -32,14 +32,10 @@
 #include <condition_variable>
 #include <mutex>
 #include <chrono>
-
-#ifdef HAVE_GETOPT_H
-#include <getopt.h>
-#else
-extern int optind;
-extern char *optarg;
-#endif
-
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/write.hpp>
+#include <boost/asio/buffer.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include "log.h"
 #include "ownet.h"
 #include "console.h"
@@ -49,6 +45,8 @@ extern char *optarg;
 #include "commands.h"
 
 using namespace std::chrono_literals;
+using namespace boost::asio;
+using namespace boost::asio::ip;
 
 void
 console_handler(Tcpip &net)
@@ -69,7 +67,7 @@ console_handler(Tcpip &net)
     args += " ";
     args += std::getenv("USER");
     cmd.createCommand(Commands::HELO, args, str);
-    net.writeNet(str);
+    // net.writeNet(str);
     
     while(loop) {
         // Don't eat up all the cpu cycles!
@@ -87,7 +85,7 @@ console_handler(Tcpip &net)
                 action = line;
             }
             cmd.createCommand(cmd.convertAction(action), args, str);
-            net.writeNet(str);
+            //net.writeNet(str);
         }
     }
 }
@@ -98,71 +96,51 @@ daemon_handler(Tcpip &net)
     DEBUGLOG_REPORT_FUNCTION;
 
     retcode_t ret;
-    int retries = 10;
+    boost::asio::io_service ioservice;
+    tcp::resolver       resolv{ioservice};
+    tcp::socket         tcp_socket{ioservice};
+    std::array<char, 1024> bytes;
+    std::memset(bytes.data(), 0, bytes.size());
+    //tcp::endpoint       tcp_endpoint{tcp::v4(), 2014};
+    tcp::endpoint       tcp_endpoint(boost::asio::ip::address::from_string("192.168.0.50"), 7654);
 
+    bool loop = true;
+    int retries = 10;
     while (retries-- > 0) {
-        bool loop = true;
-        std::vector<unsigned char> data;
+        //std::vector<unsigned char> data;
+        boost::system::error_code error;
+        tcp::resolver::query q{"pi", "7654"};
+        resolv.resolve(q);
+        tcp_socket.connect(tcp_endpoint);
+        ioservice.run();
+        //boost::asio::write(tcp_socket, buffer("Hello World!\n"), error);
         while (loop) {
-            data.clear();
-            if (net.readNet(data).size() < 0) {
-                BOOST_LOG_SEV(lg, severity_level::error) << "ERROR: Got error from socket ";
-                loop = false;
-            } else {
-                if (data.data() == 0) {
-                    continue;
-                }
-                // Store the pointer to the data to make the code easier to read.
-                std::string buffer = (char *)data.data();
-                // Check to see if the socket was closed, so the read failed.
-                if (buffer[0] == 255) {
-                    //std::cerr << "Done!!!!" << std::endl;
-                    loop = false;
-                    retries = 0;
-                    break;
-                }                
-                //if (buffer.size() == 1 && *data.data() == 0) {
-                if (data.size() == 1 && buffer[0] == 0) {
-                    net.closeConnection();
-                    // loop = false;
-                    break;
-                }
-                if (data.size() == 0) {
-                    sleep(1);
-                    continue;
-                }
-                size_t pos = buffer.find('\n');
-                if (pos == 0 || pos == std::string::npos) {
-                    data.clear();
-                    buffer.clear();
-                    loop = false;
-                    continue;
-                }
-                buffer.erase(pos);
-                // if the first character is a <, assume it's in XML formst.
-                if (buffer[0] == '<') {
-                    XML xml;
-                    xml.parseMem(buffer);
-                    BOOST_LOG(lg) << "FIXME1: \"" << xml.nameGet() << "\"";
-                    if (xml.nameGet() == "command") {
-                        std::cerr << "FIXME2: Command: " << xml.valueGet() << std::endl;
-                        if (xml.valueGet() == "help") {
-                            net.writeNet("Hello World!\n");
-                        }
-                        
-                    } else if (xml.nameGet() == "data") {
-                        std::cerr << "FIXME: DATA: " << xml.valueGet() << std::endl;
-                    } else {
-                        std::cerr << "FIXME: JUNK: " << xml.valueGet() << std::endl;
+            tcp_socket.read_some(buffer(bytes), error);
+            // if the first character is a <, assume it's in XML formst.
+            std::string str = bytes.data();
+            if (bytes[0] == '<') {
+                XML xml;
+                // the data buffer is padded with zeros, so we can safely convert
+                // it to a string as it'll be null terminated. Since the network
+                // protocol is XML based, we know it'll always be ASCII.
+                xml.parseMem(str);
+                //BOOST_LOG(lg) << "FIXME1: \"" << xml.nameGet() << "\"";
+                if (xml.nameGet() == "command") {
+                    //std::cerr << "FIXME2: Command: " << xml.valueGet() << std::endl;
+                    if (xml.valueGet() == "help") {
+                        boost::asio::write(tcp_socket, buffer("Hello World Again!\n"), error);
                     }
+                } else if (xml.nameGet() == "data") {
+                    std::cerr << "FIXME: DATA: " << xml.valueGet() << std::endl;
                 } else {
-                    std::cerr << buffer << std::endl;
+                    std::cerr << "FIXME: JUNK: " << xml.valueGet() << std::endl;
                 }
+                //xml.dump();
+            } else {
+                std::cerr << str << std::endl;
             }
         }
     }
-
-    net.closeNet();
 }
 
 // local Variables:
