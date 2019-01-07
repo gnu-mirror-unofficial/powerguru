@@ -97,7 +97,7 @@ main(int argc, char *argv[])
     retcode_t   ret;
     std::condition_variable alldone;
 
-    log_init("pgd");
+    log_init("/tmp/pgd");
     
     // scan for the two main standard GNU options
     for (c = 0; c < argc; c++) {
@@ -113,8 +113,8 @@ main(int argc, char *argv[])
 
     // Set the option flags to default values. We do it this way to
     // shut up GCC complaining they're not used.
-    daemon = true;
-    client = false;
+    //daemon = true;
+    //client = false;
     snmp = false;
     // Load the database config variable so they can be overridden by
     // the command line arguments.
@@ -140,26 +140,10 @@ main(int argc, char *argv[])
               // not using the default one.
               owserver = strdup(optarg);
               break;
-#if 0
-          case 'c':
-              client = true;
-              daemon = false;
-              break;
-
-          case 'o':
-              outbackmode = true;
-              break;
-
-          case 'r':
-              background = true;
-              break;
-#endif
 
 #ifdef USE_SNMP
           case 'j':
               snmp = true;
-              daemon = false;
-              client = false;
               break;
 #endif
               // Specify database host machine.
@@ -172,7 +156,7 @@ main(int argc, char *argv[])
           case 'v':
               // verbosity++;
               //dbglogfile.set_verbosity();
-              BOOST_LOG(lg) << "Verbose output turned on" << std::endl;
+              BOOST_LOG(lg) << "FIXME: Verbose output turned on";
               break;
 	
           default:
@@ -188,18 +172,9 @@ main(int argc, char *argv[])
         agent.master(false);
     }
 #endif
-
-    BOOST_LOG(lg) << "PowerGuru - 1 Wire Mode" << std::endl;
-    Tcpip net;
-    if (net.createNetServer(DEFAULTPORT) == ERROR) {
-        BOOST_LOG_SEV(lg, severity_level::error)
-            << "ERROR: Couldn't create a network server!";
-        exit(-1);
-    }
-
     Onewire ow;
     std::thread onewire_thread (onewire_handler, std::ref(ow));
-
+    Tcpip net;
     std::thread client_thread (client_handler, std::ref(net));
 #ifdef BUILD_OWNET
     Ownet ownet(owserver);
