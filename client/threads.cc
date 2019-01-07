@@ -32,6 +32,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <chrono>
+#include <boost/asio.hpp>
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/write.hpp>
 #include <boost/asio/buffer.hpp>
@@ -51,7 +52,7 @@ using namespace boost::asio::ip;
 void
 console_handler(Tcpip &net)
 {
-     DEBUGLOG_REPORT_FUNCTION;    
+     DEBUGLOG_REPORT_FUNCTION;
 
     // This is the main command loop for user input. Commands in
     // a simple XML format, but for the user simple text strings
@@ -104,6 +105,7 @@ daemon_handler(Tcpip &net)
     //tcp::endpoint       tcp_endpoint{tcp::v4(), 2014};
     tcp::endpoint       tcp_endpoint(boost::asio::ip::address::from_string("192.168.0.50"), 7654);
 
+    Commands cmd;
     bool loop = true;
     int retries = 10;
     while (retries-- > 0) {
@@ -111,13 +113,38 @@ daemon_handler(Tcpip &net)
         boost::system::error_code error;
         tcp::resolver::query q{"pi", "7654"};
         resolv.resolve(q);
-        tcp_socket.connect(tcp_endpoint);
+        try {
+            tcp_socket.connect(tcp_endpoint);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg, severity_level::error)
+                << "Couldn't connect to PowerGuru server! " << e.what();
+            exit(-1);
+        }
+        
         ioservice.run();
-        //boost::asio::write(tcp_socket, buffer("Hello World!\n"), error);
+        // Send a HELO message to the server to authenticate
+        std::string str;
+        std::string args = boost::asio::ip::host_name();
+        args += " ";
+        args += std::getenv("USER");
+        cmd.createCommand(Commands::HELO, args, str);
+        try {
+            boost::asio::write(tcp_socket, buffer(str), error);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg, severity_level::error)
+                << "Couldn't write data to PowerGuru server! " << e.what();
+            exit(-1);
+        }   
         while (loop) {
-            tcp_socket.read_some(buffer(bytes), error);
+            try {
+                tcp_socket.read_some(buffer(bytes), error);
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg, severity_level::error)
+                    << "Couldn't read data from PowerGuru server! " << e.what();
+                exit(-1);
+            }
             // if the first character is a <, assume it's in XML formst.
-            std::string str = bytes.data();
+            str = bytes.data();
             if (bytes[0] == '<') {
                 XML xml;
                 // the data buffer is padded with zeros, so we can safely convert
@@ -128,11 +155,12 @@ daemon_handler(Tcpip &net)
                 if (xml.nameGet() == "command") {
                     //std::cerr << "FIXME2: Command: " << xml.valueGet() << std::endl;
                     if (xml.valueGet() == "help") {
-                        boost::asio::write(tcp_socket, buffer("Hello World Again!\n"), error);
+                        boost::asio::write(tcp_socket, buffer("Hello World!\n"), error);
                     }
                 } else if (xml.nameGet() == "data") {
                     std::cerr << "FIXME: DATA: " << xml.valueGet() << std::endl;
                 } else {
+                    std::cerr << "FIXME: JUNK: " << xml.nameGet() << std::endl;
                     std::cerr << "FIXME: JUNK: " << xml.valueGet() << std::endl;
                 }
                 //xml.dump();
