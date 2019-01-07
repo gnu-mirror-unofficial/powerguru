@@ -148,12 +148,34 @@ client_handler(Tcpip &net)
     //tcp_acceptor.async_accept(tcp_socket, accept_handler);
     tcp_acceptor.accept(tcp_socket);
     ioservice.run();
-    //std::array<char, 4096> bytes;
-    //tcp_socket.async_read_some(buffer(bytes), read_handler);
     bool loop = true;
+    boost::system::error_code error;
+
+    BOOST_LOG_SEV(lg, severity_level::info) << "PowerGuru ready for incoming connections";
+    
+    // Wait for a simple handshake from the client, a HELO message
+    try {
+        tcp_socket.read_some(buffer(bytes), error);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg, severity_level::error)
+            << "Couldn't read data from PowerGuru client! " << e.what();
+        exit(-1);
+    }
+    // Send a HELO back to Acknowledge the client
+    std::string str;
+    std::string args = boost::asio::ip::host_name();
+    args += " ";
+    args += std::getenv("USER");
+    cmd.createCommand(Commands::HELO, args, str);
+    try {
+        boost::asio::write(tcp_socket, buffer(str), error);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg, severity_level::error)
+            << "Couldn't write data to PowerGuru server! " << e.what();
+        exit(-1);
+    }
+    
     while (loop) {
-        boost::system::error_code error;
-        boost::asio::write(tcp_socket, buffer("Hello World!\n"), error);
         tcp_socket.read_some(buffer(bytes), error);
         std::cerr << bytes.data();
         // Client dropped connection
