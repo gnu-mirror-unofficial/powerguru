@@ -21,18 +21,6 @@
 # include "config.h"
 #endif
 
-#include <stdarg.h>
-#include <signal.h>
-#include <netinet/in.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <sys/param.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <cstdio>
-#include <iostream>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -54,7 +42,7 @@ main(int argc, char *argv[])
 {
     int         c;
     std::string dbhost = "localhost";
-    std::string pserver = "localhost:" + DEFAULTPORT;
+    std::string pserver = "localhost:" + 7654;
     retcode_t   ret;
 
     log_init("pguru");
@@ -112,16 +100,17 @@ main(int argc, char *argv[])
     }
 #endif
     Tcpip net;
-    if (net.createNetClient(pserver) == ERROR) {
-        std::cerr << "ERROR: Can't connect to Powerguru daemon!" << std::endl;
-        exit(-1);
-    }
+    //if (net.createNetClient(pserver) == ERROR) {
+    //    std::cerr << "ERROR: Can't connect to Powerguru daemon!" << std::endl;
+    //    exit(-1);
+    //}
 
-    std::thread first (daemon_handler, std::ref(net));
-    std::thread second (console_handler, std::ref(net));
+    daemon_handler(std::ref(net));
+    //std::thread daemon_thread (daemon_handler, std::ref(net));
+    //std::thread console_thread (console_handler, std::ref(net));
 
-    first.join();                // pauses until second finishes
-    second.join();                // pauses until second finishes
+    //daemon_thread.join();                // pauses until second finishes
+    //console_thread.join();                // pauses until second finishes
 
 #ifdef BUILD_OWNET
     //third.join();                // pauses until second finishes
