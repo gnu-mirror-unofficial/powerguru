@@ -57,10 +57,9 @@ for temperature,timestamp in dbcursor:
 plt.plot(x, y, label="foo")
 plt.xlabel("Timestamps")
 plt.xticks(rotation='vertical')
-
-#plt.yticks(np.arange(1, step=0.5))
+plt.grid(which='both')
 plt.ylabel("Temperature in F")
 #plt.xticks(np.arange(min(y), max(y)+1, 1.0))
-
+plt.minorticks_on()
 plt.title("Test")
 plt.show()
