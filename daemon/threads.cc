@@ -141,11 +141,9 @@ client_handler(Tcpip &net)
     tcp::socket tcp_socket{ioservice};
     std::string data;
     tcp::resolver resolv{ioservice};
-    //tcp::socket tcp_socket{ioservice};
     std::array<char, 4096> bytes;
 
     tcp_acceptor.listen();
-    //tcp_acceptor.async_accept(tcp_socket, accept_handler);
     tcp_acceptor.accept(tcp_socket);
     ioservice.run();
     bool loop = true;
@@ -176,6 +174,7 @@ client_handler(Tcpip &net)
     }
     
     while (loop) {
+        std::memset(bytes.data(), 0, bytes.size());
         tcp_socket.read_some(buffer(bytes), error);
         std::cerr << bytes.data();
         // Client dropped connection
@@ -185,17 +184,20 @@ client_handler(Tcpip &net)
         XML xml;
         if (bytes[0] == '<') {
             std::string str(std::begin(bytes), std::end(bytes));
-            xml.parseMem(str);
-            if (xml[0]->nameGet() == "helo") {
-                hostname = xml[0]->childGet(0)->valueGet();
-                user = "foo";// xml[data]->childGet(1)->valueGet();
-                BOOST_LOG(lg) << "Incoming connection from user " << user
-                              << " on host " << hostname;
-            } else {
-                cmd.execCommand(xml, str);
-                std::lock_guard<std::mutex> guard(queue_lock);
-                tqueue.push(xml);
-                queue_cond.notify_one();
+            if (!str.empty()) {
+                xml.parseMem(str);
+                if (xml[0]->nameGet() == "helo") {
+                    hostname = xml[0]->childGet(0)->valueGet();
+                    user = "foo";// xml[data]->childGet(1)->valueGet();
+                    BOOST_LOG(lg) << "Incoming connection from user " << user
+                                  << " on host " << hostname;
+                } else {
+                    cmd.execCommand(xml, str);
+                    std::lock_guard<std::mutex> guard(queue_lock);
+                    tqueue.push(xml);
+                    queue_cond.notify_one();
+                }
+                str.clear();
             }
         }
     }
@@ -342,7 +344,7 @@ outback_handler(Ownet &ownet)
     }
 #endif
 
-    BOOST_LOG(lg) << "FIXME: outback_handler() unimplemented"<< std::endl;
+    BOOST_LOG(lg) << "FIXME: outback_handler() unimplemented";
     // Don't eat up all the cpu cycles!
     std::this_thread::sleep_for(std::chrono::seconds(ownet.getPollSleep()));
 }
@@ -363,7 +365,7 @@ xantrex_handler(Ownet &ownet)
     hostname = "localhost";
 #endif
 
-    BOOST_LOG(lg) << "FIXME: xantrext_handler() unimplemented"<< std::endl;
+    BOOST_LOG(lg) << "FIXME: xantrext_handler() unimplemented";
     // Don't eat up all the cpu cycles!
     std::this_thread::sleep_for(std::chrono::seconds(ownet.getPollSleep()));
 }
