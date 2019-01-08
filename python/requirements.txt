@@ -4,3 +4,4 @@ logging
 glob
 pyownet
 pyowfs
+matplotlib
