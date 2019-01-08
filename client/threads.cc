@@ -20,6 +20,7 @@
 # include "config.h"
 #endif
 
+#include <sys/select.h>
 #include <cstring>
 #include <vector>
 #include <stdlib.h>
@@ -37,6 +38,9 @@
 #include <boost/asio/write.hpp>
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/posix_time_io.hpp>
+#include <iostream>
 #include "log.h"
 #include "ownet.h"
 #include "console.h"
@@ -49,8 +53,13 @@ using namespace std::chrono_literals;
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
+// This queue is used to pass data between the threads.
+extern std::mutex queue_lock;
+extern std::queue <XML> tqueue;
+extern std::condition_variable queue_cond;
+
 void
-console_handler(Tcpip &net)
+console_handler(boost::asio::ip::tcp::socket &tcp_socket)
 {
      DEBUGLOG_REPORT_FUNCTION;
 
@@ -60,16 +69,9 @@ console_handler(Tcpip &net)
     int loop = true;
     std::string line;
     Commands cmd;
-
-    // Send a HELO message to the server so it knows who we are
     std::string args;
-    std::string str;
-    args = net.getHostname();
-    args += " ";
-    args += std::getenv("USER");
-    cmd.createCommand(Commands::HELO, args, str);
-    // net.writeNet(str);
     
+    std::string str;
     while(loop) {
         // Don't eat up all the cpu cycles!
         while(std::cin) {
@@ -86,42 +88,28 @@ console_handler(Tcpip &net)
                 action = line;
             }
             cmd.createCommand(cmd.convertAction(action), args, str);
-            //net.writeNet(str);
+
+            boost::system::error_code error;
+            boost::asio::write(tcp_socket, buffer(str), error);
         }
     }
 }
 
 void
-daemon_handler(Tcpip &net)
+daemon_handler(boost::asio::ip::tcp::socket &tcp_socket)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
     retcode_t ret;
     boost::asio::io_service ioservice;
     tcp::resolver       resolv{ioservice};
-    tcp::socket         tcp_socket{ioservice};
     std::array<char, 1024> bytes;
     std::memset(bytes.data(), 0, bytes.size());
-    //tcp::endpoint       tcp_endpoint{tcp::v4(), 2014};
-    tcp::endpoint       tcp_endpoint(boost::asio::ip::address::from_string("192.168.0.50"), 7654);
-
     Commands cmd;
     bool loop = true;
     int retries = 10;
     while (retries-- > 0) {
-        //std::vector<unsigned char> data;
         boost::system::error_code error;
-        tcp::resolver::query q{"pi", "7654"};
-        resolv.resolve(q);
-        try {
-            tcp_socket.connect(tcp_endpoint);
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg, severity_level::error)
-                << "Couldn't connect to PowerGuru server! " << e.what();
-            exit(-1);
-        }
-        
-        ioservice.run();
         // Send a HELO message to the server to authenticate
         std::string str;
         std::string args = boost::asio::ip::host_name();

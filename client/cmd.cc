@@ -23,6 +23,7 @@
 
 #include <thread>
 #include <mutex>
+#include <queue>
 #include <condition_variable>
 #include "tcpip.h"
 #include "console.h"
@@ -34,15 +35,23 @@
 static void usage (const char *);
 
 const int INBUFSIZE = 1024;
-extern void daemon_handler(Tcpip &net);
-extern void console_handler(Tcpip &net);
+extern void daemon_handler(boost::asio::ip::tcp::socket &sock);
+extern void console_handler(boost::asio::ip::tcp::socket &sock);
+extern void damn_handler(boost::asio::ip::tcp::socket &sock);
+
+using namespace boost::asio;
+using namespace boost::asio::ip;
+
+std::mutex queue_lock;
+std::queue <XML> tqueue;
+std::condition_variable queue_cond;
 
 int
 main(int argc, char *argv[])
 {
     int         c;
     std::string dbhost = "localhost";
-    std::string pserver = "localhost:" + 7654;
+    std::string pserver = "pi";
     retcode_t   ret;
 
     log_init("pguru");
@@ -87,30 +96,53 @@ main(int argc, char *argv[])
         }
     }
 
-#ifdef BUILD_OWNET_XXX
-    // Talk directly to the OW daemon
-    Ownet ownet(pserver + ":4304");
-    if (ownet.isConnected()) {
-        if (ownet.hasSensors()) {
-            BOOST_LOG(lg) << "and has sensors attached" << std::endl;
-            ownet.dump();
-        } else {
-            BOOST_LOG(lg) << "and has no sensors attached" << std::endl;
-        }
+     // Connect to the PowerGuru daemon. Note that this is currently
+    // only allows a single connection at a time.
+    boost::asio::io_service ioservice;
+    tcp::resolver       resolver{ioservice};
+    tcp::resolver::query query{tcp::v4(), pserver, "7654"};
+    tcp::resolver::iterator iterator = resolver.resolve(query);
+    tcp::socket         tcp_socket{ioservice};
+    // resolv.resolve(q);
+    tcp::endpoint       tcp_endpoint(boost::asio::ip::address::from_string("192.168.0.50"), 7654);
+    boost::system::error_code error;
+    // resolv.resolve(q);
+    // std::array<char, 1024> bytes;
+    // std::memset(bytes.data(), 0, bytes.size());
+    try {
+        //boost::asio::connect(tcp_socket, iterator);
+        tcp_socket.connect(tcp_endpoint);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg, severity_level::error)
+            << "Couldn't connect to PowerGuru server! " << e.what();
+        exit(-1);
+    }
+
+     ioservice.run();
+    std::thread daemon_thread (daemon_handler, std::ref(tcp_socket));
+
+    std::thread console_thread (console_handler, std::ref(tcp_socket));
+
+#if 0
+    // Commands from the client via the client_handler get processed here
+    // so messages can be passed between threads.
+    while (true) {
+        std::unique_lock<std::mutex> guard(queue_lock);
+        queue_cond.wait(guard, [] { return !tqueue.empty(); });
+        XML xml = tqueue.front();
+        tqueue.pop();
+        // if (xml[0]->nameGet() == "list") {
+            std::vector<std::string> devs;
+            //ownet.listDevices(devs);
+            //std::vector<std::string>::iterator sit;
+            //for (sit = devs.begin(); sit != devs.end(); sit++) {
+            std::cerr << "FIXME: " << xml[0]->nameGet() <<std::endl;
+            //}
     }
 #endif
-    Tcpip net;
-    //if (net.createNetClient(pserver) == ERROR) {
-    //    std::cerr << "ERROR: Can't connect to Powerguru daemon!" << std::endl;
-    //    exit(-1);
-    //}
 
-    daemon_handler(std::ref(net));
-    //std::thread daemon_thread (daemon_handler, std::ref(net));
-    //std::thread console_thread (console_handler, std::ref(net));
-
-    //daemon_thread.join();                // pauses until second finishes
-    //console_thread.join();                // pauses until second finishes
+    daemon_thread.join();                // pauses until second finishes
+    console_thread.join();                // pauses until second finishes
 
 #ifdef BUILD_OWNET
     //third.join();                // pauses until second finishes
