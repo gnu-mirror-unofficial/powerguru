@@ -25,6 +25,7 @@
 #include <mutex>
 #include <queue>
 #include <condition_variable>
+#include <boost/asio.hpp>
 #include "tcpip.h"
 #include "console.h"
 #include "msgs.h"
@@ -98,27 +99,31 @@ main(int argc, char *argv[])
 
      // Connect to the PowerGuru daemon. Note that this is currently
     // only allows a single connection at a time.
+#if 1
     boost::asio::io_service ioservice;
     tcp::resolver       resolver{ioservice};
     tcp::resolver::query query{tcp::v4(), pserver, "7654"};
     tcp::resolver::iterator iterator = resolver.resolve(query);
     tcp::socket         tcp_socket{ioservice};
-    // resolv.resolve(q);
-    tcp::endpoint       tcp_endpoint(boost::asio::ip::address::from_string("192.168.0.50"), 7654);
     boost::system::error_code error;
-    // resolv.resolve(q);
-    // std::array<char, 1024> bytes;
-    // std::memset(bytes.data(), 0, bytes.size());
     try {
-        //boost::asio::connect(tcp_socket, iterator);
-        tcp_socket.connect(tcp_endpoint);
+        boost::asio::connect(tcp_socket, iterator);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg, severity_level::error)
             << "Couldn't connect to PowerGuru server! " << e.what();
         exit(-1);
     }
+    ioservice.run();
+#else
+    // New API, not supported by Raspbian
+    boost::asio::io_context io_context;
+    tcp::resolver resolver(io_context);
+    tcp::resolver::results_type endpoints =
+        resolver.resolve(tcp::v4(),pserver, "7654");
+    tcp::socket tcp_socket(io_context);
+    boost::asio::connect(tcp_socket, endpoints);
+#endif
 
-     ioservice.run();
     std::thread daemon_thread (daemon_handler, std::ref(tcp_socket));
 
     std::thread console_thread (console_handler, std::ref(tcp_socket));
