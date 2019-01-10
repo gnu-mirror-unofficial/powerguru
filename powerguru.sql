@@ -78,7 +78,7 @@ CREATE TABLE onewire (
   id varchar(12) NOT NULL default '0',
   alias varchar(12) NOT NULL default '0',
   type  wire_type NOT NULL default 'UNSUPPORTED',
-  "timestamp" timestamp without time zone
+  "timestamp" timestamp without time zone UNIQUE
 );
 
 DROP TABLE IF EXISTS temperature;
@@ -88,7 +88,7 @@ CREATE TABLE temperature (
   temphigh float NOT NULL default '0',
   templow float NOT NULL default '0',
   scale char(1) NOT NULL default 'F',
-  "timestamp" timestamp without time zone
+  "timestamp" timestamp without time zone UNIQUE
 );
 
 DROP TABLE IF EXISTS battery;
@@ -97,7 +97,7 @@ CREATE TABLE battery (
   current float NOT NULL default '0',
   volts float NOT NULL default '0',
   type volt_type NOT NULL default 'DC',
-  "timestamp" timestamp without time zone
+  "timestamp" timestamp without time zone UNIQUE
 );
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
