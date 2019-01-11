@@ -19,6 +19,10 @@
 
 # API documentation at: https://pyownet.readthedocs.io/en/latest/
 
+## \file mergedb.py
+# Simple script to merge logged data from a remote database to
+# local one.
+
 import epdb
 import logging
 import time
