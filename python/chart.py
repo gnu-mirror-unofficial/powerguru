@@ -28,6 +28,7 @@ import matplotlib.dates as mdates
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from matplotlib.dates import DateFormatter
+import matplotlib.animation as animation
 from datetime import datetime
 import numpy as np
 import getopt
@@ -107,10 +108,6 @@ ch.setLevel(verbosity)
 
 dbname = ""
 connect = ""
-x = list()
-y = list()
-xx = list()
-yy = list()
 if options['dbserver'] != "localhost":
     connect = "host='" + options['dbserver'] + "'"
 connect += " dbname='" + options['dbname'] + "'"
@@ -131,43 +128,56 @@ if dbcursor.closed != 0:
 
 logging.info("Opened cursor in %r" % options['dbserver'])
 
-query = "SELECT id,temperature,timestamp FROM temperature ORDER BY timestamp"
-logging.debug(connect)
-dbcursor.execute(query)
-print(dbcursor.rowcount)
-for id,temperature,timestamp in dbcursor:
-    #print("%r, %r" % (temperature,timestamp))
-    x.append(timestamp)
-    y.append(temperature)
-
-query = "SELECT id,current,volts,timestamp FROM battery ORDER BY timestamp"
-logging.debug(query)
-dbcursor.execute(query)
-for id,current,volts,timestamp in dbcursor:
-    #print("BATTERY: %r, %r, %r, %r" % id, current, volts, timestamp)
-    xx.append(timestamp)
-    yy.append(volts)
-
-
 fig, (temp, power) = plt.subplots(2, 1, sharex=True)
-fig.suptitle('PowerGuru')
-temp.set_ylabel("Temperature in F")
-temp.set_title("Temperature")
-temp.grid(which='major', color='red')
-temp.grid(which='minor', color='blue', linestyle='dashed')
-temp.minorticks_on()
-temp.plot(x, y, color="green")
 
-power.set_title("Battery")
-power.plot(xx, yy, color="purple")
-plt.setp(power.xaxis.get_majorticklabels(), rotation=90)
-power.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d %H'))
-power.xaxis.set_major_locator(mdates.HourLocator(byhour=range(0,24,12)))
-power.xaxis.set_minor_locator(mdates.HourLocator())
-power.set_ylabel("DC Volts")
-power.set_xlabel("Time (hourly)")
-power.grid(which='major', color='red')
-power.grid(which='minor', color='blue', linestyle='dashed')
-power.minorticks_on()
+def animate(i):
+    logging.debug("Refreshing data...")
+    x = list()
+    y = list()
+    xx = list()
+    yy = list()
+    query = "SELECT id,temperature,timestamp FROM temperature ORDER BY timestamp"
+    logging.debug(query)
+    dbcursor.execute(query)
+    logging.debug("Query returned %r records" % dbcursor.rowcount)
+    for id,temperature,timestamp in dbcursor:
+        #print("%r, %r" % (temperature,timestamp))
+        x.append(timestamp)
+        y.append(temperature)
 
+    query = "SELECT id,current,volts,timestamp FROM battery ORDER BY timestamp"
+    logging.debug(query)
+    dbcursor.execute(query)
+    logging.debug("Query returned %r records" % dbcursor.rowcount)
+    for id,current,volts,timestamp in dbcursor:
+        #print("BATTERY: %r, %r, %r, %r" % id, current, volts, timestamp)
+        xx.append(timestamp)
+        yy.append(volts)
+
+    #
+    # There will be more plots in the future
+    #
+    fig.suptitle('PowerGuru')
+    temp.set_ylabel("Temperature in F")
+    temp.set_title("Temperature")
+    temp.grid(which='major', color='red')
+    temp.grid(which='minor', color='blue', linestyle='dashed')
+    temp.minorticks_on()
+    temp.plot(x, y, color="green")
+    
+    power.set_title("Battery")
+    power.plot(xx, yy, color="purple")
+    power.set_ylabel("DC Volts")
+    power.set_xlabel("Time (hourly)")
+    power.grid(which='major', color='red')
+    power.grid(which='minor', color='blue', linestyle='dashed')
+    power.minorticks_on()
+    plt.setp(power.xaxis.get_majorticklabels(), rotation=90)
+    power.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d %H'))
+    power.xaxis.set_major_locator(mdates.HourLocator(byhour=range(0,24,6)))
+    power.xaxis.set_minor_locator(mdates.HourLocator())
+
+# The timeout is in miliseconds
+seconds = 1000 * 100
+ani = animation.FuncAnimation(fig, animate, interval=seconds)
 plt.show()
