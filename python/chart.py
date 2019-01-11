@@ -149,37 +149,25 @@ for id,current,volts,timestamp in dbcursor:
     yy.append(volts)
 
 
-# plt.subplots(2, 2, sharex=True
-# 2 rows, 2 columns, index 1 (upper left corner
-plt.subplot(211)
+fig, (temp, power) = plt.subplots(2, 1, sharex=True)
+fig.suptitle('PowerGuru')
+temp.set_ylabel("Temperature in F")
+temp.set_title("Temperature")
+temp.grid(which='major', color='red')
+temp.grid(which='minor', color='blue', linestyle='dashed')
+temp.minorticks_on()
+temp.plot(x, y, color="green")
 
-#plt.xlabel("Timestamps")
-plt.xticks(rotation='45')
-#plt.xaxis.set_major_formatter(mdates.DateFormatter('%d-%H'))
-#plt.set_major_locator(mdates.HourLocator(byhour=range(0,24,12)))
-#plt.set_minor_locator(mdates.HourLocator())
-
-plt.ylabel("Temperature in F")
-
-plt.grid(which='major', color='red')
-plt.grid(which='minor', color='blue', linestyle='dashed')
-plt.minorticks_on()
-
-plt.title("Temperature")
-plt.plot(x, y, color="green")
-plt.tight_layout()
-
-ax = plt.subplot(212)
-ax.set_title("Battery")
-ax.plot(xx, yy, color="purple")
-plt.setp(ax.xaxis.get_majorticklabels(), rotation=90)
-ax.xaxis.set_major_formatter(mdates.DateFormatter('%d-%H'))
-ax.xaxis.set_major_locator(mdates.HourLocator(byhour=range(0,24,12)))
-ax.xaxis.set_minor_locator(mdates.HourLocator())
-ax.set_ylabel("DC Volts")
-ax.set_xlabel("When by the Hour")
-ax.grid(which='major', color='red')
-ax.grid(which='minor', color='blue', linestyle='dashed')
-ax.minorticks_on()
+power.set_title("Battery")
+power.plot(xx, yy, color="purple")
+plt.setp(power.xaxis.get_majorticklabels(), rotation=90)
+power.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d %H'))
+power.xaxis.set_major_locator(mdates.HourLocator(byhour=range(0,24,12)))
+power.xaxis.set_minor_locator(mdates.HourLocator())
+power.set_ylabel("DC Volts")
+power.set_xlabel("Time (hourly)")
+power.grid(which='major', color='red')
+power.grid(which='minor', color='blue', linestyle='dashed')
+power.minorticks_on()
 
 plt.show()
