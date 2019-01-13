@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006 - 2018
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+//               2014, 2015, 2016, 2017, 2018, 2019
 //      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
@@ -20,6 +21,10 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+#include <array>
+#include <string>
+#include <iostream>
 
 #include <sys/types.h>
 #include <sys/time.h>
@@ -95,7 +100,7 @@ retcode_t
 Tcpip::createNetServer(short port, const std::string &protocol)
 {
     DEBUGLOG_REPORT_FUNCTION;
-  
+
     struct protoent *ppe = 0;
     struct sockaddr_in sock_in;
     int             on, type;
@@ -141,7 +146,7 @@ Tcpip::createNetServer(short port, const std::string &protocol)
     }
     
     BOOST_LOG(lg) << "Listening for net traffic on fd #" << _sockIOfd;
-
+    
     return SUCCESS;
 }
 
@@ -335,7 +340,7 @@ Tcpip::createNetClient(const std::string &hostname, short port,
   
     // For a client, the IO file descriptor is the same as the default one
     _sockIOfd = _sockfd;
-
+    
     return SUCCESS;
 }
 
@@ -747,7 +752,7 @@ Tcpip::writeNet(const std::vector<unsigned char> &buffer)
 }
 
 Tcpip &
-Tcpip::operator = (Tcpip &tcp) 
+Tcpip::operator = (Tcpip &tcp)
 {
     _sockfd = _sockfd;
     _sockIOfd = _sockIOfd;
@@ -756,6 +761,77 @@ Tcpip::operator = (Tcpip &tcp)
     //memcpy(_client, tcp._client, sizeof(sockaddr_in);
     //_proto = strdup(_proto);
     _port = _port;
+}
+
+////////////////////////////////////////////////
+
+using namespace boost::asio;
+using namespace boost::asio::ip;
+//io_service ioservice;
+// tcp::resolver resolv{ioservice};
+//tcp::socket tcp_socket{ioservice};
+//std::array<char, 4096> bytes;
+
+// For boost::asio
+static io_service       ioservice;
+static tcp::endpoint    tcp_endpoint{tcp::v4(), 2014};
+static tcp::acceptor    tcp_acceptor{ioservice, tcp_endpoint};
+static tcp::socket      tcp_socket{ioservice};
+static std::array<char, 4096> bytes;
+
+void
+read_handler(const boost::system::error_code &ec,
+             std::size_t bytes_transferred)
+{
+    DEBUGLOG_REPORT_FUNCTION;
+    if (!ec) {
+        std::cout.write(bytes.data(), bytes_transferred);
+        tcp_socket.async_read_some(buffer(bytes), read_handler);
+    }
+}
+
+void
+connect_handler(const boost::system::error_code &ec)
+{
+    DEBUGLOG_REPORT_FUNCTION;
+    if (!ec) {
+        std::string r =
+            "GET / HTTP/1.1\r\nHost: theboostcpplibraries.com\r\n\r\n";
+        write(tcp_socket, buffer(r));
+        tcp_socket.async_read_some(buffer(bytes), read_handler);
+    }
+}
+
+void
+write_handler(const boost::system::error_code &ec,
+  std::size_t bytes_transferred)
+{
+    DEBUGLOG_REPORT_FUNCTION;
+    if (!ec) {
+        tcp_socket.shutdown(tcp::socket::shutdown_send);
+    }
+}
+
+void
+accept_handler(const boost::system::error_code &ec)
+{
+    DEBUGLOG_REPORT_FUNCTION;
+    if (!ec) {
+        std::time_t now = std::time(nullptr);
+        static std::string data;
+        data = std::ctime(&now);
+        async_write(tcp_socket, buffer(data), write_handler);
+    }
+}
+
+void
+resolve_handler(const boost::system::error_code &ec,
+  tcp::resolver::iterator it)
+{
+    DEBUGLOG_REPORT_FUNCTION;
+    if (!ec) {
+        tcp_socket.async_connect(*it, connect_handler);
+    }
 }
 
 // local Variables:

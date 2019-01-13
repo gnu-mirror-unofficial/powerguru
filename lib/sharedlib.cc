@@ -27,21 +27,23 @@
 #include "sharedlib.h"
 
 using namespace std;
+#include <boost/system/error_code.hpp>
+using namespace boost::system;
 
 extern LogFile dbglogfile;
 
-retcode_t
+boost::system::error_code
 SharedLib::CloseLib (ErrCond &err)
 {
     lt_dlclose (dlhandle);
 }
 
-retcode_t
+boost::system::error_code
 SharedLib::OpenLib (string &filespec, ErrCond &Err)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
-    retcode_t (*FuncAddr)(void);
+    boost::system::error_code (*FuncAddr)(void);
     int errors = 0;
     char *errmsg;
     char pwd[512];
@@ -54,7 +56,7 @@ SharedLib::OpenLib (string &filespec, ErrCond &Err)
           case ENOENT:
               Err.SetMsg("Specified shared library doesn't exist");
               BOOST_LOG(lg) << "ERROR: Dynamic library, " << filespec << " doesn't exist!" << endl;
-              return ERROR;
+              errc::make_error_code(errc::not_supported);
               break;
         }
     }
@@ -75,7 +77,7 @@ SharedLib::OpenLib (string &filespec, ErrCond &Err)
 
     if (errors) {
         Err << "Couldn't initialize ltdl";
-        return ERROR;
+        errc::make_error_code(errc::not_supported);
     }
 
     BOOST_LOG(lg) << "Initialized ltdl" << endl;
@@ -92,7 +94,7 @@ SharedLib::OpenLib (string &filespec, ErrCond &Err)
     errors = lt_dladdsearchdir (abelmon);
     if (errors) {
         Err << lt_dlerror();
-        return ERROR;
+        errc::make_error_code(errc::not_supported);
     }
 
     BOOST_LOG(lg) << "Added " << abelmon << " to the search paths" << endl;
@@ -103,13 +105,13 @@ SharedLib::OpenLib (string &filespec, ErrCond &Err)
 
     if (dlhandle == NULL) {
         Err << lt_dlerror();
-        return ERROR;
+        errc::make_error_code(errc::not_supported);
     }
 
     dlname = filespec;
   
     BOOST_LOG(lg) << "Opened dynamic library " << filespec << endl;
-    return SUCCESS;
+    errc::make_error_code(errc::success);
 }
 
 entrypoint *
@@ -134,7 +136,7 @@ SharedLib::GetSymbol (std::string &symbol, ErrCond &err)
 
 #if 0
 // Open the database
-retcode_t
+boost::system::error_code
 SharedLib::ScanDir (void) {
     DEBUGLOG_REPORT_FUNCTION;
   
@@ -142,7 +144,7 @@ SharedLib::ScanDir (void) {
     struct device_info *info;
     struct dirent *entry;
     lt_dlhandle dlhandle;
-    retcode_t (*InitDBaddr)(void);
+    boost::system::error_code (*InitDBaddr)(void);
     lt_ptr_t addr;
     struct errcond err;
 
@@ -173,7 +175,7 @@ SharedLib::ScanDir (void) {
         // we get all the duplicates.
         entry = readdir(library_dir);
         if ((int)entry < 1)
-            return SUCCESS;
+            errc::make_error_code(errc::success);
 
         //    handle = dlopen (entry->d_name, RTLD_NOW|RTLD_GLOBAL);
         dlhandle = lt_dlopen (entry->d_name);
@@ -181,7 +183,7 @@ SharedLib::ScanDir (void) {
             continue;
         }
         cout << "Opening " << entry->d_name << endl;
-        //    InitDBaddr = (retcode_t (*)(...))dlsym (handle, "InitDB");
+        //    InitDBaddr = (boost::system::error_code (*)(...))dlsym (handle, "InitDB");
         (lt_ptr_t) InitDBaddr = lt_dlsym (dlhandle, "InitDB");
         if (InitDBaddr != NULL) {
             //      BOOST_LOG(lg) << "Found OpenDB in " << entry->d_name << endl;

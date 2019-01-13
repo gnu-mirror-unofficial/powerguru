@@ -1,5 +1,5 @@
 // 
-// Copyright (C) 2018
+// Copyright (C) 2018, 2019
 //      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
@@ -57,25 +57,47 @@ std::string &
 Commands::createNode(cmd_t cmd, const std::string &args,
                                std::string &str)
 {
+    DEBUGLOG_REPORT_FUNCTION;
+
+    return str;
+}
+
+/// createCommand
+/// @param cmd The command
+/// @param args Arguments to the command, separated by spaces
+/// @param str The string to hold the result
+/// @returns The XML for this command
+std::string &
+Commands::createCommand(cmd_t cmd, const std::string &args,
+                        std::string &str)
+{
     //DEBUGLOG_REPORT_FUNCTION;
+
+    if (cmd != RESULT) {
+        str = "<command>";
+    }
 
     switch (cmd) {
       case LIST:
-          BOOST_LOG(lg) << "create LIST command" << std::endl;
+          BOOST_LOG_SEV(lg, severity_level::debug) << "create LIST command: " << args;
           str += "<list>" + args + "</list>";
           break;
       case POLL:
-          BOOST_LOG(lg) << "create POLL command" << std::endl;  
+          BOOST_LOG_SEV(lg, severity_level::debug) << "create POLL command: " << args;
           str += "<poll>" + args + "</poll>";
           break;
       case NOP:
-          BOOST_LOG(lg) << "create NOP command" << std::endl;  
+          BOOST_LOG_SEV(lg, severity_level::debug) << "create NOP command: " << args;
           str += "<nop>" + args + "</nop>";
+          break;
+      case RESULT:
+          BOOST_LOG_SEV(lg, severity_level::debug) << "create RESULT command: " << args;
+          str += "<result>" + args + "</result>";
           break;
       case HELO:
           // This takes two optional arguments, the first one
           // is the hostname, the second the user name.
-          BOOST_LOG(lg) << "create HELO command" << std::endl;
+          BOOST_LOG_SEV(lg, severity_level::debug) << "create HELO command: " << args;
           std::string data = "<hostname>";
           size_t pos = args.find(' ');
           if (pos == std::string::npos) {
@@ -93,21 +115,10 @@ Commands::createNode(cmd_t cmd, const std::string &args,
           str += "<helo>" + data + "</helo>";
           break;
     };
+    if (cmd != RESULT) {
+        str += "</command>\n";
+    }
     
-    return str;
-}
-
-std::string &
-Commands::createCommand(cmd_t cmd, const std::string &args,
-                        std::string &str)
-{
-    //DEBUGLOG_REPORT_FUNCTION;
-    
-    std::string newstr = "<command>";
-    newstr += str;
-    newstr += "</command>\n";
-    str = newstr;
-
     return str;
 }
 
@@ -118,15 +129,17 @@ Commands::execCommand(XML &xml, std::string &str)
 
     std::string cmd = xml.nameGet();
     
-    BOOST_LOG(lg) << "Executing remote command " << cmd << std::endl;
+    BOOST_LOG(lg) << "Executing remote command " << cmd;
 
     // The first child node is the top level command
-    if (xml[0]->nameGet() == "list") {
-        if (xml[0]->valueGet() == "devices") {
-            // FIXME:
-        }
-    }
+    //if (xml[0]->nameGet() == "list") {
+        //if (xml[0]->valueGet() == "devices") {
+        //     // FIXME:
+        //}
+        //}
 
+    createCommand(RESULT, "Iko Iko", str);
+    
     return str;
 }
 

@@ -28,10 +28,14 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <iostream>
+#include <boost/system/error_code.hpp>
+#include <boost/log/core.hpp>
 
-#include "err.h"
 #include "snmp.h"
 #include "proc.h"
+#include "log.h"
+
+using namespace boost::system;
 
 #if 0
 #include "ifTable.h"
@@ -49,8 +53,6 @@ extern "C" {
 #define NETSNMP_ATTRIBUTE_DEPRECATED 1
 #endif
 
-using namespace std;
-
 SnmpClient::SnmpClient()
 {
 }
@@ -59,7 +61,7 @@ SnmpClient::~SnmpClient()
 {
 }
 
-retcode_t
+boost::system::error_code
 SnmpClient::open(std::string init, std::string mibname)
 {
     // PowerGuru
@@ -78,15 +80,16 @@ SnmpClient::open(std::string init, std::string mibname)
     
     _pdu = snmp_pdu_create(SNMP_MSG_GET);
     
-    return SUCCESS;
+    errc::make_error_code(errc::success);
 }
 
-retcode_t
+boost::system::error_code
 SnmpClient::close(void)
 {
     snmp_close(_handle);
-    cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << endl;
-    return ERROR;
+    BOOST_LOG_SEV(lg, severity_level::warning) << __PRETTY_FUNCTION__
+                                               << "ERROR: unimplemented!";
+    errc::make_error_code(errc::not_supported);
 }
 
 struct snmp_pdu *
@@ -131,7 +134,7 @@ SnmpDaemon::~SnmpDaemon()
 }
 
 
-retcode_t
+boost::system::error_code
 SnmpDaemon::master(bool background)
 {
     // print log errors to syslog or stderr
@@ -193,11 +196,11 @@ SnmpDaemon::master(bool background)
     snmp_shutdown("powerguru");
     SOCK_CLEANUP;
     
-    return SUCCESS;
+    errc::make_error_code(errc::success);
 }
 
 #if 0
-retcode_t
+boost::system::error_code
 SnmpDaemon::process(void)
 {
     int             numfds, count;
@@ -216,7 +219,7 @@ SnmpDaemon::process(void)
         snmp_read(&readfds);
     }
     
-    return SUCCESS;
+    errc::make_error_code(errc::success);
 }
 #endif
 

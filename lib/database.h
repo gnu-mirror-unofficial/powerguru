@@ -102,6 +102,8 @@ public:
         _ftable[MOISTURE] = "MOISTURE";
         _ftable[UNSUPPORTED] = "UNSUPORTED";
 
+        initTable(_family);
+
         // These values may be replaced on the command line. These are the
         // default behaviour.
         _tblname  = DBTABLE;

@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006 - 2018
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+//               2014, 2015, 2016, 2017, 2018, 2019
 //      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
@@ -52,17 +53,14 @@
 XMLNode *
 XML::extractNode(xmlNodePtr node)
 {
-    DEBUGLOG_REPORT_FUNCTION;
+//    DEBUGLOG_REPORT_FUNCTION;
     xmlAttrPtr attr;
     xmlNodePtr childnode;
     xmlChar *ptr = NULL;
     XMLNode *child;
     int len;
 
-    // BOOST_LOG(lg) << "\rCreated new element for " << (const char *)node->name << " at " << element << std::endl;
-
-    BOOST_LOG(lg) << "extracting node " << node->name << std::endl;
-
+    // BOOST_LOG_SEV(lg, severity_level::debug) << "extracting node " << node->name;
     XMLNode *xml = new XMLNode;
     std::string name;
     std::string value;
@@ -76,10 +74,10 @@ XML::extractNode(xmlNodePtr node)
             xml->attribAdd(name, value);
             attr = attr->next;
 #if 0
-            BOOST_LOG(lg) << "FIXME: attribute " << node->name
-                       << " has property "
-                       << name << " value is "
-                       << value << std::endl;
+            BOOST_LOG_SEV(lg, severity_level::debug)
+                << "FIXME: attribute " << node->name
+                << " has property " << name
+                << " value is " << value;
 #endif
         }
     }
@@ -100,9 +98,10 @@ XML::extractNode(xmlNodePtr node)
         if (ptr != NULL) {
             //value = reinterpret_cast<const char *>(node->children->content);
             value = reinterpret_cast<const char *>(ptr);
-#if 1
-            BOOST_LOG(lg) << "\tChild node: " << name
-                       << " has contents " << value << std::endl;
+#if 0
+            BOOST_LOG_SEV(lg, severity_level::debug)
+                << "\tChild node: " << name
+                << " has contents " << value;
 #endif
             xml->valueSet(value.substr(0, value.find('\n')));
             xmlFree(ptr);
@@ -114,14 +113,17 @@ XML::extractNode(xmlNodePtr node)
 
     while (childnode != NULL) {
         if (childnode->type == XML_ELEMENT_NODE) {
-            BOOST_LOG(lg) << "\tfound node " << (const char *)childnode->name << std::endl;
+#if 0
+            BOOST_LOG_SEV(lg, severity_level::debug)
+                << "\tfound node " << (const char *)childnode->name;
+#endif
             XMLNode *child = extractNode(childnode);
             //if (child->_value.get_type() != as_value::UNDEFINED) {
-#if 1
-            BOOST_LOG(lg) << "\tPushing child Node " << child->nameGet()
-                       << " value " << child->valueGet()
-                       <<  " on element "
-                       <<  xml->nameGet() << std::endl;
+#if 0
+            BOOST_LOG_SEV(lg, severity_level::debug)
+                << "\tPushing child Node " << child->nameGet()
+                << " value " << child->valueGet()
+                <<  " on element " <<  xml->nameGet();
 #endif
             xml->childAdd(child);
         }
@@ -136,13 +138,14 @@ XML::extractNode(xmlNodePtr node)
 bool
 XML::parseMem(const std::string &xml_in)
 {
-    DEBUGLOG_REPORT_FUNCTION;
+    //DEBUGLOG_REPORT_FUNCTION;
     bool          ret = true;
 
-    BOOST_LOG(lg) << "Parse XML from memory: " << xml_in.c_str() << std::endl;
+    BOOST_LOG_SEV(lg, severity_level::debug)
+        << "Parse XML from memory: \n\t" << xml_in.c_str();
 
     if (xml_in.size() == 0) {
-        BOOST_LOG(lg) << "ERROR: XML data is empty!" << std::endl;
+        BOOST_LOG_SEV(lg, severity_level::error) << "XML data is empty!";
         return false;
     }
 
@@ -150,7 +153,7 @@ XML::parseMem(const std::string &xml_in)
   
     _doc = xmlParseMemory(xml_in.c_str(), xml_in.size());
     if (_doc == 0) {
-        BOOST_LOG(lg) << "ERROR: Can't parse XML data!" << std::endl;
+        BOOST_LOG_SEV(lg, severity_level::error) << "Can't parse XML data!";
         return false;
     }
     _nodes = extractNode(xmlDocGetRootElement(_doc));
@@ -192,14 +195,15 @@ bool
 XML::parseFile(const std::string &filespec)
 {
     DEBUGLOG_REPORT_FUNCTION;
-    BOOST_LOG(lg) << "Load disk XML file: " << filespec << std::endl;
+    BOOST_LOG_SEV(lg, severity_level::debug) << "Load disk XML file: " << filespec;
   
     //BOOST_LOG(lg) << %s: mem is %d\n", __FUNCTION__, mem);
 
     xmlInitParser();
     _doc = xmlParseFile(filespec.c_str());
     if (_doc == 0) {
-        BOOST_LOG(lg) << "ERROR: Can't load XML file: " << filespec << std::endl;
+        BOOST_LOG_SEV(lg, severity_level::error) << "ERROR: Can't load XML file: "
+                                                 << filespec;
         return false;
     }
     //_nodes = extractNode(xmlDocGetRootElement(_doc));
@@ -210,24 +214,6 @@ XML::parseFile(const std::string &filespec)
 
     return true;
 }
-
-// const XMLNode &
-// XML::operator [] (int x) {
-//     // DEBUGLOG_REPORT_FUNCTION;
-//     return _nodes->childGet(x);
-// }
-
-// bool
-// XML::hasChildren(void)
-// {
-//     return (_nodes->childrenSize() > 0)? true : false;
-// }
-
-// const std::string &
-// XML::nodeNameGet(void)
-// {
-//     return _nodes->nameGet();
-// }
 
 void
 XMLNode::operator = (XMLNode &node)

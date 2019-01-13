@@ -40,9 +40,9 @@ libpguru_la_SOURCES = \
 	rc.cc rc.h \
 	log.cc log.h \
 	console.cc console.h \
-	database.h \
-	tcputil.cc tcputil.h \
-	tcpip.cc tcpip.h
+	database.h
+#	tcputil.cc tcputil.h \
+#	tcpip.cc tcpip.h
 
 if BUILD_OUTBACK
 libpguru_la_SOURCES += msgs.cc msgs.h menuitem.cc menuitem.h
@@ -76,14 +76,9 @@ noinst_HEADERS = \
 	menuitem.h \
 	database.h \
 	console.h \
-	err.h \
 	log.h \
-	tcputil.h \
-	tcpip.h \
 	msgs.h \
 	xml.h
-
-#libpguru_la_LDFLAGS = -module -avoid-version -no-undefined
 
 clean-hook:
 	-rm -f core.*

@@ -23,17 +23,19 @@
 #include <ltdl.h>
 
 #include "log.h"
-#include "err.h"
 
-typedef retcode_t entrypoint (unsigned char *buf, int bytes, struct errcond *err);
+#include <boost/system/error_code.hpp>
+using namespace boost::system;
 
-typedef retcode_t IOentrypoint (FILE *, struct errcond *err);
+typedef boost::system::error_code entrypoint (unsigned char *buf, int bytes, struct errcond *err);
+
+typedef boost::system::error_code IOentrypoint (FILE *, struct errcond *err);
 
 class SharedLib
 {
 public:
-    retcode_t OpenLib (std::string &name, ErrCond &Err);
-    retcode_t CloseLib (ErrCond &Err);
+    boost::system::error_code OpenLib (std::string &name, ErrCond &Err);
+    boost::system::error_code CloseLib (ErrCond &Err);
     entrypoint *GetSymbol (std::string &name, ErrCond &Err);
 
     // Accessors for the protocol name

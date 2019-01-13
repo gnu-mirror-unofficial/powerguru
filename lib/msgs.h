@@ -29,10 +29,10 @@
 #include <cstring>
 #include <map>
 #include <sstream>
+#include <boost/system/error_code.hpp>
 
 #include "database.h"
 #include "log.h"
-#include "err.h"
 #ifdef HAVE_LIBXML
 # include "xml.h"
 #endif
@@ -98,7 +98,7 @@ public:
         RESPONSE
     } xml_msg_e;
   
-    typedef retcode_t (Msgs::*methodPtr_t)(XMLNode *node);
+    typedef boost::system::error_code (Msgs::*methodPtr_t)(XMLNode *node);
 
 //   struct msg_data 
 //   {
@@ -111,45 +111,45 @@ public:
     Msgs(Tcpip *tcpip);
     ~Msgs();
 
-    retcode_t init(void);
-    retcode_t init(net_mode_e);
-    retcode_t init(std::string &);
-    retcode_t init(net_mode_e, const std::string &);
-    retcode_t init(bool);
-    retcode_t init(net_mode_e, bool);
+    boost::system::error_code init(void);
+    boost::system::error_code init(net_mode_e);
+    boost::system::error_code init(std::string &);
+    boost::system::error_code init(net_mode_e, const std::string &);
+    boost::system::error_code init(bool);
+    boost::system::error_code init(net_mode_e, bool);
   
     void dump(XMLNode &);
     void process(const XMLNode &node);
     
     // These parse incoming messages for the daemon
-    retcode_t statusProcess(const XMLNode &node);
-    retcode_t powerguruProcess(const XMLNode &node);
+    boost::system::error_code statusProcess(const XMLNode &node);
+    boost::system::error_code powerguruProcess(const XMLNode &node);
   
-    retcode_t heloProcess(const XMLNode &node);
-    retcode_t serverProcess(const XMLNode &node);
-    retcode_t clientProcess(const XMLNode &node);
+    boost::system::error_code heloProcess(const XMLNode &node);
+    boost::system::error_code serverProcess(const XMLNode &node);
+    boost::system::error_code clientProcess(const XMLNode &node);
   
-    retcode_t configProcess(const XMLNode &node);
+    boost::system::error_code configProcess(const XMLNode &node);
 
     // These are all the tags associated with meters
-    retcode_t metersProcess(const XMLNode &node);
-    retcode_t chargeAmpsProcess(const XMLNode &node);
-    retcode_t loadAmpsProcess(const XMLNode &node);
-    retcode_t pvAmpsProcess(const XMLNode &node);
-    retcode_t pvVoltsProcess(const XMLNode &node);
-    retcode_t dailyKwhProcess(const XMLNode &node);
-    retcode_t hertzProcess(const XMLNode &node);
-    retcode_t batteryVoltsProcess(const XMLNode &node);
-    retcode_t buyAmpsProcess(const XMLNode &node);
-    retcode_t sellAmpsProcess(const XMLNode &node);
-    retcode_t acVoltsOutProcess(const XMLNode &node);
-    retcode_t ac1InProcess(const XMLNode &node);
-    retcode_t ac2InProcess(const XMLNode &node);
+    boost::system::error_code metersProcess(const XMLNode &node);
+    boost::system::error_code chargeAmpsProcess(const XMLNode &node);
+    boost::system::error_code loadAmpsProcess(const XMLNode &node);
+    boost::system::error_code pvAmpsProcess(const XMLNode &node);
+    boost::system::error_code pvVoltsProcess(const XMLNode &node);
+    boost::system::error_code dailyKwhProcess(const XMLNode &node);
+    boost::system::error_code hertzProcess(const XMLNode &node);
+    boost::system::error_code batteryVoltsProcess(const XMLNode &node);
+    boost::system::error_code buyAmpsProcess(const XMLNode &node);
+    boost::system::error_code sellAmpsProcess(const XMLNode &node);
+    boost::system::error_code acVoltsOutProcess(const XMLNode &node);
+    boost::system::error_code ac1InProcess(const XMLNode &node);
+    boost::system::error_code ac2InProcess(const XMLNode &node);
 
-    retcode_t unimplementedProcess(const XMLNode &node);
+    boost::system::error_code unimplementedProcess(const XMLNode &node);
 
     // These are all the system commands
-    retcode_t commandProcess(const XMLNode &node);
+    boost::system::error_code commandProcess(const XMLNode &node);
 
     // These format client side messages to the daemon
     std::string &statusCreate(meter_data_t *data);
@@ -178,11 +178,11 @@ public:
 
     void methodSet(const std::string &, methodPtr_t func);
     methodPtr_t methodGet(const std::string &name);
-    retcode_t methodProcess(const std::string &name, XMLNode &);
+    boost::system::error_code methodProcess(const std::string &name, XMLNode &);
     void methodsDump(void);
 
     std::string cacheGet(const std::string &);
-    retcode_t cacheAdd(const std::string &name, const std::string &);
+    boost::system::error_code cacheAdd(const std::string &name, const std::string &);
     void cacheDump(void);
     
     std::string &thisIPGet(void) { return _thisip; };
@@ -190,7 +190,7 @@ public:
     std::string &thisHostnameGet(void) { return _remoteip; };
     std::string &remoteHostnameGet(void) { return _remotehost; };
 
-    retcode_t findTag(const std::string &);
+    boost::system::error_code findTag(const std::string &);
   
 private:
     float               _version;

@@ -25,18 +25,16 @@
 #endif
 
 #include <cstring>
-#include "err.h"
+#include <boost/system/error_code.hpp>
 
-namespace rcinit {
-  
 class RCinitFile 
 {
 public:
     RCinitFile();
     ~RCinitFile();
-    retcode_t load_files();
-    retcode_t parse_file(std::string &filespec);
-    retcode_t update_file(std::string &filespec);
+    boost::system::error_code load_files();
+    boost::system::error_code parse_file(std::string &filespec);
+    boost::system::error_code update_file(std::string &filespec);
 
     // Database config options
     std::string dbhostGet()   { return _dbhost; }
@@ -55,9 +53,6 @@ private:
     std::string _devmode;
     std::string _device;
 }; 
-
-// End of rcinit namespace 
-}
 
 // __RC_H__
 #endif

@@ -24,6 +24,11 @@
 # include "config.h"
 #endif
 
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/write.hpp>
+#include <boost/asio/buffer.hpp>
+#include <boost/asio/ip/tcp.hpp>
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -40,8 +45,8 @@ extern const short DEFAULTPORT;
 class Tcpip : public Tcputil
 {
 public:
-    Tcpip(void);
-    ~Tcpip(void);
+    Tcpip(void) {};
+    ~Tcpip(void) {};
 
     // Create a new server. After creating it, then you have to wait for an
     // incoming connection.
@@ -132,6 +137,19 @@ protected:
     bool                _console;
 };
 
+/////////////////////////////////////////////
+using namespace boost::asio;
+using namespace boost::asio::ip;
+
+extern void read_handler(const boost::system::error_code &ec,
+                  std::size_t bytes_transferred);
+extern void connect_handler(const boost::system::error_code &ec);
+extern void resolve_handler(const boost::system::error_code &ec,
+                            boost::asio::ip::tcp::resolver::iterator it);
+extern void write_handler(const boost::system::error_code &ec,
+                   std::size_t bytes_transferred);
+void accept_handler(const boost::system::error_code &ec);
+    
 // EOF __TCPIP_H__ */
 #endif
 

@@ -27,13 +27,14 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
+#include <boost/system/error_code.hpp>
 
-#include "err.h"
 #include "log.h"
 #include "rc.h"
 
-using namespace rcinit;
-  
+#include <boost/system/error_code.hpp>
+using namespace boost::system;
+
 RCinitFile::RCinitFile()
 {
 }
@@ -43,7 +44,7 @@ RCinitFile::~RCinitFile()
 }
 
 // Look for a config file in the likely places.
-retcode_t
+boost::system::error_code
 RCinitFile::load_files()
 {
     char *home;
@@ -65,11 +66,11 @@ RCinitFile::load_files()
         return parse_file(loadfile);
     }
   
-    return ERROR;
+    errc::make_error_code(errc::not_supported);
 }
 
 // Parse the config file and set the variables.
-retcode_t
+boost::system::error_code
 RCinitFile::parse_file(std::string &filespec)
 {
     struct stat stats;
@@ -80,7 +81,7 @@ RCinitFile::parse_file(std::string &filespec)
 
     BOOST_LOG(lg) << "Seeing if " << filespec << " exists.";
     if (filespec.size() == 0) {
-        return ERROR;
+        errc::make_error_code(errc::not_supported);
     }
   
     if (stat(filespec.c_str(), &stats) == 0) {
@@ -88,7 +89,7 @@ RCinitFile::parse_file(std::string &filespec)
     
         if (!in) {
             BOOST_LOG(lg) << "ERROR: Couldn't open file: " << filespec;
-            return ERROR;
+            errc::make_error_code(errc::not_supported);
         }
 
         // Read in each line and parse it
@@ -135,21 +136,21 @@ RCinitFile::parse_file(std::string &filespec)
         if (in) {
             in.close();
         }
-        return ERROR;
+        errc::make_error_code(errc::not_supported);
     }  
 
     if (in) {
         in.close();
     }
-    return SUCCESS;
+    errc::make_error_code(errc::success);
 }
 
 // Write the changed settings to the config file
-retcode_t
+boost::system::error_code
 RCinitFile::update_file(std::string &filespec)
 {
     std::cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << std::endl;
-    return ERROR;
+    errc::make_error_code(errc::not_supported);
 }
 
 // local Variables:

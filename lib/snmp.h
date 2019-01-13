@@ -32,10 +32,7 @@
 /* If you have sys/time.h on your machine: */
 #include <sys/time.h>
 
-/* Else pick one of these instead:
-#include <time.h>
-#include <sys/timeb.h>
-*/
+#include <boost/system/error_code.hpp>
 
 /* if on windows: */
 #ifdef WIN32
@@ -75,15 +72,14 @@
 #include <net-snmp/agent/scalar.h>
 
 #include <cstring>
-#include "err.h"
 
 class SnmpClient
 {
 public:
     SnmpClient();
     ~SnmpClient();
-    retcode_t open(std::string init, std::string mibname);
-    retcode_t close(void);
+    boost::system::error_code open(std::string init, std::string mibname);
+    boost::system::error_code close(void);
     struct snmp_pdu *read(std::string mibnode);
 private:
     std::string           *_hostname;
@@ -102,11 +98,11 @@ class SnmpDaemon
 public:
     SnmpDaemon();
     ~SnmpDaemon();
-    retcode_t master(bool background);
-    retcode_t start(std::string init, std::string mibname);
-    retcode_t close(void);
+    boost::system::error_code master(bool background);
+    boost::system::error_code start(std::string init, std::string mibname);
+    boost::system::error_code close(void);
     struct snmp_pdu *readSnmp(std::string mibnode);
-    retcode_t process(void);
+    boost::system::error_code process(void);
   
 private:
     std::string           *_hostname;

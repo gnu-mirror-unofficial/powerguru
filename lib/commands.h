@@ -32,7 +32,7 @@
 class Commands 
 {
 public:
-    typedef enum { NOP, LIST, POLL, HELO } cmd_t; 
+    typedef enum { NOP, LIST, POLL, HELO, RESULT } cmd_t; 
     Commands();
     ~Commands();
     std::string &createNode(cmd_t cmd, const std::string &args,

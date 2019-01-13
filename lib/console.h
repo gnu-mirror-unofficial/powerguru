@@ -26,7 +26,8 @@
 #include <vector>
 #include <cstdio>
 #include <termios.h>
-#include "err.h"
+#include <boost/system/error_code.hpp>
+using namespace boost::system;
 
 class Console {
 public:
@@ -60,7 +61,6 @@ public:
     // write a string to the console
     int putsCon (std::string out) { return putsCon (out.c_str(), outchannel.fhandle); }
     int putsCon (std::string out, FILE *y)  { return fputs(out.c_str(), y); }
-    int putsCon (ErrCond &Err)  { return fputs(Err.GetMsg().c_str(), outchannel.fhandle); }
  
     // Accessors
 

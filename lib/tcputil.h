@@ -49,10 +49,10 @@ public:
         struct saddr;
     };
 
-    Tcputil();
+    Tcputil() {};
     Tcputil(const std::string &host);
     Tcputil(const std::string &host, short port);
-    ~Tcputil();
+    ~Tcputil() {};
     
     // This gets the servent data that contains the port
     // number as specified by it's /etc/services file entry.
