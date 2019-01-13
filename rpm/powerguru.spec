@@ -17,19 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-# When using rpm 4.1 or newer, the behaviour changed to terminate
-# if any files are missing. This is stupid as if you have scrollkeeper
-# support for the docs, they need to be included in the package. As
-# these are system files, this is down right stupid, so we turn this
-# "feature" off.
-#
-# So anyway, do this to get the rpm to build:
-# echo "%_unpackaged_files_terminate_build 0" >> /etc/rpm/macros
-#
-# Turns out this also works.
-%define _unpackaged_files_terminate_build 0
-
-%define version 0.2
+%define version 0.5dev
 %define localstatedir   /var/lib
 
 Summary: A monitoring and control program for power devices.
@@ -43,9 +31,7 @@ Vendor: Seneca Software & Solar, Inc.
 Packager: Rob Savoye <rob@senecass.com>
 Group: Applications/Engineering
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
-Requires: owfs-shell owfs-capi owfs-server owfs-ownet owfs-devel \
-	  boost-devel libxml2-devel net-snmp-devel \
-	  postgresql-devel
+Requires: owfs-shell owfs-capi owfs-server owfs-ownet owfs-devel boost-devel libxml2-devel net-snmp-devel docbook2X docbook-utils docbook5-style-xsl docbook-utils-pdf postgresql-devel
 
 %description
 Powerguru is an program for monitoring, data logging, and controlling
