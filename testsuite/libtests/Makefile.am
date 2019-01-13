@@ -27,7 +27,7 @@ AM_CPPFLAGS = -I$(top_srcdir) \
 	$(PQ_CPPFLAGS) \
 	-DSRCDIR=\"$(srcdir)\"
 
-check_PROGRAMS =  tcpip tutil childtcpip db
+check_PROGRAMS =  db
 TESTS = $(check_PROGRAMS)
 
 if BUILD_LIBXML
@@ -43,18 +43,6 @@ xml_test_SOURCES = xml-test.cc ../../lib/xml.cc
 xml_test_LDADD = $(LIBXML_LIBS) $(LOG)
 endif
 
-tcpip_SOURCES = tcpip-test.cc
-tcpip_LDADD =  ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG)
-tcpip_DEPENDENCIES = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG)
-
-tutil_SOURCES = tcputil-test.cc
-tutil_LDADD = ../../lib/tcputil.lo  $(LOG)
-tutil_DEPENDENCIES = ../../lib/tcputil.lo $(LOG)
-
 db_SOURCES = db-test.cc
 db_LDADD =  $(LOG) -lpthread
 db_DEPENDENCIES = $(LOG)
-
-childtcpip_SOURCES = childtcpip.cc
-childtcpip_LDADD = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG)
-childtcpip_DEPENDENCIES = ../../lib/tcpip.lo ../../lib/tcputil.lo $(LOG)
