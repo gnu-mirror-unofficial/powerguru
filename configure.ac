@@ -26,6 +26,7 @@ AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([macros])
+AM_PATH_PYTHON([3])
 
 dnl Use the DMalloc library, if specified.
 AM_WITH_DMALLOC
@@ -230,6 +231,9 @@ save_CXXFLAGS="${CXXFLAGS}"
 save_CPPFLAGS="${CPPFLAGS}"
 save_CFLAGS="${CFLAGS}"
 
+dnl THe 2011 C++ standard added many Boost libraries to the
+dnl standard so we use those instead of wrapping C code like
+dnl the good old days...
 CFLAGS="--std=c++11"
 AC_MSG_CHECKING([For C++11 support])
 AC_TRY_COMPILE([#include <time.h>], [
@@ -240,7 +244,7 @@ AC_TRY_COMPILE([#include <time.h>], [
 )
 AC_MSG_RESULT([${has_c11}])
 if test x"${has_c11}" = x"no"; then
-  AC_MSG_ERROR([You need a C++ compiler that support the C++11 standard])
+  AC_MSG_ERROR([You need a C++ compiler that supports the C++11 standard])
 fi
 
 dnl Force warningto cause an error for compile tests
@@ -384,6 +388,16 @@ AC_TRY_COMPILE([#include <boost/filesystem.hpp>], [
 )
 AC_MSG_RESULT([${has_boost_filesystem}])
 
+dnl FIXME: need test for boost log, which isn't in Centos 7.6, aka... boost 1.53
+AC_MSG_CHECKING([For Boost log development files])
+AC_TRY_COMPILE([#include <boost/log/core.hpp>], [
+  int foo = BOOST_LOG_CORE_HPP_INCLUDED_;
+  ],
+  has_boost_log=yes,
+  has_boost_log=no
+)
+AC_MSG_RESULT([${has_boost_log}])
+
 AC_MSG_CHECKING([For Boost regex development files])
 AC_TRY_COMPILE([#include <boost/regex.hpp>], [
   boost::regex re;
@@ -401,6 +415,7 @@ AC_TRY_COMPILE([#include <boost/system/error_code.hpp>], [
   has_boost_system=no
 )
 AC_MSG_RESULT([${has_boost_system}])
+
 
 dnl We need all of these boost libraries
 if (test x"${has_boost_filesystem}" = x"no" \
@@ -480,7 +495,7 @@ dnl link to the images so we can browse the HTML output before
 dnl installing it.
 dnl Link to the python code so it's easier to use from the builddir.
 AC_LINK_FILES(doc/C/images,doc/C/images)
-AC_LINK_FILES(python,python)
+dnl AC_LINK_FILES(python,python)
 
 
 AC_OUTPUT([
@@ -495,6 +510,7 @@ po/Makefile.in
 doc/Makefile
 doc/Doxyfile
 doc/C/Makefile
+python/Makefile
 testsuite/Makefile
 testsuite/libtests/Makefile
 ])
