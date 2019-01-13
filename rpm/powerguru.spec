@@ -1,3 +1,22 @@
+# 
+# Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+#               2014, 2015, 2016, 2017, 2018, 2019
+#	Free Software Foundation, Inc.
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 # When using rpm 4.1 or newer, the behaviour changed to terminate
 # if any files are missing. This is stupid as if you have scrollkeeper
 # support for the docs, they need to be included in the package. As
@@ -10,7 +29,7 @@
 # Turns out this also works.
 %define _unpackaged_files_terminate_build 0
 
-%define version 0.1
+%define version 0.2
 %define localstatedir   /var/lib
 
 Summary: A monitoring and control program for power devices.
@@ -24,6 +43,9 @@ Vendor: Seneca Software & Solar, Inc.
 Packager: Rob Savoye <rob@senecass.com>
 Group: Applications/Engineering
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Requires: owfs-shell owfs-capi owfs-server owfs-ownet owfs-devel \
+	  boost-devel libxml2-devel net-snmp-devel \
+	  postgresql-devel
 
 %description
 Powerguru is an program for monitoring, data logging, and controlling
@@ -31,15 +53,16 @@ your inverter, charger controller, or power meter.
 
 %prep
 %setup -q -n powerguru-%{version}
+./autogen.sh
 
 %build
-./configure --disable-gtkhtml-help --prefix=%{_prefix} \
+./configure --prefix=%{_prefix} \
     --bindir=%{_bindir} --mandir=%{_mandir} \
     --localstatedir=%{localstatedir} --libdir=%{_libdir} \
     --datadir=%{_datadir} --includedir=%{_includedir} \
     --sysconfdir=%{_sysconfdir}
-CFLAGS="$RPM_OPT_FLAGS" make all
-CFLAGS="$RPM_OPT_FLAGS" make -C doc/C alldocs
+CXXFLAGS="$RPM_OPT_FLAGS" make all
+CXXFLAGS="$RPM_OPT_FLAGS" make -C doc/C install-doc
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -62,17 +85,18 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/powerguru/libpguru.*
 %{_datadir}/omf/powerguru/powerguru.omf
 
-# %config site.exp
+#%post
+#/sbin/ldconfig
+#if which scrollkeeper-update>/dev/null 2>&1; then scrollkeeper-update; fi
 
-%post
-/sbin/ldconfig
-if which scrollkeeper-update>/dev/null 2>&1; then scrollkeeper-update; fi
-
-%postun
-/sbin/ldconfig
-if which scrollkeeper-update>/dev/null 2>&1; then scrollkeeper-update; fi
+#%postun
+#/sbin/ldconfig
+#if which scrollkeeper-update>/dev/null 2>&1; then scrollkeeper-update; fi
 
 %changelog
+* Sun Jan 13 2019 Rob Savoye <rob@senecass.com>
+- Update version after heavy refactoring of all the code.
+
 * Sat Jun 11 2005 Rob Savoye <rob@senecass.com>
 - Update version number for 0.1 release.
 
