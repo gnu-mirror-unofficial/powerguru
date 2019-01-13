@@ -1,5 +1,5 @@
 // 
-// Copyright (C) 2018 Free Software Foundation, Inc.
+// Copyright (C) 2018, 2019 Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -45,13 +45,14 @@
 #include "ownet.h"
 #include "console.h"
 #include "database.h"
-#include "tcpip.h"
 #include "xml.h"
 #include "commands.h"
 
 using namespace std::chrono_literals;
 using namespace boost::asio;
 using namespace boost::asio::ip;
+#include <boost/system/error_code.hpp>
+using namespace boost::system;
 
 // This queue is used to pass data between the threads.
 extern std::mutex queue_lock;
@@ -100,7 +101,7 @@ daemon_handler(boost::asio::ip::tcp::socket &tcp_socket)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
-    retcode_t ret;
+    boost::system::error_code ret;
     boost::asio::io_service ioservice;
     tcp::resolver       resolv{ioservice};
     std::array<char, 1024> bytes;

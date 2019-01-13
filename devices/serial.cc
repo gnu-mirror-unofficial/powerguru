@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006 - 2018
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+//               2014, 2015, 2016, 2017, 2018, 2019
 //      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
@@ -41,7 +42,9 @@
 #include "log.h"
 #include "serial.h"
 
-static src::logger lg;
+//static src::logger lg;
+#include <boost/system/error_code.hpp>
+using namespace boost::system;
 
 // Set the names of the baud rates so we can dump them in a human
 // readable fashion.
@@ -136,7 +139,7 @@ Serial::~Serial(void)
 /// it can be read/write in raw mode.
 /// @param The full path to the serial port to open
 /// @return Whether the file could be opened or not
-retcode_t
+boost::system::error_code
 Serial::Open(std::string &filespec)
 {
     DEBUGLOG_REPORT_FUNCTION;
@@ -177,17 +180,17 @@ Serial::Open(std::string &filespec)
     // set the timeout value for communications
     if (SetTimeout (20, errcond) == ERROR) {
         BOOST_LOG(lg) << "ERROR: Couldn't set the timeout value";
-        return ERROR;
+        errc::make_error_code(errc::not_supported);
     }
     DumpTtyState();
 #endif
 
-    return SUCCESS;
+    errc::make_error_code(errc::success);
 }
 
 /// Close the serial port
 /// @return Whether the file could be closed or not
-retcode_t
+boost::system::error_code
 Serial::Close(void)
 {
     DEBUGLOG_REPORT_FUNCTION;
@@ -202,18 +205,18 @@ Serial::Close(void)
     _uartfd = -1;
     uartfile = 0;
   
-    return ERROR;
+    errc::make_error_code(errc::not_supported);
 }
 
 /// Flush data in the serial port so it gets out
 ///
 /// @return Whether the file could be closed or not
-retcode_t
+boost::system::error_code
 Serial::Flush  (void)
 {
     tcflush(_uartfd, TCIOFLUSH);
 
-    return SUCCESS;               // FIXME: this should be a real check
+    errc::make_error_code(errc::success);               // FIXME: this should be a real check
 }
 
 
@@ -344,7 +347,7 @@ if ((sret == 0) && (ret <= 0)) {
 
 //seriallogfile << "<read>" << buf << "</read>" << std::endl;
 } else {
-      return ERROR;
+      errc::make_error_code(errc::not_supported);
   }
 #endif
 
@@ -386,7 +389,7 @@ Serial::Write(const char *buf, int nbytes) const
 ///
 /// @param The baud rate code as returned by rate_to_code()
 /// @return Whether the baud rate could be set
-retcode_t
+boost::system::error_code
 Serial::SetBaud (int baudcode)
 {
     DEBUGLOG_REPORT_FUNCTION;
@@ -406,7 +409,7 @@ Serial::SetBaud (int baudcode)
     int ret = tcsetattr(_uartfd, TCSANOW, &ctty);
     if (ret == 0) {
         BOOST_LOG(lg) << __PRETTY_FUNCTION__ << " worked" << std::endl;
-        return SUCCESS;
+        errc::make_error_code(errc::success);
     }
   
     seriallogfile << "<device><baud>\"" << serial_speeds[baudcode] << "\"</baud></device>" << std::endl;
@@ -419,19 +422,19 @@ Serial::SetBaud (int baudcode)
     BOOST_LOG(lg) << "Output baud is now set to " << serial_speeds[obaud] << std::endl;
 
     BOOST_LOG(lg) << __PRETTY_FUNCTION__ << " failed" << std::endl;
-    return ERROR;
+    errc::make_error_code(errc::not_supported);
 }
 
 #if 0
 /// @return Whether the file could be closed or not
-retcode_t
+boost::system::error_code
 Serial::send_break (struct errcond *err) const
 {
     DEBUGLOG_REPORT_FUNCTION;
     
     tcsendbreak (Device::fd, 0);
 
-    return SUCCESS;
+    errc::make_error_code(errc::success);
 }
 #endif
 
@@ -439,7 +442,7 @@ Serial::send_break (struct errcond *err) const
 ///
 /// @param 
 /// @return Whether the blocking mode could be changed
-retcode_t
+boost::system::error_code
 Serial::SetBlocking(bool mode)
 {
     tcgetattr(_uartfd, &currenttty);
@@ -451,7 +454,7 @@ Serial::SetBlocking(bool mode)
   
     tcsetattr(_uartfd, TCSANOW, &currenttty);
 
-    return SUCCESS;               // FIXME: this should be a real check
+    errc::make_error_code(errc::success);               // FIXME: this should be a real check
 }
 
 //  modem control lines
@@ -461,7 +464,7 @@ Serial::SetBlocking(bool mode)
 
 /// Set the DTR for the serial port
 /// @return Whether the DTR could be set
-retcode_t
+boost::system::error_code
 Serial::SetDTR (void)
 {
     return SetDTR(true);
@@ -471,7 +474,7 @@ Serial::SetDTR (void)
 ///
 /// @param What to set the DTR to
 /// @return Whether the DTR could be set
-retcode_t
+boost::system::error_code
 Serial::SetDTR (bool value)
 {
     int arg = 0;
@@ -492,12 +495,12 @@ Serial::SetDTR (bool value)
 
     ioctl(_uartfd, TIOCMSET, (unsigned long) &arg);
 
-    return SUCCESS;               // FIXME: this should be a real check
+    errc::make_error_code(errc::success);               // FIXME: this should be a real check
 }
 
 /// Set Raw mode for th serial port
 /// @return Whether the serial port could be set to raw mode
-retcode_t
+boost::system::error_code
 Serial::SetRaw (void)
 {
     DEBUGLOG_REPORT_FUNCTION;
@@ -525,7 +528,7 @@ Serial::SetRaw (void)
   
     tcsetattr(_uartfd, TCSANOW, &currenttty);
 
-    return SUCCESS;               // FIXME: this should be a real check
+    errc::make_error_code(errc::success);               // FIXME: this should be a real check
 }
 
 void

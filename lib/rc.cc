@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006 - 2018
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+//               2014, 2015, 2016, 2017, 2018, 2019
 //      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +28,6 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
-#include <boost/system/error_code.hpp>
 
 #include "log.h"
 #include "rc.h"

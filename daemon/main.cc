@@ -42,6 +42,8 @@ extern int optind;
 extern char *optarg;
 #endif
 
+#include <boost/asio.hpp>
+
 #include "log.h"
 #ifdef BUILD_XANTREX
 include "xantrex-trace.h"
@@ -58,19 +60,19 @@ include "xantrex-trace.h"
 #include "database.h"
 #include "snmp.h"
 #include "rc.h"
-#include "tcpip.h"
-//#include "xml.h"
 #include "serial.h"
 #include "commands.h"
 #include "onewire.h"
-
-using namespace rcinit;
+using namespace boost::asio;
+using namespace boost::asio::ip;
+#include <boost/system/error_code.hpp>
+using namespace boost::system;
 
 static void usage (const char *);
 
 // Protoypes for the threads entry point
 extern void onewire_handler(Onewire &ow);
-extern void client_handler(Tcpip &net);
+extern void client_handler(boost::asio::ip::tcp::socket &tcp_socket);
 extern void ownet_handler(Ownet &);
 extern void outback_handler(Ownet &);
 extern void xantrex_handler(Ownet &);
@@ -83,6 +85,9 @@ std::condition_variable queue_cond;
 // Note that an entry for 'pi' needs to be in /etc/hosts.
 const char DEFAULT_ARGV[] = "-s pi:4304";
 
+#include <boost/system/error_code.hpp>
+using namespace boost::system;
+
 int
 main(int argc, char *argv[])
 {
@@ -94,7 +99,7 @@ main(int argc, char *argv[])
     bool snmp;
     bool daemon;
     bool client;
-    retcode_t   ret;
+    boost::system::error_code   ret;
     std::condition_variable alldone;
 
     log_init("/tmp/pgd");
@@ -156,7 +161,7 @@ main(int argc, char *argv[])
           case 'v':
               // verbosity++;
               //dbglogfile.set_verbosity();
-              BOOST_LOG(lg) << "FIXME: Verbose output turned on";
+              BOOST_LOG(lg) << "FIXME: Verbose output NOT turned on";
               break;
 	
           default:
@@ -172,10 +177,17 @@ main(int argc, char *argv[])
         agent.master(false);
     }
 #endif
+    io_service ioservice;
+    tcp::endpoint tcp_endpoint{tcp::v4(), 7654};
+    tcp::acceptor tcp_acceptor{ioservice, tcp_endpoint};
+    tcp::socket tcp_socket{ioservice};
+    std::string data;
+    tcp::resolver resolv{ioservice};
+    std::array<char, 4096> bytes;
+    std::thread client_thread (client_handler, std::ref(tcp_socket));
+
     Onewire ow;
     std::thread onewire_thread (onewire_handler, std::ref(ow));
-    Tcpip net;
-    std::thread client_thread (client_handler, std::ref(net));
 #ifdef BUILD_OWNET
     Ownet ownet(owserver);
     std::thread ownet_thread (ownet_handler, std::ref(ownet));

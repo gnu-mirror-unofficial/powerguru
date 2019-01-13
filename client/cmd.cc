@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006 - 2018
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+//               2014, 2015, 2016, 2017, 2018, 2019
 //      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
@@ -26,11 +27,9 @@
 #include <queue>
 #include <condition_variable>
 #include <boost/asio.hpp>
-#include "tcpip.h"
 #include "console.h"
-#include "msgs.h"
 #include "log.h"
-#include "tcpip.h"
+#include "xml.h"
 #include "ownet.h"
 
 static void usage (const char *);
@@ -42,6 +41,8 @@ extern void damn_handler(boost::asio::ip::tcp::socket &sock);
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
+#include <boost/system/error_code.hpp>
+using namespace boost::system;
 
 std::mutex queue_lock;
 std::queue <XML> tqueue;
@@ -53,7 +54,7 @@ main(int argc, char *argv[])
     int         c;
     std::string dbhost = "localhost";
     std::string pserver = "pi";
-    retcode_t   ret;
+    boost::system::error_code ret;
 
     log_init("pguru");
     // scan for the two main standard GNU options

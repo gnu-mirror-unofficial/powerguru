@@ -36,9 +36,8 @@
 #ifdef HAVE_LIBXML
 # include "xml.h"
 #endif
-#include "tcpip.h"
 
-class Msgs : public Tcpip {
+class Msgs {
 public:
 
     typedef enum {

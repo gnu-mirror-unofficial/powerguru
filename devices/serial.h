@@ -1,6 +1,7 @@
-// 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013,
-// 2014, 2015 2016. 2017, 2018, 2019 Free Software Foundation, Inc.
+//
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+//               2014, 2015, 2016, 2017, 2018, 2019
+//      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -33,6 +34,8 @@
 #include <cstdio>
 
 #include <termios.h>
+#include <boost/system/error_code.hpp>
+using namespace boost::system;
 
 //#define DEFAULT_UART "/dev/pts/12";
 #define DEFAULT_UART "/dev/ttyS0";
@@ -45,13 +48,13 @@ public:
     Serial (void);
 
     // Set the terminal to be in RAW mode
-    retcode_t SetRaw (void);
-    retcode_t SetDTR (void);
-    retcode_t SetDTR (bool value);
-    retcode_t SetBlocking(bool mode);    
+    boost::system::error_code SetRaw (void);
+    boost::system::error_code SetDTR (void);
+    boost::system::error_code SetDTR (bool value);
+    boost::system::error_code SetBlocking(bool mode);    
 
     // Set the baud rate
-    retcode_t SetBaud (int x);
+    boost::system::error_code SetBaud (int x);
 
     int GetFD() {
         return _uartfd;
@@ -64,12 +67,12 @@ public:
     termios *GetTtyState (void);
 
     // These methods operate on the serial port
-    retcode_t Open   (std::string &name);
-    retcode_t Close  (void);
+    boost::system::error_code Open   (std::string &name);
+    boost::system::error_code Close  (void);
     int Read   (char *buf, int nbytes);
     int Write  (const char *buf, int nbytes) const;
 
-    retcode_t Flush  (void);
+    boost::system::error_code Flush  (void);
 
     // These methods do byte oriented I/O on the serial port
     int Getc (void);
@@ -90,7 +93,6 @@ private:
     FILE           *uartfile;
     termios        origtty;
     termios        currenttty;
-    ErrCond        errcond;
 };
 
 // __SERIAL_H__

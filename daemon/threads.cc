@@ -1,5 +1,5 @@
 // 
-// Copyright (C) 2018 Free Software Foundation, Inc.
+// Copyright (C) 2018, 2019 Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -45,7 +45,6 @@ extern char *optarg;
 #include "ownet.h"
 #include "console.h"
 #include "database.h"
-#include "tcpip.h"
 #include "xml.h"
 #include "commands.h"
 #include "onewire.h"
@@ -126,11 +125,11 @@ onewire_handler(Onewire &onewire)
 }
 
 void
-client_handler(Tcpip &net)
+client_handler(boost::asio::ip::tcp::socket &sock)
 {
     DEBUGLOG_REPORT_FUNCTION;
 
-    retcode_t ret;
+    boost::system::error_code ret;
     Commands cmd;
     int retries = 3;
     std::string hostname;
@@ -176,11 +175,10 @@ client_handler(Tcpip &net)
     while (loop) {
         std::memset(bytes.data(), 0, bytes.size());
         tcp_socket.read_some(buffer(bytes), error);
-        std::cerr << bytes.data();
         // Client dropped connection
         if (error == boost::asio::error::eof)
             break;
-        // if the first character is a <, assume it's in XML formst.
+        // if the first c-haracter is a <, assume it's in XML formst.
         XML xml;
         if (bytes[0] == '<') {
             std::string str(std::begin(bytes), std::end(bytes));
@@ -188,14 +186,15 @@ client_handler(Tcpip &net)
                 xml.parseMem(str);
                 if (xml[0]->nameGet() == "helo") {
                     hostname = xml[0]->childGet(0)->valueGet();
-                    user = "foo";// xml[data]->childGet(1)->valueGet();
-                    BOOST_LOG(lg) << "Incoming connection from user " << user
-                                  << " on host " << hostname;
                 } else {
                     cmd.execCommand(xml, str);
-                    std::lock_guard<std::mutex> guard(queue_lock);
-                    tqueue.push(xml);
-                    queue_cond.notify_one();
+                    try {
+                        boost::asio::write(tcp_socket, buffer(str), error);
+                    } catch (const std::exception& e) {
+                        BOOST_LOG_SEV(lg, severity_level::error)
+                            << "Couldn't write data to PowerGuru server! " << e.what();
+                        exit(-1);
+                    }
                 }
                 str.clear();
             }

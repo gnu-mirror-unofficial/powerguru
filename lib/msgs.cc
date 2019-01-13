@@ -36,8 +36,6 @@
 #endif
 #include "log.h"
 #include "msgs.h"
-#include "tcputil.h"
-#include "tcpip.h"
 
 Msgs::net_mode_e  Msgs::_net_mode;
 std::map<const char *, Msgs::methodPtr_t> Msgs::_methods;
