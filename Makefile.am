@@ -101,9 +101,7 @@ cppclean:
 dump:
 	@echo "Dumping configure options"
 if BUILD_SNMP
-
-
-@echo "	Building with net-snmp"
+	@echo "	Building with net-snmp"
 endif
 if BUILD_LIBXML
 	@echo "	Building with libxml2"
