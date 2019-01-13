@@ -1,6 +1,9 @@
 ## Process this file with automake to produce Makefile.in
 
-# Copyright (C) 2004, 2005-2018.
+#
+# Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+#               2014, 2015, 2016, 2017, 2018, 2019
+#	Free Software Foundation, Inc.
 #
 # Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -14,11 +17,12 @@
 
 include $(top_srcdir)/doc/xmldocs.make
 
-STYLESDIR = @docbook_styles@
+#STYLESDIR = @docbook_styles@
+STYLESDIR = /usr/share/xml/docbook/stylesheet/docbook-xsl
 EXTRA_DIST += \
 	powerguru.html \
-	powerguru.pdf \
 	pgd.1
+#	powerguru.pdf
 
 figdir = images
 docname = powerguru
@@ -39,20 +43,25 @@ entities = legal.xml xantrex.xml outback.xml
 all:
 	@echo "Nothing to do in doc/C for target all"
 
-alldocs: html pdf man
+alldocs: html man # pdf
 
 html: powerguru.html
 pdf:  powerguru.pdf
 man:  pgd.1
-powerguru.pdf powerguru.html: powergdb2x_texixml powerguru.txmluru.xml outback.xml xantrex.xml
+powerguru.pdf powerguru.html: powerguru.xml outback.xml xantrex.xml
 
 .xml.html:
 	@echo "Making HTML from XML source..."
+#	docbook2html ?<
 	@xsltproc --output $@ --nonet $(STYLESDIR)/html/docbook.xsl $<
+#	@xsltproc --output $@ --nonet $(STYLESDIR)/html/docbook.xsl $<
 #xsltproc --output powerguru.fo --stringparam  paper.type  A4 --nonet $(STYLESDIR)/html/docbook.xsl $(srcdir)/powerguru/doc/C/powerguru.xml
 .xml.pdf:
-	@echo "Making PDF from XML source..."
-	@fop.sh -xsl $(STYLESDIR)/fo/docbook.xsl -xml $< -pdf $@
+	@echo "FIXME: Making PDF from XML source..."
+	@xsltproc --output $@ --nonet $(STYLESDIR)/fo/docbook.xsl $< 
+#	docbook2pdf ?<
+
+#	@fop.sh -xsl $(STYLESDIR)/fo/docbook.xsl -xml $< -pdf $@
 #	fop.sh -fo powerguru.fo -pdf powerguru.pdf
 
 dist-hook: app-dist-hook
@@ -99,7 +108,7 @@ uninstall-hook:
 #	$(INSTALL_DATA) $(srcdir)/images/*.png $(powerguru_helpdir)/images
 
 install-doc:
-
+	@echo "Install docs manually"
 # db2x_xsltproc -s texi powerguru.xml -o powerguru.txml
 # db2x_texixml powerguru.txml
 # makeinfo --force powerguru_manual_v0.2.texi
