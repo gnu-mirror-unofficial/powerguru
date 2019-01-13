@@ -1,5 +1,9 @@
+powerguru (0.2) stable; urgency=low
+  * Refactored release.
+
+ -- Rob Savoye <rob@senecass.com>  Sat,  12 Jan 2019 04:20:00 -0800
+
 powerguru (0.1) stable; urgency=low
   * Initial release.
 
- -- Rob Savoye <rob@senecass.com>  Sat,  4 June 2005 04:20:00 -0800
-
+ -- Rob Savoye <rob@senecass.com>  Sat,  4 Jun 2005 04:20:00 -0800

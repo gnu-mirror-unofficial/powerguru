@@ -1,2 +1,3 @@
-/usr/pgd/pgd.py
-/usr/bin/pguru.py
+/usr/bin/pgd.py
+/usr/bin/mergedb.py
+/usr/bin/chart.py
