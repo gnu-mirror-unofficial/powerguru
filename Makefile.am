@@ -31,6 +31,9 @@ if BUILD_SNMP
 SUBDIRS += snmp $(STD_DIRS) #src
 endif
 
+# Build an RPM package
+include $(srcdir)/rpm/rpm.am
+
 # These are built now, as they depend on the the libraries
 SUBDIRS += devices client daemon # testsuite
 
@@ -50,35 +53,7 @@ EXTRA_DIST = \
 	po/Makefile.in.in \
 	po/POTFILES.in \
 	web
-#	powerguru.glade2
-#	powerguru.glade2p
 
-#install-data-local:
-# 	@$(NORMAL_INSTALL)
-# 	if test -d $(srcdir)/pixmaps; then \
-# 	  $(mkinstalldirs) $(datadir)/pixmaps/$(PACKAGE); \
-# 	  for pixmap in $(srcdir)/pixmaps/*; do \
-# 	    if test -f $$pixmap; then \
-# 	      $(INSTALL_DATA) $$pixmap $(DESTDIR)$(datadir)/pixmaps/$(PACKAGE); \
-# 	    fi \
-# 	  done \
-# 	fi
-
-#install-doc:
-#	@cd doc/C ; $(MAKE) install-doc
-
-#doc:
-#	@cd doc/C ; $(MAKE) alldocs
-
-#dist-hook:
-# 	if test -d pixmaps; then \
-# 	  mkdir $(distdir)/pixmaps; \
-# 	  for pixmap in pixmaps/*; do \
-# 	    if test -f $$pixmap; then \
-# 	      cp -p $$pixmap $(distdir)/pixmaps; \
-# 	    fi \
-# 	  done \
-# 	fi
 
 # Install executables into qemu, which we do a lot when experimenting with
 # toolchains and cross compiing something that actually works.
@@ -126,7 +101,9 @@ cppclean:
 dump:
 	@echo "Dumping configure options"
 if BUILD_SNMP
-	@echo "	Building with net-snmp"
+
+
+@echo "	Building with net-snmp"
 endif
 if BUILD_LIBXML
 	@echo "	Building with libxml2"
@@ -155,3 +132,7 @@ if BUILD_CROSS
 	@echo "	User supplied sysroot: $(sysroot)"
 	@echo "	Libc.so is from here: `${CXX} -print-file-name=libc.so`"
 endif
+
+clean:
+	@-$(RM) -fr powerguru_* pypowerguru_* \
+		powerguru-*dev powerguru*.bz2 *.sum *.log
