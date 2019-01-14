@@ -25,9 +25,7 @@ SNAPSHOT_VERSION = 0.5dev
 
 powerguru.spec spec: $(srcdir)/rpm/powerguru.spec
 	mkdir -p $(RPMBUILD_DIR); \
-	echo "%_topdir $(RPMBUILD_DIR)" > $(RPMMACROS)
-
-; \
+	echo "%_topdir $(RPMBUILD_DIR)" > $(RPMMACROS); \
 	snapshot_version=$(SNAPSHOT_VERSION); \
 	snapshot_release=`echo $${snapshot_version}|grep "~"|sed 's/.*~\(.*\)/0.1.\1/'`; \
 	snapshot_version=`echo $${snapshot_version}|cut -d"~" -f1`; \
