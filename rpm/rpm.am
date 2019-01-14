@@ -21,10 +21,13 @@ RPMBUILD_DIR = $(abs_top_builddir)/rpmbuild
 RPMMACROS = $(abs_top_builddir)/.rpmmacros
 RPMSPEC = $(abs_top_builddir)/powerguru.spec
 RPMBUILD_FLAGS = --macros=/usr/lib/rpm/macros:$(RPMMACROS)
+SNAPSHOT_VERSION = 0.5dev
 
-powerguru.spec spec: $(srcdir)/packaging/redhat/powerguru.spec
+powerguru.spec spec: $(srcdir)/rpm/powerguru.spec
 	mkdir -p $(RPMBUILD_DIR); \
-	echo "%_topdir $(RPMBUILD_DIR)" > $(RPMMACROS); \
+	echo "%_topdir $(RPMBUILD_DIR)" > $(RPMMACROS)
+
+; \
 	snapshot_version=$(SNAPSHOT_VERSION); \
 	snapshot_release=`echo $${snapshot_version}|grep "~"|sed 's/.*~\(.*\)/0.1.\1/'`; \
 	snapshot_version=`echo $${snapshot_version}|cut -d"~" -f1`; \
@@ -33,7 +36,7 @@ powerguru.spec spec: $(srcdir)/packaging/redhat/powerguru.spec
 	echo "Editing the version in the spec file to be $${snapshot_version} $${snapshot_release} for Distribution $${distro}..."; \
 	sed -e "s/Version.*/Version:	$${snapshot_version}/" \
 	    -e "s/Release.*/Release:	$${snapshot_release}/" \
-	    -e "s/Distribution:.*/Distribution:   $${distro}/" $(srcdir)/packaging/redhat/powerguru.spec > $(RPMSPEC)
+	    -e "s/Distribution:.*/Distribution:   $${distro}/" $(srcdir)/rpm/powerguru.spec > $(RPMSPEC)
 
 
 # Build an Redhat/Fedora .rpm package
