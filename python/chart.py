@@ -30,6 +30,7 @@ from matplotlib.lines import Line2D
 from matplotlib.dates import DateFormatter
 import matplotlib.animation as animation
 from datetime import datetime
+from datetime import timedelta
 import numpy as np
 import getopt
 import sys
@@ -40,6 +41,7 @@ from sys import argv
 options = dict()
 options['dbserver'] = "pi"  # hostname of the database
 options['dbname'] = "powerguru"  # hostname of the database
+options['interval'] = 100        # interval in seconds between data updates
 
 #import matplotlib
 #matplotlib.use('agg')
@@ -50,15 +52,16 @@ def usage(argv):
     print("""\t--help(-h)   Help
     \t--dbserver(-s)    Database server [host]:port]], default '%s'
     \t--database(-d)    Database on server, default '%s'
+    \t--interval(-i)    Interval for data updates, default '%s'
     \t--verbose(-v)     Enable verbosity
-    """ %  (options['dbserver'], options['dbname'])
+    """ %  (options['dbserver'], options['dbname'],  options['interval'])
     )
     quit()
 
 # Check command line arguments
 try:
-    (opts, val) = getopt.getopt(argv[1:], "h,d:,s;v,",
-           ["help", "database", "dbserver", "verbose"])
+    (opts, val) = getopt.getopt(argv[1:], "h,d:,s;v,i:",
+           ["help", "database", "dbserver", "verbose", "interval"])
 except getopt.GetoptError as e:
     logging.error('%r' % e)
     usage(argv)
@@ -94,6 +97,8 @@ for (opt, val) in opts:
         usage(argv)
     elif opt == "--dbserver" or opt == '-s':
         options['dbserver'] = val
+    elif opt == "--interval" or opt == '-i':
+        options['interval'] = val
     elif opt == "--database" or opt == '-d':
         options['dbname'] = val
     elif opt == "--verbose" or opt == '-v':
@@ -106,6 +111,7 @@ for (opt, val) in opts:
 
 ch.setLevel(verbosity)
 
+delta = 0
 dbname = ""
 connect = ""
 if options['dbserver'] != "localhost":
@@ -128,56 +134,101 @@ if dbcursor.closed != 0:
 
 logging.info("Opened cursor in %r" % options['dbserver'])
 
-fig, (temp, power) = plt.subplots(2, 1, sharex=True)
+# Create the two subslots
+fig, (temp, dcvolts, amps) = plt.subplots(3, 1, sharex=True)
+plt.subplots_adjust(top=0.88, bottom=0.20, left=0.10, right=0.95, hspace=0.58,
+                    wspace=0.35)
 
+colors = list()
+colors.append("red")
+colors.append("green")
+colors.append("blue")
+colors.append("black")
 def animate(i):
     logging.debug("Refreshing data...")
-    x = list()
-    y = list()
+    ids = list()
+    query = "SELECT DISTINCT id FROM temperature"
+    logging.debug(query)
+    dbcursor.execute(query)
+    logging.debug("Query returned %r records" % dbcursor.rowcount)
+    for id in dbcursor:
+        print("ID: %r" % id)
+        ids.append(id)
+
+    cur = 0
+    for id in ids:
+        query = "SELECT id,temperature,timestamp FROM temperature WHERE id='%s' ORDER BY timestamp " % id
+        logging.debug(query)
+        dbcursor.execute(query)
+        logging.debug("Query returned %r records" % dbcursor.rowcount)
+        x = list()
+        y = list()
+        for id,temperature,timestamp in dbcursor:
+            #print("TEMP: %r, %r" % (temperature,timestamp))
+            x.append(timestamp)
+            y.append(temperature)
+
+        fig.suptitle('PowerGuru')
+        temp.set_ylabel("Temperature in F")
+        temp.set_title("Temperature")
+        temp.grid(which='major', color='red')
+        temp.grid(which='minor', color='blue', linestyle='dashed')
+        temp.minorticks_on()
+        temp.plot(x, y, color=colors[cur])
+        cur += 1
+    
     xx = list()
     yy = list()
-    query = "SELECT id,temperature,timestamp FROM temperature ORDER BY timestamp"
+    zz = list()
+    query = "SELECT DISTINCT id FROM battery"
     logging.debug(query)
     dbcursor.execute(query)
     logging.debug("Query returned %r records" % dbcursor.rowcount)
-    for id,temperature,timestamp in dbcursor:
-        #print("%r, %r" % (temperature,timestamp))
-        x.append(timestamp)
-        y.append(temperature)
+    if  dbcursor.rowcount > 0:
+        for id in dbcursor:
+            print("ID: %r" % id)
+            ids.append(id)
+            query = "SELECT id,current,volts,timestamp FROM battery WHERE id='%s' ORDER BY timestamp " % id
+            logging.debug(query)
+            dbcursor.execute(query)
+            logging.debug("Query returned %r records" % dbcursor.rowcount)
+            for id,current,voltage,timestamp in dbcursor:
+                print("BATTERY: %r, %r, %r, %r" % (id, current, voltage, timestamp))
+                xx.append(timestamp)
+                yy.append(voltage)
+                zz.append(current)
 
-    query = "SELECT id,current,volts,timestamp FROM battery ORDER BY timestamp"
-    logging.debug(query)
-    dbcursor.execute(query)
-    logging.debug("Query returned %r records" % dbcursor.rowcount)
-    for id,current,volts,timestamp in dbcursor:
-        #print("BATTERY: %r, %r, %r, %r" % id, current, volts, timestamp)
-        xx.append(timestamp)
-        yy.append(volts)
-
-    #
-    # There will be more plots in the future
-    #
-    fig.suptitle('PowerGuru')
-    temp.set_ylabel("Temperature in F")
-    temp.set_title("Temperature")
-    temp.grid(which='major', color='red')
-    temp.grid(which='minor', color='blue', linestyle='dashed')
-    temp.minorticks_on()
-    temp.plot(x, y, color="green")
+        dcvolts.set_title("DC Voltage")
+        dcvolts.plot(xx, yy, color="purple")
+        dcvolts.set_ylabel("DC Volts")
+        #dcvolts.set_xlabel("Time (hourly)")
+        dcvolts.grid(which='major', color='red')
+        dcvolts.grid(which='minor', color='blue', linestyle='dashed')
+        dcvolts.minorticks_on()
     
-    power.set_title("Battery")
-    power.plot(xx, yy, color="purple")
-    power.set_ylabel("DC Volts")
-    power.set_xlabel("Time (hourly)")
-    power.grid(which='major', color='red')
-    power.grid(which='minor', color='blue', linestyle='dashed')
-    power.minorticks_on()
-    plt.setp(power.xaxis.get_majorticklabels(), rotation=90)
-    power.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d %H'))
-    power.xaxis.set_major_locator(mdates.HourLocator(byhour=range(0,24,6)))
-    power.xaxis.set_minor_locator(mdates.HourLocator())
+        amps.set_title("DC Current")
+        amps.plot(xx, zz, color="green")
+        amps.set_ylabel("Amps")
+        amps.set_xlabel("Time (hourly)")
+        amps.grid(which='major', color='red')
+        amps.grid(which='minor', color='blue', linestyle='dashed')
+        amps.minorticks_on()
+        plt.setp(amps.xaxis.get_majorticklabels(), rotation=90)
+        amps.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d %H'))
+        amps.xaxis.set_major_locator(mdates.HourLocator(byhour=range(0,24,6)))
+        amps.xaxis.set_minor_locator(mdates.HourLocator())
 
+    # Get the time delta between data samples, as it's not worth updating there
+    # the display till their in fresh data. Sample may be minutes or hours apart,
+    # so o need to waste cpu cycles
+    query = "SELECT AGE(%r::timestamp, %r::timestamp);" % (x[1].strftime("%Y-%m-%d %H:%M:%S"), x[0].strftime("%Y-%m-%d %H:%M:%S"))
+    logging.debug(query)
+    dbcursor.execute(query)
+    delta = (dbcursor.fetchall())[0][0].total_seconds()
+    logging.debug("Query returned %r" % delta)
+    
 # The timeout is in miliseconds
-seconds = 1000 * 100
+#seconds = 1000 * delta
+seconds = 1000 * options['interval']
 ani = animation.FuncAnimation(fig, animate, interval=seconds)
 plt.show()
