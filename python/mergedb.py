@@ -68,7 +68,7 @@ except getopt.GetoptError as e:
 # Setup a disk space log filemode. By default, everything
 # gets logged to the disk file
 logging.basicConfig(
-    filename='pgdpy.log',
+    filename='mergedb.log',
     filemode='w',
     level=logging.DEBUG,
     format= '[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
@@ -114,50 +114,72 @@ ch.setLevel(verbosity)
 #
 # Open the two data base connections, if not localhost
 #
+
 connect = ""
-if options['source'] != "localhost":
-    connect = "host='" + options['source'] + "'"
-    connect += " dbname='" + options['dbname'] + "'"
+#if options['source'] != "localhost":
+connect = "host='" + options['source'] + "'"
+connect += " dbname='" + options['dbname'] + "'"
 
 logging.debug("Source connect: %r" % connect)
 source = psycopg2.connect(connect)
 if source.closed == 0:
     source.autocommit = True
-    logging.info("Opened connection to %r on %r" % (options['dbname'], options['source']))
-srccursor = source.cursor()
-logging.debug("Opened cursor in %r" % options['dbname'])
+    logging.info("Opened connection using %r" % source.dsn)
+    srccursor = source.cursor()
+    #if srccursor.closed == 0:
+    logging.debug("Opened src cursor using %r" % source.dsn)
+    #else:
+    #    logging.error("Couldn't open src cursor using %r" % source.dsn)
+else:
+    logging.error("Couldn't open connection using %r" % source.dsn)
     
-connect = "host='" + options['dest'] + "'"
+connect = ""
+if options['dest'] != "localhost":
+    connect = "host='" + options['dest'] + "'"
 connect += " dbname='" + options['dbname'] + "'"
 logging.debug("Dest connect: %r" % connect)
 dest = psycopg2.connect(connect)
 if dest.closed == 0:
     dest.autocommit = True
-    logging.info("Opened connection to %r on %r" % (options['dbname'], options['source']))
-
-    
-# FIXME: for now this is limited to the powerguru database
-destcursor = dest.cursor()
-logging.debug("Opened cursor in %r" % options['dbname'])
+    logging.info("Opened connection to using %r" % dest.dsn)
+    # FIXME: for now this is limited to the powerguru database
+    destcursor = dest.cursor()
+    #if destcursor.closed == True:
+    logging.debug("Opened dest cursor on %r" % options['dest'])
+    #else:
+    #    logging.error("Couldn't open dest cursor on %r" % options['dest'])
+else:
+    logging.error("Couldn't open connection using %r" % dest.dsn)
 
 start = ""
 if options['starttime'] != "":
     start = "WHERE timestamp>=%r" % options['starttime']
 else:
-    start = ""
+    # Get the last entry
+    query = "SELECT timestamp FROM temperature ORDER BY timestamp DESC LIMIT 1;"
+    logging.debug(query)
+    destcursor.execute(query)
+    last = destcursor.fetchone()
+    if destcursor.rowcount != 0:
+        start = "WHERE timestamp>%r" % last[0].strftime("%Y-%m-%d %H:%M:%S")
+        logging.info("Starting from: %r" % last[0].strftime("%Y-%m-%d %H:%M:%S"))
+    else:
+        start = ""
 if options['endtime'] != "" and options['starttime'] != "":
     end = " AND timestamp<=%r" % options['endtime']
 if options['endtime'] != "" and options['starttime'] == "":
     end = " WHERE timestamp<=%r" % options['endtime']
 else:
     end = ""
+
 # FIXME: Add LIMIT if we need to transfer data by blocks
-query = """SELECT * FROM temperature %s %s ORDER BY timestamp""" % (start, end)
+query = """SELECT * FROM temperature %s %s ORDER BY timestamp;""" % (start, end)
 logging.debug(query)
 srccursor.execute(query)
 temps = dict()
 data = list()
 # Store the returned data
+logging.debug("Got %r records" % srccursor.rowcount)
 for id,temperature,temphigh,templow,scale,timestamp in srccursor:
     temps['id'] = id
     temps['temperature'] = temperature
@@ -165,11 +187,12 @@ for id,temperature,temphigh,templow,scale,timestamp in srccursor:
     temps['templow'] = templow
     temps['scale'] = scale
     temps['timestamp'] = timestamp
-    print("%r" % temps)
+    #print("%r" % temps)
     data.append(temps)
     #INSERT INTO datas () VALUES ('$data','$notes','$sortname','$listname','$url')";
 
-    query = """INSERT INTO temperature VALUES (%r, '%r', '%r', '%r', %r, %r) ON CONFLICT DO NOTHING""" % (id, temperature, temphigh, templow, scale,
+    query = """INSERT INTO temperature VALUES (%r, '%r', '%r', '%r', %r, %r) ON CONFLICT DO NOTHING;""" % (id, temperature, temphigh, templow, scale,
                              timestamp.strftime("%Y-%m-%d %H:%M:%S"))
     logging.debug("Dest query: %r" % query)
+    logging.debug("Dest status: %r" % destcursor.statusmessage)
     destcursor.execute(query)
