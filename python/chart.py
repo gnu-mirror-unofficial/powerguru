@@ -42,6 +42,8 @@ options = dict()
 options['dbserver'] = "pi"  # hostname of the database
 options['dbname'] = "powerguru"  # hostname of the database
 options['interval'] = 100        # interval in seconds between data updates
+options['starttime'] = 0
+options['endtime'] = 0
 
 #import matplotlib
 #matplotlib.use('agg')
@@ -53,6 +55,8 @@ def usage(argv):
     \t--dbserver(-s)    Database server [host]:port]], default '%s'
     \t--database(-d)    Database on server, default '%s'
     \t--interval(-i)    Interval for data updates, default '%s'
+    \t--starttime(-t)   Use timestanps after this, default begining of data
+    \t--endtime(-e)     Use timestanps after this, default end of data
     \t--verbose(-v)     Enable verbosity
     """ %  (options['dbserver'], options['dbname'],  options['interval'])
     )
@@ -60,8 +64,8 @@ def usage(argv):
 
 # Check command line arguments
 try:
-    (opts, val) = getopt.getopt(argv[1:], "h,d:,s;v,i:",
-           ["help", "database", "dbserver", "verbose", "interval"])
+    (opts, val) = getopt.getopt(argv[1:], "h,d:,s;v,i:,t:,e:",
+           ["help", "database", "dbserver", "verbose", "interval", "starttime", "endtime"])
 except getopt.GetoptError as e:
     logging.error('%r' % e)
     usage(argv)
@@ -95,6 +99,10 @@ verbosity = logging.CRITICAL
 for (opt, val) in opts:
     if opt == '--help' or opt == '-h':
         usage(argv)
+    elif opt == "--starttime" or opt == '-t':
+        options['starttime'] = val
+    elif opt == "--endtime" or opt == '-e':
+        options['endtime'] = val
     elif opt == "--dbserver" or opt == '-s':
         options['dbserver'] = val
     elif opt == "--interval" or opt == '-i':
@@ -134,6 +142,16 @@ if dbcursor.closed != 0:
 
 logging.info("Opened cursor in %r" % options['dbserver'])
 
+# Setup optional timestamp filter
+start = ""
+end = ""
+if options['starttime'] != "":
+    start = "AND timestamp>=%r" % options['starttime']
+elif options['endtime'] != "" and options['starttime'] != "":
+    end = " AND timestamp<=%r" % options['endtime']
+    if options['endtime'] != "" and options['starttime'] == "":
+        end = " AND timestamp<=%r" % options['endtime']
+
 # Create the two subslots
 fig, (temp, dcvolts, amps) = plt.subplots(3, 1, sharex=True)
 plt.subplots_adjust(top=0.88, bottom=0.20, left=0.10, right=0.95, hspace=0.58,
@@ -157,7 +175,7 @@ def animate(i):
 
     cur = 0
     for id in ids:
-        query = "SELECT id,temperature,timestamp FROM temperature WHERE id='%s' ORDER BY timestamp " % id
+        query = "SELECT id,temperature,timestamp FROM temperature WHERE (id='%s' %s %s) ORDER BY timestamp;" % (id[0], start, end)
         logging.debug(query)
         dbcursor.execute(query)
         logging.debug("Query returned %r records" % dbcursor.rowcount)
@@ -186,12 +204,12 @@ def animate(i):
     logging.debug("Query returned %r records" % dbcursor.rowcount)
     if  dbcursor.rowcount > 0:
         for id in dbcursor:
-            print("ID: %r" % id)
             ids.append(id)
-            query = "SELECT id,current,volts,timestamp FROM battery WHERE id='%s' ORDER BY timestamp " % id
+            query = "SELECT id,current,volts,timestamp FROM battery WHERE (id='%s' %s %s) ORDER BY timestamp " % (id[0], start, end)
             logging.debug(query)
             dbcursor.execute(query)
             logging.debug("Query returned %r records" % dbcursor.rowcount)
+            cur = 0
             for id,current,voltage,timestamp in dbcursor:
                 print("BATTERY: %r, %r, %r, %r" % (id, current, voltage, timestamp))
                 xx.append(timestamp)
@@ -207,7 +225,8 @@ def animate(i):
         dcvolts.minorticks_on()
     
         amps.set_title("DC Current")
-        amps.plot(xx, zz, color="green")
+        amps.plot(xx, zz, color=colors[cur])
+        cur += 1
         amps.set_ylabel("Amps")
         amps.set_xlabel("Time (hourly)")
         amps.grid(which='major', color='red')
