@@ -1,21 +1,21 @@
 -- 
---   Copyright (C) 2005, 2006-2018
---   Free Software Foundation, Inc.
---
---   This program is free software; you can redistribute it and/or modify
---   it under the terms of the GNU General Public License as published by
---   the Free Software Foundation; either version 2 of the License, or
---   (at your option) any later version.
---
---   This program is distributed in the hope that it will be useful,
---   but WITHOUT ANY WARRANTY; without even the implied warranty of
---   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
---   GNU General Public License for more details.
---
---   You should have received a copy of the GNU General Public License
---   along with this program; if not, write to the Free Software
---   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
---
+-- Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+--               2014, 2015, 2016, 2017, 2018, 2019
+--	Free Software Foundation, Inc.
+-- 
+-- This program is free software; you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation; either version 3 of the License, or
+-- (at your option) any later version.
+-- 
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+-- 
+-- You should have received a copy of the GNU General Public License
+-- along with this program; if not, write to the Free Software
+-- Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 -- MySQL dump 10.8
 --
@@ -34,16 +34,39 @@
 --
 -- Name: data; Type: TYPE; Schema: public; Owner: rob
 --
+DROP TYPE IF EXISTS channel_type;
+CREATE TYPE public.channel_type AS ENUM (
+    'A',
+    'B',
+    'C'
+);
+
+DROP TYPE IF EXISTS volt_type;
 CREATE TYPE public.volt_type AS ENUM (
     'AC',
     'DC'
 );
 
-CREATE TYPE public.wire_type AS ENUM (
+DROP TYPE IF EXISTS device_type;
+CREATE TYPE public.device_type AS ENUM (
+    'unknown',
+    'onewire',
+    'ownet',
+    'rtl433',
+    'rtlsdr',
+    'usb',
+    'serial',
+    'gpio'
+);
+
+DROP TYPE IF EXISTS sensor_type;
+CREATE TYPE public.sensor_type AS ENUM (
+    'UNKNOWN',
     'ACVOLTAGE',
     'DCVOLTAGE',
     'AUTH',
     'BATTERY',
+    'POWER',
     'CLOCK',
     'TEMPERATURE',
     'MOISTURE',
@@ -72,13 +95,14 @@ CREATE TABLE meters (
   battery_tempcomp float NOT NULL default '0'
 );
 
-DROP TABLE IF EXISTS onewire;
-CREATE TABLE onewire (
-  family char(2) NOT NULL default '0',
+DROP TABLE IF EXISTS sensor;
+CREATE TABLE sensor (
   id varchar(12) NOT NULL default '0',
   alias varchar(12) NOT NULL default '0',
-  type  wire_type NOT NULL default 'UNSUPPORTED',
-  "timestamp" timestamp without time zone UNIQUE
+  location varchar(12) NOT NULL default '0',
+  device device_type NOT NULL default '1wire',
+  type sensor_type NOT NULL default 'UNKNOWN',
+  channel channel_type NOT NULL default 'A'
 );
 
 DROP TABLE IF EXISTS temperature;
@@ -87,12 +111,13 @@ CREATE TABLE temperature (
   temperature float NOT NULL default '0',
   temphigh float NOT NULL default '0',
   templow float NOT NULL default '0',
+  humidity float NOT NULL default '0',
   scale char(1) NOT NULL default 'F',
   "timestamp" timestamp without time zone UNIQUE
 );
 
-DROP TABLE IF EXISTS battery;
-CREATE TABLE battery (
+DROP TABLE IF EXISTS power;
+CREATE TABLE power (
   id char(16) NOT NULL default '0',
   current float NOT NULL default '0',
   volts float NOT NULL default '0',
