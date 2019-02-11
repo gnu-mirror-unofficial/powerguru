@@ -70,7 +70,7 @@ class Sensor(object):
         else:
             self.data['device'] = DeviceType.UNKNOWN
         if data['sensor'] is not None and data['sensor'] is not "":
-            self.data['sensor'] = SensorType.UNKNOWN
+            self.data['sensor'] = data['sensor']
         else:
             self.data['sensor'] = SensorType.UNKNOWN
         if data['channel'] is not None and data['channel'] is not "":
@@ -185,3 +185,31 @@ class Sensor(object):
 
         logging.debug(query)
         return (query)
+
+    def populate(self, result):
+        """Populate the internal data from an SQL query """
+        self.data['id'] = data['id']
+        self.data['alias'] = data['alias']
+        self.data['location'] = data['location']
+        self.data['device'] = data['device']
+            self.data['sensor'] = SensorType.UNKNOWN
+        else:
+            self.data['sensor'] = SensorType.UNKNOWN
+        if data['channel'] is not None and data['channel'] is not "":
+            self.data['channel'] = data['channel']
+        else:
+            self.data['channel'] = None
+        
+data = dict()
+data['id'] = "1"
+data['alias'] = "AAA"
+data['location'] = "LLL"
+data['device'] = DeviceType.UNKNOWN
+data['sensor'] = SensorType.UNKNOWN
+data['channel'] = None
+            
+sense = Sensor(data)
+sense.dump()
+
+sense.set('id', '0')
+print(sense.MakeSQL())
