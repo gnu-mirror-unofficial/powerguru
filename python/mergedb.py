@@ -156,7 +156,7 @@ if options['starttime'] != "":
     start = "WHERE timestamp>=%r" % options['starttime']
 else:
     # Get the last entry
-    query = "SELECT timestamp FROM temperature ORDER BY timestamp DESC LIMIT 1;"
+    query = "SELECT timestamp FROM weather ORDER BY timestamp DESC LIMIT 1;"
     logging.debug(query)
     destcursor.execute(query)
     last = destcursor.fetchone()
@@ -173,25 +173,26 @@ else:
     end = ""
 
 # FIXME: Add LIMIT if we need to transfer data by blocks
-query = """SELECT * FROM temperature %s %s ORDER BY timestamp;""" % (start, end)
+query = """SELECT * FROM weather %s %s ORDER BY timestamp;""" % (start, end)
 logging.debug(query)
 srccursor.execute(query)
 temps = dict()
 data = list()
 # Store the returned data
 logging.debug("Got %r records" % srccursor.rowcount)
-for id,temperature,temphigh,templow,scale,timestamp in srccursor:
+for id,temperature,temphigh,templow,humidity,scale,timestamp in srccursor:
     temps['id'] = id
     temps['temperature'] = temperature
     temps['temphigh'] = temphigh
     temps['templow'] = templow
+    temps['humidity'] = humidity
     temps['scale'] = scale
     temps['timestamp'] = timestamp
     #print("%r" % temps)
     data.append(temps)
     #INSERT INTO datas () VALUES ('$data','$notes','$sortname','$listname','$url')";
 
-    query = """INSERT INTO temperature VALUES (%r, '%r', '%r', '%r', %r, %r) ON CONFLICT DO NOTHING;""" % (id, temperature, temphigh, templow, scale,
+    query = """INSERT INTO weather VALUES (%r, '%r', '%r', '%r', %r, %r, %r) ON CONFLICT DO NOTHING;""" % (id, temperature, temphigh, templow, humidity, scale,
                              timestamp.strftime("%Y-%m-%d %H:%M:%S"))
     logging.debug("Dest query: %r" % query)
     logging.debug("Dest status: %r" % destcursor.statusmessage)
