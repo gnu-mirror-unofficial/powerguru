@@ -36,9 +36,11 @@
 --
 DROP TYPE IF EXISTS channel_type;
 CREATE TYPE public.channel_type AS ENUM (
+    '',
     'A',
     'B',
-    'C'
+    'C',
+    'X'
 );
 
 DROP TYPE IF EXISTS volt_type;
@@ -49,14 +51,14 @@ CREATE TYPE public.volt_type AS ENUM (
 
 DROP TYPE IF EXISTS device_type;
 CREATE TYPE public.device_type AS ENUM (
-    'unknown',
-    'onewire',
-    'ownet',
-    'rtl433',
-    'rtlsdr',
-    'usb',
-    'serial',
-    'gpio'
+    'UNKNOWN',
+    'ONEWIRE',
+    'OWNET',
+    'RTL433',
+    'RTLSDR',
+    'USB',
+    'SERIAL',
+    'GPIO'
 );
 
 DROP TYPE IF EXISTS sensor_type;
@@ -95,18 +97,18 @@ CREATE TABLE meters (
   battery_tempcomp float NOT NULL default '0'
 );
 
-DROP TABLE IF EXISTS sensor;
-CREATE TABLE sensor (
+DROP TABLE IF EXISTS sensors;
+CREATE TABLE sensors (
   id varchar(12) NOT NULL default '0',
-  alias varchar(12) NOT NULL default '0',
-  location varchar(12) NOT NULL default '0',
-  device device_type NOT NULL default '1wire',
-  type sensor_type NOT NULL default 'UNKNOWN',
+  alias varchar(24) NOT NULL default '0',
+  location varchar(24) NOT NULL default '0',
+  device device_type NOT NULL default 'ONEWIRE',
+  sensor sensor_type NOT NULL default 'UNKNOWN',
   channel channel_type NOT NULL default 'A'
 );
 
-DROP TABLE IF EXISTS temperature;
-CREATE TABLE temperature (
+DROP TABLE IF EXISTS weather;
+CREATE TABLE weather (
   id varchar(12) NOT NULL default '0',
   temperature float NOT NULL default '0',
   temphigh float NOT NULL default '0',
