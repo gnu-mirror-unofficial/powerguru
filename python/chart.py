@@ -42,8 +42,8 @@ options = dict()
 options['dbserver'] = "pi"  # hostname of the database
 options['dbname'] = "powerguru"  # hostname of the database
 options['interval'] = 100        # interval in seconds between data updates
-options['starttime'] = 0
-options['endtime'] = 0
+options['starttime'] = ""
+options['endtime'] = ""
 
 #import matplotlib
 #matplotlib.use('agg')
@@ -165,7 +165,7 @@ colors.append("black")
 def animate(i):
     logging.debug("Refreshing data...")
     ids = list()
-    query = "SELECT DISTINCT id FROM temperature"
+    query = "SELECT DISTINCT id FROM weather"
     logging.debug(query)
     dbcursor.execute(query)
     logging.debug("Query returned %r records" % dbcursor.rowcount)
@@ -175,13 +175,13 @@ def animate(i):
 
     cur = 0
     for id in ids:
-        query = "SELECT id,temperature,timestamp FROM temperature WHERE (id='%s' %s %s) ORDER BY timestamp;" % (id[0], start, end)
+        query = "SELECT id,temperature,humidity,timestamp FROM weather WHERE (id='%s' %s %s) ORDER BY timestamp;" % (id[0], start, end)
         logging.debug(query)
         dbcursor.execute(query)
         logging.debug("Query returned %r records" % dbcursor.rowcount)
         x = list()
         y = list()
-        for id,temperature,timestamp in dbcursor:
+        for id,temperature,humidity,timestamp in dbcursor:
             #print("TEMP: %r, %r" % (temperature,timestamp))
             x.append(timestamp)
             y.append(temperature)
@@ -198,14 +198,14 @@ def animate(i):
     xx = list()
     yy = list()
     zz = list()
-    query = "SELECT DISTINCT id FROM battery"
+    query = "SELECT DISTINCT id FROM power"
     logging.debug(query)
     dbcursor.execute(query)
     logging.debug("Query returned %r records" % dbcursor.rowcount)
     if  dbcursor.rowcount > 0:
         for id in dbcursor:
             ids.append(id)
-            query = "SELECT id,current,volts,timestamp FROM battery WHERE (id='%s' %s %s) ORDER BY timestamp " % (id[0], start, end)
+            query = "SELECT id,current,volts,timestamp FROM power WHERE (id='%s' %s %s) ORDER BY timestamp " % (id[0], start, end)
             logging.debug(query)
             dbcursor.execute(query)
             logging.debug("Query returned %r records" % dbcursor.rowcount)
