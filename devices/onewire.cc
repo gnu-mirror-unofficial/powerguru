@@ -18,10 +18,13 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
+#include <boost/endian/conversion.hpp>
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <map>
 #include <streambuf>
+#include <sstream>
 #include "onewire.h"
 #include "log.h"
 
@@ -206,7 +209,11 @@ Onewire::getTemperature(const std::string &device)
     std::string family = _sensors[device]->family;
     bool bus = _sensors[device]->bus;
     boost::shared_ptr<temperature_t> temp(new temperature_t);
-    temp->id = _sensors[device]->id;
+    // Data stored
+    int64_t idnum = std::stoll(_sensors[device]->id, 0, 16);
+    std::stringstream id;
+    id << std::hex << std::setw(12) << std::setfill('0') << boost::endian::endian_reverse(idnum << 16);
+    temp->id = boost::algorithm::to_upper_copy(id.str());
     std::string result;
     if (bus) {
         getValue(device, "w1_slave", result);
