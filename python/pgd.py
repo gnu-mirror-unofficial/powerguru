@@ -22,11 +22,16 @@ import epdb
 import logging
 import getopt
 import sys
+import rtlsdr
+import rtl433
 import ownet
 import onewire
 from threading import Thread
 from time import sleep
 from sys import argv
+import psycopg2
+#from sensor import Sensor
+import sensor
 
 # Setup default command line options
 options = dict()
@@ -103,6 +108,9 @@ for (opt, val) in opts:
 
 ch.setLevel(verbosity)
 
+sensors = sensor.Sensors()
+sensors.dump()
+
 #
 # Start the I/O threads
 #
@@ -115,6 +123,14 @@ ownet_thread.start()
 onewire_thread = Thread(target = onewire.onewire_handler, args = (10, ))
 onewire_thread.start()
 
+# rtl_433 filesystem
+rtl433_thread = Thread(target = rtl433.rtl433_handler, args = (options, sensors,))
+rtl433_thread.start()
+
+# rtl_sdr filesystem
+rtlsdr_thread = Thread(target = rtlsdr.rtlsdr_handler, args = (options, ))
+rtlsdr_thread.start()
+
 #
 # Join the I/O threads as we're done.
 #
@@ -123,4 +139,10 @@ print("ownet_thread finished...exiting")
 
 onewire_thread.join()
 print("onewire_thread finished...exiting")
+
+rtl433_thread.join()
+print("rtl433_thread finished...exiting")
+
+rtlsdr_thread.join()
+print("rtlsdr_thread finished...exiting")
 
