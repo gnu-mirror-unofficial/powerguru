@@ -181,7 +181,7 @@ def animate(i):
         logging.debug("Query returned %r records" % dbcursor.rowcount)
         x = list()
         y = list()
-        for id,temperature,humidity,timestamp in dbcursor:
+        for model,temperature,humidity,timestamp in dbcursor:
             #print("TEMP: %r, %r" % (temperature,timestamp))
             x.append(timestamp)
             y.append(temperature)
@@ -192,7 +192,8 @@ def animate(i):
         temp.grid(which='major', color='red')
         temp.grid(which='minor', color='blue', linestyle='dashed')
         temp.minorticks_on()
-        temp.plot(x, y, color=colors[cur])
+        temp.plot(x, y, color=colors[cur], label=id[0])
+        legend = temp.legend(loc='upper left', shadow=True)
         cur += 1
     
     xx = list()
@@ -211,13 +212,14 @@ def animate(i):
             logging.debug("Query returned %r records" % dbcursor.rowcount)
             cur = 0
             for id,current,voltage,timestamp in dbcursor:
-                print("BATTERY: %r, %r, %r, %r" % (id, current, voltage, timestamp))
+                #print("BATTERY: %r, %r, %r, %r" % (id, current, voltage, timestamp))
                 xx.append(timestamp)
                 yy.append(voltage)
                 zz.append(current)
 
         dcvolts.set_title("DC Voltage")
         dcvolts.plot(xx, yy, color="purple")
+        dcvolts.legend([id])
         dcvolts.set_ylabel("DC Volts")
         #dcvolts.set_xlabel("Time (hourly)")
         dcvolts.grid(which='major', color='red')
@@ -226,6 +228,7 @@ def animate(i):
     
         amps.set_title("DC Current")
         amps.plot(xx, zz, color=colors[cur])
+        amps.legend([id])
         cur += 1
         amps.set_ylabel("Amps")
         amps.set_xlabel("Time (hourly)")
