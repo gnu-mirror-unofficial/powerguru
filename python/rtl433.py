@@ -27,64 +27,74 @@ import logging
 import time
 import os
 import psycopg2
+import sensor
+import itertools, operator
 ON_POSIX = 'posix' in sys.builtin_module_names
 
-def rtl433_handler(args):
-    logging.debug("Start rtl_433 %r" % args)
-    cmd = [ 'rtl_433', '-F', 'csv', '-R', '40', '-T', '15']
+def rtl433_handler(options, sensors):
+    logging.debug("Start rtl_433 %r" % options)
+
+    # Connect to a postgresql database
+    try:
+        dbname = "powerguru"
+        connect = "dbname=" + dbname
+        dbshell = psycopg2.connect(connect)
+        if dbshell.closed == 0:
+            dbshell.autocommit = True
+            logging.info("Opened connection to %r" % dbname)
+            dbcursor = dbshell.cursor()
+            if dbcursor.closed == 0:
+                logging.info("Opened cursor in %r" % dbname)
+
+    except Exception as e:
+        logging.warning("Couldn't connect to database: %r" % e)
 
     #ppp = Popen(cmd, stdout=PIPE, stderr=STDOUT, bufsize=1, close_fds=ON_POSIX)
-    retries = 10
-    while retries > 0:
+    cmd = [ 'rtl_433', '-F', 'csv', '-R', '40', '-T', '15']
+    while True:
         ppp = Popen(cmd, stdout=PIPE, bufsize=0, close_fds=ON_POSIX)
-        try:
-            out, err = ppp.communicate()
-            #out, err = ppp.communicate(timeout=0.2)
-        except subprocess.TimeoutExpired:
-            logging.warning('subprocess did not terminate in time')
+        out, err = ppp.communicate()
+        #out, err = ppp.communicate(timeout=0.5)
         #print("FIXME0: %r" % retries)
-        #epdb.set_trace()
         for line in out.splitlines():
+            mapper = map
             #for line in ppp.readline():
-            print("FIXME: %r" % line)
+            #print("FIXME: %r" % line)
             str = line.decode('utf8')
             tokens = str.split(',')
             # this is just the csv header fields
             if tokens[0] == 'time':
                 continue
-            sensors = dict()
-            sensors['model'] = tokens[3]
-            sensors['id'] = tokens[5]
-            sensors['channel'] = tokens[6]
-            sensors['temperature'] = tokens[7]
-            sensors['humidity'] = tokens[8]
-            # Dump data
-            print("MODEL: %r" % sensors['model'])
-            print("\tID: %r" % sensors['id'])
-            print("\tCHANNEL: %r" % sensors['channel'])
-            print("\tTEMPERATURE: %rC" % sensors['temperature'])
-            print("\tHUMIDITY: %r" % sensors['humidity'])
-            print("")
-            time.sleep(1)
-        retries -= 1    
-        epdb.set_trace()
+            temp = dict()
+            temp['timestamp'] = tokens[0]
+            temp['model'] = tokens[3]
+            temp['id'] = tokens[4]
+            temp['channel'] = tokens[6]
+            temp['temperature'] = tokens[7]
+            temp['humidity'] = tokens[8]
+            if sensors.get(temp['id']) is None:
+                print("New sensor %r found!" % temp['id'])
+                sense = sensor.SensorDevice()
+                sense.set('id', temp['id'])
+                sense.set('alias', temp['model'])
+                sense.set('device', sensor.DeviceType.RTL433)
+                sense.set('sensor', sensor.SensorType.TEMPERATURE)
+                sense.set('channel', temp['channel'])
+                sensors.add(sense)
+            #else:
+                #sensor.sensors[temp['id']]['channel'] = temp['channel']
+                #sensor.sensors[temp['id']]['device'] = DeviceType.RTL433
+            sensors.dump()
+            # Convert from Celcius if needed
+            if (options['scale'] == 'F'):
+                temp['temperature'] = (float(temp['temperature']) * 1.8) + 32.0;
+                #temp['lowtemp'] =  (float(temp['lowtemp']) * 1.8) + 32.0;
+                #temp['hightemp'] =  (float(temp['hightemp']) * 1.8) + 32.0;
+            query = """INSERT INTO weather VALUES( '%s', %s, %s, %s, %s, '%s', '%s' )  ON CONFLICT DO NOTHING;; """ % (temp['id'], temp['temperature'], "0", "0",  temp['humidity'], options['scale'], temp['timestamp'])
+            logging.debug(query)
+            dbcursor.execute(query)
+        #time.sleep(30)
+        time.sleep(int(options['interval']))
  
-    # # Connect to a postgresql database
-    # try:
-    #     dbname = "powerguru"
-    #     connect = "dbname=" + dbname
-    #     dbshell = psycopg2.connect(connect)
-    #     if dbshell.closed == 0:
-    #         dbshell.autocommit = True
-    #         logging.info("Opened connection to %r" % dbname)
-            
-    #         dbcursor = dbshell.cursor()
-    #         if dbcursor.closed == 0:
-    #             logging.info("Opened cursor in %r" % dbname)
-                
-    # except Exception as e:
-    #     logging.warning("Couldn't connect to database: %r" % e)
-        
-
     # _sensors = list()
 
