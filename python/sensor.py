@@ -26,7 +26,6 @@ import psycopg2
 from datetime import datetime
 from enum import Enum
 
-
 class SensorType(Enum):
     UNKNOWN = 0
     ACVOLTAGE = 1
@@ -49,31 +48,90 @@ class DeviceType(Enum):
     SERIAL = 6
     GPIO = 7
 
-class Sensor(object):
+
+class Sensors(object):
+    """Data about all the sensors"""
     def __init__(self, data=dict()):
-        """A class to hold weather sensor data"""
+        self.sensors = dict()
+        # Connect to a postgresql database
+        try:
+            dbname = "powerguru"
+            connect = "dbname=" + dbname
+            self.dbshell = psycopg2.connect(connect)
+            if self.dbshell.closed == 0:
+                self.dbshell.autocommit = True
+                logging.info("Opened connection to %r" % dbname)
+
+            self.dbcursor = self.dbshell.cursor()
+            if self.dbcursor.closed == 0:
+                logging.info("Opened cursor in %r" % dbname)
+
+        except Exception as e:
+            logging.warning("Couldn't connect to database: %r" % e)
+
+        # Get any existing sensor data
+        query = """SELECT * FROM sensors;"""
+        logging.debug(query)
+        self.dbcursor.execute(query)
+        logging.debug("Got %r sensor records" % self.dbcursor.rowcount)
+        for id,alias,location,device,sense,channel in self.dbcursor:
+            data = dict()
+            if id is not None:
+                data['id'] = id
+            if alias is not None:
+                data['alias'] = alias
+            if location is not None:
+                data['location'] = location
+            if device is not None:
+                data['device'] = device
+            if sense is not None:
+                data['sensor'] = sense
+            if channel is not None:
+                data['channel'] = channel
+            self.sensors[id] = SensorDevice(data)
+
+    def dump(self):
+        logging.debug("Sensor.dump(%r entries)" % len(self.sensors))
+        for id,sensor in self.sensors.items():
+            sensor.dump()
+
+    def add(self, sensor):
+        id = sensor.get('id')
+        self.sensors[id] = sensor
+        self.dbcursor.execute(sensor.MakeSQL())
+
+    def get(self, id):
+        try:
+            sensor = self.sensors[id]
+        except:
+            sensor = None
+        return sensor
+
+class SensorDevice(object):
+    """A class to hold sensor data"""
+    def __init__(self, data=dict()):
         self.data = dict()
-        if data['id'] is not None and data['id'] is not "":
+        if ('id' in data) is True:
             self.data['id'] = data['id']
         else:
             self.data['id'] = None
-        if data['alias'] is not None and data['alias'] is not "":
+        if ('alias' in data) == True:
             self.data['alias'] = data['alias']
         else:
             self.data['alias'] = None
-        if data['location'] is not None and data['location'] is not "":
+        if ('location' in data) is True:
             self.data['location'] = data['location']
         else:
             self.data['location'] = None
-        if data['device'] is not None and data['device'] is not "":
+        if ('device' in data) is True:
             self.data['device'] = data['device']
         else:
             self.data['device'] = DeviceType.UNKNOWN
-        if data['sensor'] is not None and data['sensor'] is not "":
+        if ('sensor' in data) is True:
             self.data['sensor'] = data['sensor']
         else:
             self.data['sensor'] = SensorType.UNKNOWN
-        if data['channel'] is not None and data['channel'] is not "":
+        if ('channel' in data) is True:
             self.data['channel'] = data['channel']
         else:
             self.data['channel'] = None
@@ -95,46 +153,46 @@ class Sensor(object):
     def dump(self):
         """ Dump the data about this sensor"""
         print("ID: %r" % self.data['id'])
-        print("Alias: %r" % self.data['alias'])
-        print("Location: %r" % self.data['location'])
-        print("Channel: %r" % self.data['channel'])
+        print("\tAlias: %r" % self.data['alias'])
+        print("\tLocation: %r" % self.data['location'])
+        print("\tChannel: %r" % self.data['channel'])
         if self.data['device'] ==  DeviceType.UNKNOWN:
-            print("Device: UNKNOWN")
+            print("\tDevice: UNKNOWN")
         elif self.data['device'] ==  DeviceType.ONEWIRE:
-            print("Device: ONEWIRE")
+            print("\tDevice: ONEWIRE")
         elif self.data['device'] ==  DeviceType.OWNET:
-            print("Device: OWNET")
+            print("\tDevice: OWNET")
         elif self.data['device'] ==  DeviceType.RTL433:
-            print("Device: RTL433")
+            print("\tDevice: RTL433")
         elif self.data['device'] ==  DeviceType.RTLSDR:
-            print("Device: RTLSDR")
+            print("\tDevice: RTLSDR")
         elif self.data['device'] ==  DeviceType.USB:
-            print("Device: USB")
+            print("\tDtevice: USB")
         elif self.data['device'] ==  DeviceType.SERIAL:
-            print("Device: SERIAL")
+            print("\tDevice: SERIAL")
         elif self.data['device'] ==  DeviceType.GPIO:
-            print("Device: GPIO")
+            print("\tDevice: GPIO")
 
         if self.data['sensor'] ==  SensorType.UNKNOWN:
-            print("Sensor: UNKNOWN")
+            print("\tSensor: UNKNOWN")
         elif self.data['sensor'] ==  SensorType.ACVOLTAGE:
-            print("Sensor: ACVOLTAGE")
+            print("\tSensor: ACVOLTAGE")
         elif self.data['sensor'] ==  SensorType.DCVOLTAGE:
-            print("Sensor: DCVOLTAGE")
+            print("\tSensor: DCVOLTAGE")
         elif self.data['sensor'] ==  SensorType.AUTH:
-            print("Sensor: AUTH")
+            print("\tSensor: AUTH")
         elif self.data['sensor'] ==  SensorType.BATTERY:
-            print("Sensor: BATTERY")
+            print("\tSensor: BATTERY")
         elif self.data['sensor'] ==  SensorType.POWER:
-            print("Sensor: POWER")
+            print("\tSensor: POWER")
         elif self.data['sensor'] ==  SensorType.CLOCK:
-            print("Sensor: CLOCK")
+            print("\tSensor: CLOCK")
         elif self.data['sensor'] ==  SensorType.TEMPERATURE:
-            print("Sensor: TEMPERATURE")
+            print("\tSensor: TEMPERATURE")
         elif self.data['sensor'] ==  SensorType.MOISTURE:
-            print("Sensor: MOISTURE")
+            print("\tSensor: MOISTURE")
         elif self.data['sensor'] ==  SensorType.UNSUPPORTED:
-            print("Sensor: UNSUPPORTED")
+            print("\tSensor: UNSUPPORTED")
 
     def MakeSQL(self):
         """ Format the SQL query to add this sensor"""
@@ -181,35 +239,32 @@ class Sensor(object):
         else:
             channel = ''
 
-        query = """INSERT INTO sensors VALUES (%r, %r, %r, %r, %r, %r) ON CONFLICT DO NOTHING;""" % (self.data['id'], self.data['alias'], self.data['location'], device, sensor, channel)
+        if self.data['id'] is not None:
+            id = self.data['id']
+        else:
+            id = ""
+
+        if self.data['alias'] is not None:
+            alias = self.data['alias']
+        else:
+            alias = ""
+
+        if self.data['location'] is not None:
+            location = self.data['location']
+        else:
+            location = ""
+
+        query = """INSERT INTO sensors VALUES (%r, %r, %r, %r, %r, %r) ON CONFLICT DO NOTHING;""" % (id, alias, location, device, sensor, channel)
 
         logging.debug(query)
         return (query)
 
-    def populate(self, result):
+    def populate(self, result=""):
         """Populate the internal data from an SQL query """
+
         self.data['id'] = data['id']
         self.data['alias'] = data['alias']
         self.data['location'] = data['location']
         self.data['device'] = data['device']
-            self.data['sensor'] = SensorType.UNKNOWN
-        else:
-            self.data['sensor'] = SensorType.UNKNOWN
-        if data['channel'] is not None and data['channel'] is not "":
-            self.data['channel'] = data['channel']
-        else:
-            self.data['channel'] = None
-        
-data = dict()
-data['id'] = "1"
-data['alias'] = "AAA"
-data['location'] = "LLL"
-data['device'] = DeviceType.UNKNOWN
-data['sensor'] = SensorType.UNKNOWN
-data['channel'] = None
-            
-sense = Sensor(data)
-sense.dump()
-
-sense.set('id', '0')
-print(sense.MakeSQL())
+        self.data['sensor'] = data['sensor']
+        self.data['channel'] = data['channel']
