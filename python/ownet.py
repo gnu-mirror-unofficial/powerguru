@@ -46,8 +46,6 @@ def ownet_handler(args):
         logging.warning("Couldn't connect to database: %r" % e)
         
 
-    _sensors = list()
-
     # It turns out that the network connection occcsasionally times out
     # reading data, which is ok to ignore most of the time. However,
     # it's possible there is a server error, so kill the thread if
@@ -62,8 +60,8 @@ def ownet_handler(args):
         retries -= 1
         # Get a list of all directories on the server
         try:
-            owproxy = protocol.proxy(host=args['owserver'], port=4304)
-            logging.error("Connected to OW server: %r" % args['owserver'])
+            owproxy = protocol.proxy(host=args['owserver'], port=4304, persistent=True)
+            logging.info("Connected to OW server: %r" % args['owserver'])
             owproxy.dir()
             break
         except Exception as e:
@@ -93,8 +91,7 @@ def ownet_handler(args):
                 time.sleep(1)   # give the server a second to recover
                 continue
 
-            logging.debug("%r" % sensor)
-            _sensors.append(sensor)
+            #logging.debug("%r" % sensor)
             # FIXME: format query and write to database
             # dbcursor.execute(query)
             # family | id | alias | type | timestamp
@@ -115,18 +112,22 @@ def ownet_handler(args):
                 # By default, all temperature readings are in 'C' (Celcius)
                 # we convert to 'F' (Farenheit) if need be
                 if (args['scale'] == 'F'):
-                    temp['temperature'] = (float(temp['temperature']) * 1.8) + 32.0;
-                    temp['lowtemp'] =  (float(temp['lowtemp']) * 1.8) + 32.0;
-                    temp['hightemp'] =  (float(temp['hightemp']) * 1.8) + 32.0;
-                query = "INSERT INTO temperature VALUES("
+                    temp['temperature'] = (float(temp['temperature']) * 1.8) + 32.0
+                    if temp['lowtemp'] is not "0":
+                        temp['lowtemp'] =  (float(temp['lowtemp']) * 1.8) + 32.0
+                    if temp['hightemp'] is not "0":
+                        temp['hightemp'] =  (float(temp['hightemp']) * 1.8) + 32.0;
+                query = "INSERT INTO weather VALUES("
                 query += "'" + id + "'"
                 query += ", " + str(temp['temperature'])
                 query += ", " + str(temp['lowtemp'])
                 query += ", " + str(temp['hightemp'])
+                query += ", 0"
+                #query += ", " + str(temp['humidity'])
                 query += ", " + "'" + args['scale'] + "'"
                 query += ", '" + time.strftime("%Y-%m-%d %H:%M:%S") + "'"
                 query += ");"
-                logging.debug(query)
+                #logging.debug(query)
                 dbcursor.execute(query)
                 # id | temperature | temphigh | templow | scale | timestamp
  
@@ -143,14 +144,14 @@ def ownet_handler(args):
                     time.sleep(1)   # give the server a second to recover
                     continue
 
-                query = "INSERT INTO battery VALUES("
+                query = "INSERT INTO power VALUES("
                 query += "'" + id + "'"
                 query += ", " + batt['current']
                 query += ", " + batt['voltage']
                 query += ", 'DC'"
                 query += ", '" + time.strftime("%Y-%m-%d %H:%M:%S") + "'"
                 query += ");"
-                logging.debug(query)
+                #logging.debug(query)
                 dbcursor.execute(query)
                 # id | current | volts | type | timestamp
 
