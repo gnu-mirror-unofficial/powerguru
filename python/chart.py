@@ -35,11 +35,12 @@ import numpy as np
 import getopt
 import sys
 from sys import argv
+import sensor
 
 # http://initd.org/psycopg/docs/
 
 options = dict()
-options['dbserver'] = "pi"  # hostname of the database
+options['dbserver'] = "localhost"  # hostname of the database
 options['dbname'] = "powerguru"  # hostname of the database
 options['interval'] = 100        # interval in seconds between data updates
 options['starttime'] = ""
@@ -64,7 +65,7 @@ def usage(argv):
 
 # Check command line arguments
 try:
-    (opts, val) = getopt.getopt(argv[1:], "h,d:,s;v,i:,t:,e:",
+    (opts, val) = getopt.getopt(argv[1:], "h,d:,s:,,v,i:,t:,e:",
            ["help", "database", "dbserver", "verbose", "interval", "starttime", "endtime"])
 except getopt.GetoptError as e:
     logging.error('%r' % e)
@@ -92,7 +93,7 @@ formatter = logging.Formatter('%(message)s')
 #formatter = logging.Formatter('{%(filename)s:%(lineno)d} - %(message)s')
 ch.setFormatter(formatter)
 root.addHandler(ch)
-terminator = ch.terminator
+#terminator = ch.terminator
 verbosity = logging.CRITICAL
 
 # process command line arguments, will override the defaults
@@ -122,9 +123,12 @@ ch.setLevel(verbosity)
 delta = 0
 dbname = ""
 connect = ""
-if options['dbserver'] != "localhost":
-    connect = "host='" + options['dbserver'] + "'"
-connect += " dbname='" + options['dbname'] + "'"
+epdb.set_trace()
+if options['dbserver'] is "localhost":
+    connect += " dbname='" + options['dbname'] + "'"
+else:
+    connect += "host='" + options['dbserver'] + "'"
+    connect += " dbname='" + options['dbname'] + "'"
 
 logging.debug(connect)
 dbshell = psycopg2.connect(connect)
@@ -142,6 +146,9 @@ if dbcursor.closed != 0:
 
 logging.info("Opened cursor in %r" % options['dbserver'])
 
+# Get the data on each sensor
+sensors = sensor.Sensors()
+
 # Setup optional timestamp filter
 start = ""
 end = ""
@@ -152,16 +159,29 @@ elif options['endtime'] != "" and options['starttime'] != "":
     if options['endtime'] != "" and options['starttime'] == "":
         end = " AND timestamp<=%r" % options['endtime']
 
-# Create the two subslots
-fig, (temp, dcvolts, amps) = plt.subplots(3, 1, sharex=True)
+# Create the subslots
+fig, (temp) = plt.subplots(1, 1, sharex=True)
+#fig, (temp, humidity) = plt.subplots(2, 1, sharex=True)
+#fig, (temp, dcvolts, amps) = plt.subplots(3, 1, sharex=True)
 plt.subplots_adjust(top=0.88, bottom=0.20, left=0.10, right=0.95, hspace=0.58,
                     wspace=0.35)
 
+
+# https://matplotlib.org/gallery/color/named_colors.html
 colors = list()
 colors.append("red")
 colors.append("green")
 colors.append("blue")
+colors.append("orange")
+colors.append("cyan")
+colors.append("yellow")
 colors.append("black")
+colors.append("violet")
+colors.append("silver")
+colors.append("purple")
+colors.append("grey")
+colors.append("navy")
+
 def animate(i):
     logging.debug("Refreshing data...")
     ids = list()
@@ -179,6 +199,7 @@ def animate(i):
         logging.debug(query)
         dbcursor.execute(query)
         logging.debug("Query returned %r records" % dbcursor.rowcount)
+
         x = list()
         y = list()
         for model,temperature,humidity,timestamp in dbcursor:
@@ -186,59 +207,66 @@ def animate(i):
             x.append(timestamp)
             y.append(temperature)
 
+        #sensors.dump()
+        #epdb.set_trace()
+        sense = sensors.get(id[0])
+        if sense != None:
+            location = sense.get('location')
+        else:
+            location = id[0]
         fig.suptitle('PowerGuru')
         temp.set_ylabel("Temperature in F")
         temp.set_title("Temperature")
         temp.grid(which='major', color='red')
         temp.grid(which='minor', color='blue', linestyle='dashed')
         temp.minorticks_on()
-        temp.plot(x, y, color=colors[cur], label=id[0])
         legend = temp.legend(loc='upper left', shadow=True)
+        temp.plot(x, y, color=colors[cur], label=location)
         cur += 1
-    
-    xx = list()
-    yy = list()
-    zz = list()
-    query = "SELECT DISTINCT id FROM power"
-    logging.debug(query)
-    dbcursor.execute(query)
-    logging.debug("Query returned %r records" % dbcursor.rowcount)
-    if  dbcursor.rowcount > 0:
-        for id in dbcursor:
-            ids.append(id)
-            query = "SELECT id,current,volts,timestamp FROM power WHERE (id='%s' %s %s) ORDER BY timestamp " % (id[0], start, end)
-            logging.debug(query)
-            dbcursor.execute(query)
-            logging.debug("Query returned %r records" % dbcursor.rowcount)
-            cur = 0
-            for id,current,voltage,timestamp in dbcursor:
-                #print("BATTERY: %r, %r, %r, %r" % (id, current, voltage, timestamp))
-                xx.append(timestamp)
-                yy.append(voltage)
-                zz.append(current)
 
-        dcvolts.set_title("DC Voltage")
-        dcvolts.plot(xx, yy, color="purple")
-        dcvolts.legend([id])
-        dcvolts.set_ylabel("DC Volts")
-        #dcvolts.set_xlabel("Time (hourly)")
-        dcvolts.grid(which='major', color='red')
-        dcvolts.grid(which='minor', color='blue', linestyle='dashed')
-        dcvolts.minorticks_on()
+    # xx = list()
+    # yy = list()
+    # zz = list()
+    # query = "SELECT DISTINCT id FROM power"
+    # logging.debug(query)
+    # dbcursor.execute(query)
+    # logging.debug("Query returned %r records" % dbcursor.rowcount)
+    # if  dbcursor.rowcount > 0:
+    #     for id in dbcursor:
+    #         ids.append(id)
+    #         query = "SELECT id,current,volts,timestamp FROM power WHERE (id='%s' %s %s) ORDER BY timestamp " % (id[0], start, end)
+    #         logging.debug(query)
+    #         dbcursor.execute(query)
+    #         logging.debug("Query returned %r records" % dbcursor.rowcount)
+    #         cur = 0
+    #         for id,current,voltage,timestamp in dbcursor:
+    #             #print("BATTERY: %r, %r, %r, %r" % (id, current, voltage, timestamp))
+    #             xx.append(timestamp)
+    #             yy.append(voltage)
+    #             zz.append(current)
+
+    #     dcvolts.set_title("DC Voltage")
+    #     dcvolts.plot(xx, yy, color="purple")
+    #     dcvolts.legend([id])
+    #     dcvolts.set_ylabel("DC Volts")
+    #     #dcvolts.set_xlabel("Time (hourly)")
+    #     dcvolts.grid(which='major', color='red')
+    #     dcvolts.grid(which='minor', color='blue', linestyle='dashed')
+    #     dcvolts.minorticks_on()
     
-        amps.set_title("DC Current")
-        amps.plot(xx, zz, color=colors[cur])
-        amps.legend([id])
-        cur += 1
-        amps.set_ylabel("Amps")
-        amps.set_xlabel("Time (hourly)")
-        amps.grid(which='major', color='red')
-        amps.grid(which='minor', color='blue', linestyle='dashed')
-        amps.minorticks_on()
-        plt.setp(amps.xaxis.get_majorticklabels(), rotation=90)
-        amps.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d %H'))
-        amps.xaxis.set_major_locator(mdates.HourLocator(byhour=range(0,24,6)))
-        amps.xaxis.set_minor_locator(mdates.HourLocator())
+    #     amps.set_title("DC Current")
+    #     amps.plot(xx, zz, color=colors[cur])
+    #     amps.legend([id])
+    #     cur += 1
+    #     amps.set_ylabel("Amps")
+    #     amps.set_xlabel("Time (hourly)")
+    #     amps.grid(which='major', color='red')
+    #     amps.grid(which='minor', color='blue', linestyle='dashed')
+    #     amps.minorticks_on()
+    #     plt.setp(amps.xaxis.get_majorticklabels(), rotation=90)
+    #     amps.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d %H'))
+    #     amps.xaxis.set_major_locator(mdates.HourLocator(byhour=range(0,24,6)))
+    #     amps.xaxis.set_minor_locator(mdates.HourLocator())
 
     # Get the time delta between data samples, as it's not worth updating there
     # the display till their in fresh data. Sample may be minutes or hours apart,
