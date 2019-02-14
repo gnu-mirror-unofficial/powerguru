@@ -32,6 +32,9 @@ from sys import argv
 import psycopg2
 #from sensor import Sensor
 import sensor
+import platform
+import i2c
+
 
 # Setup default command line options
 options = dict()
@@ -116,20 +119,35 @@ sensors.dump()
 #
 
 # OWFS network protocol
-ownet_thread = Thread(target=ownet.ownet_handler, args=(options, ))
+ownet_thread = Thread(target=ownet.ownet_handler, args=(options, sensors))
 ownet_thread.start()
 
 # OWFS filesystem
-onewire_thread = Thread(target = onewire.onewire_handler, args = (10, ))
+onewire_thread = Thread(target = onewire.onewire_handler, args = (options, ))
 onewire_thread.start()
 
 # rtl_433 filesystem
 rtl433_thread = Thread(target = rtl433.rtl433_handler, args = (options, sensors,))
 rtl433_thread.start()
 
-# rtl_sdr filesystem
-rtlsdr_thread = Thread(target = rtlsdr.rtlsdr_handler, args = (options, ))
+# rtl_sdr
+rtlsdr_thread = Thread(target = rtlsdr.rtlsdr_handler, args = (options, sensors))
 rtlsdr_thread.start()
+
+# GPIO only works on a Raspberry PI
+#if platform.machine is "armv7l":
+import gpio433
+gpio433_thread = Thread(target = gpio433.gpio433_handler, args = (options, sensors))
+gpio433_thread.start()
+
+i2c_thread = Thread(target = i2c.ina219_handler, args = (options, sensors))
+i2c_thread.start()
+
+gpio433_thread.join()
+print("gpio433_thread finished...exiting")
+
+i2c_thread.join()
+print("i2c_thread finished...exiting")
 
 #
 # Join the I/O threads as we're done.
