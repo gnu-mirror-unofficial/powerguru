@@ -45,21 +45,23 @@ def ina219_handler(options, sensors):
             if dbcursor.closed == 0:
                 logging.info("Opened cursor in %r" % dbname)
                 
-            while True:
-                try:
-                    print('Bus Voltage: {0:0.2f}V'.format(ina.voltage()))
-                    print('Bus Current: {0:0.2f}mA'.format(ina.current()))
-                    print('Power: {0:0.2f}mW'.format(ina.power()))
-                    print('Shunt Voltage: {0:0.2f}mV\n'.format(ina.shunt_voltage()))
-                except DeviceRangeError as e:
-                    # Current out of device range with specified shunt resister
-                    print(e)
-
-                id = "XXXXX"
-                query = """INSERT INTO power VALUES( '%s', %s, %s, '%s', '%s' )  ON CONFLICT DO NOTHING;; """ % (id, ina.current(), ina.voltage(), 'DC', time.strftime("%Y-%m-%d %H:%M:%S"))
-                logging.debug(query)
-                dbcursor.execute(query)
-                time.sleep(10)
     except Exception as e:
         logging.warning("Couldn't connect to database: %r" % e)
-        
+
+    while True:
+        try:
+            print('Bus Voltage: {0:0.2f}V'.format(ina.voltage()))
+            print('Bus Current: {0:0.2f}mA'.format(ina.current()))
+            print('Power: {0:0.2f}mW'.format(ina.power()))
+            print('Shunt Voltage: {0:0.2f}mV\n'.format(ina.shunt_voltage()))
+
+            id = "XXXXX"
+            query = """INSERT INTO power VALUES( '%s', %s, %s, 'DC', '%s' )  ON CONFLICT DO NOTHING;; """ % (id, ina.current(), ina.voltage(), time.strftime("%Y-%m-%d %H:%M:%S"))
+        except DeviceRangeError as e:
+            # Current out of device range with specified shunt resister
+            print(e)
+        logging.debug(query)
+        dbcursor.execute(query)
+        time.sleep(100)
+        #time.sleep(options['interval'])
+
