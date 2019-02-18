@@ -25,8 +25,9 @@ import time
 from pyownet import protocol
 import onewire
 import psycopg2
+import sensor
 
-def ownet_handler(args):
+def ownet_handler(args, sensors):
     logging.debug("Start ownet %r" % args)
 
     # Connect to a postgresql database
@@ -82,6 +83,7 @@ def ownet_handler(args):
                 sensor['family'] = family
                 id = owproxy.read(dir + 'id').decode("utf-8")
                 sensor['id'] = id;
+                #sensor['id'] = id[10:12] + id[8:10] + id[6:8] + id[4:6] + id[2:4] + id[0:2]
                 sensor['alias'] = owproxy.read(dir + 'alias').decode("utf-8")
                 sensor['type'] = onewire._family[family]['type']
                 sensor['chips'] = owproxy.read(dir + 'type').decode("utf-8")
@@ -131,7 +133,7 @@ def ownet_handler(args):
                 dbcursor.execute(query)
                 # id | temperature | temphigh | templow | scale | timestamp
  
-            if sensor['type'] == 'BATTERY':
+            if sensor['type'] == 'POWER':
                 # logging.info("Found a power monitor sensor: " + family + '.' + id)
                 batt = dict()
                 try:
