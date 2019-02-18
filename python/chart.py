@@ -123,7 +123,6 @@ ch.setLevel(verbosity)
 delta = 0
 dbname = ""
 connect = ""
-epdb.set_trace()
 if options['dbserver'] is "localhost":
     connect += " dbname='" + options['dbname'] + "'"
 else:
