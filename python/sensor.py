@@ -37,6 +37,7 @@ class SensorType(Enum):
     TEMPERATURE = 7
     MOISTURE = 8
     UNSUPPORTED = 9
+sensorStrings= ('UNKNOWN', 'ACVOLTAGE', 'DCVOLTAGE', 'AUTH', 'BATTERY', 'POWER', 'CLOCK', 'TEMPERATURE', 'MOISTURE', 'UNSUPPORTED' )
 
 class DeviceType(Enum):
     UNKNOWN = 0
@@ -48,6 +49,7 @@ class DeviceType(Enum):
     SERIAL = 6
     GPIO = 7
 
+deviceStrings = ('UNNOWN', 'ONEWIRE', 'OWNET', 'RTL433', 'RTLSDR', 'USB', 'SERIAL', 'GPIO')
 
 class Sensors(object):
     """Data about all the sensors"""
@@ -90,7 +92,13 @@ class Sensors(object):
                 data['channel'] = channel
             self.sensors[id] = SensorDevice(data)
 
-    def dump(self):
+    def makeXML(self, xml=""):
+        """Create an XML string of all the sensor data"""
+        for id,sensor in self.sensors.items():
+            xml += sensor.makeXML()
+        return xml
+
+    def dump(self, result=""):
         logging.debug("Sensor.dump(%r entries)" % len(self.sensors))
         for id,sensor in self.sensors.items():
             sensor.dump()
@@ -150,89 +158,24 @@ class SensorDevice(object):
         else:
             logging.warning("Key %r doesn't exist in data structure" % index)
 
+    def makeXML(self, xml=""):
+        """Convert data about each sensor into XML for the remote API"""
+        xml="""<ID>%r</ID><ALIAS>%r</ALIAS><LOCATION>%r</LOCATION><CHANNEL>%r</CHANNEL><DEVICE>%r</DEVICE><SENSOR>%r</SENSOR>""" % (self.data['id'], self.data['alias'], self.data['location'], self.data['channel'], self.data['device'], self.data['sensor'])
+        return xml
+
     def dump(self):
         """ Dump the data about this sensor"""
         print("ID: %r" % self.data['id'])
         print("\tAlias: %r" % self.data['alias'])
         print("\tLocation: %r" % self.data['location'])
         print("\tChannel: %r" % self.data['channel'])
-        if self.data['device'] ==  DeviceType.UNKNOWN:
-            print("\tDevice: UNKNOWN")
-        elif self.data['device'] ==  DeviceType.ONEWIRE:
-            print("\tDevice: ONEWIRE")
-        elif self.data['device'] ==  DeviceType.OWNET:
-            print("\tDevice: OWNET")
-        elif self.data['device'] ==  DeviceType.RTL433:
-            print("\tDevice: RTL433")
-        elif self.data['device'] ==  DeviceType.RTLSDR:
-            print("\tDevice: RTLSDR")
-        elif self.data['device'] ==  DeviceType.USB:
-            print("\tDtevice: USB")
-        elif self.data['device'] ==  DeviceType.SERIAL:
-            print("\tDevice: SERIAL")
-        elif self.data['device'] ==  DeviceType.GPIO:
-            print("\tDevice: GPIO")
-
-        if self.data['sensor'] ==  SensorType.UNKNOWN:
-            print("\tSensor: UNKNOWN")
-        elif self.data['sensor'] ==  SensorType.ACVOLTAGE:
-            print("\tSensor: ACVOLTAGE")
-        elif self.data['sensor'] ==  SensorType.DCVOLTAGE:
-            print("\tSensor: DCVOLTAGE")
-        elif self.data['sensor'] ==  SensorType.AUTH:
-            print("\tSensor: AUTH")
-        elif self.data['sensor'] ==  SensorType.BATTERY:
-            print("\tSensor: BATTERY")
-        elif self.data['sensor'] ==  SensorType.POWER:
-            print("\tSensor: POWER")
-        elif self.data['sensor'] ==  SensorType.CLOCK:
-            print("\tSensor: CLOCK")
-        elif self.data['sensor'] ==  SensorType.TEMPERATURE:
-            print("\tSensor: TEMPERATURE")
-        elif self.data['sensor'] ==  SensorType.MOISTURE:
-            print("\tSensor: MOISTURE")
-        elif self.data['sensor'] ==  SensorType.UNSUPPORTED:
-            print("\tSensor: UNSUPPORTED")
+        print("\tDevice: %r" % self.data['device'])
+        print("\tSensor: %r" % self.data['sensor'])
 
     def MakeSQL(self):
         """ Format the SQL query to add this sensor"""
-        if self.data['device'] ==  DeviceType.UNKNOWN:
-            device = "UNKNOWN"
-        elif self.data['device'] ==  DeviceType.ONEWIRE:
-            device = "ONEWIRE"
-        elif self.data['device'] ==  DeviceType.OWNET:
-            device = "OWNET"
-        elif self.data['device'] ==  DeviceType.RTL433:
-            device = "RTL433"
-        elif self.data['device'] ==  DeviceType.RTLSDR:
-            device = "RTLSDR"
-        elif self.data['device'] ==  DeviceType.USB:
-            device = "USB"
-        elif self.data['device'] ==  DeviceType.SERIAL:
-            device = "SERIAL"
-        elif self.data['device'] ==  DeviceType.GPIO:
-            device = "GPIO"
-
-        if self.data['sensor'] ==  SensorType.UNKNOWN:
-            sensor = "UNKNOWN"
-        elif self.data['sensor'] ==  SensorType.ACVOLTAGE:
-            sensor = "ACVOLTAGE"
-        elif self.data['sensor'] ==  SensorType.DCVOLTAGE:
-            sensor = "DCVOLTAGE"
-        elif self.data['sensor'] ==  SensorType.AUTH:
-            sensor = "AUTH"
-        elif self.data['sensor'] ==  SensorType.BATTERY:
-            sensor = "BATTERY"
-        elif self.data['sensor'] ==  SensorType.POWER:
-            sensor = "POWER"
-        elif self.data['sensor'] ==  SensorType.CLOCK:
-            sensor = "CLOCK"
-        elif self.data['sensor'] ==  SensorType.TEMPERATURE:
-            sensor = "TEMPERATURE"
-        elif self.data['sensor'] ==  SensorType.MOISTURE:
-            sensor = "MOISTURE"
-        elif self.data['sensor'] ==  SensorType.UNSUPPORTED:
-            sensor = "UNSUPPORTED"
+        device = deviceStrings[self.data['device']]
+        sense = sensorStrings[self.data['sensor']]
 
         if self.data['channel'] is not None:
             channel = self.data['channel']
@@ -254,7 +197,7 @@ class SensorDevice(object):
         else:
             location = ""
 
-        query = """INSERT INTO sensors VALUES (%r, %r, %r, %r, %r, %r) ON CONFLICT DO NOTHING;""" % (id, alias, location, device, sensor, channel)
+        query = """INSERT INTO sensors VALUES (%r, %r, %r, %r, %r, %r) ON CONFLICT DO NOTHING;""" % (id, alias, location, device, sense, channel)
 
         logging.debug(query)
         return (query)
