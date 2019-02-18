@@ -163,17 +163,19 @@ if pi is True:
 
     i2c_thread = Thread(target = i2c.ina219_handler, args = (options, sensors))
     i2c_thread.start()
-
-# NOTE that this only handles a single connection at a time
-with socketserver.TCPServer(("0.0.0.0", 7654), remote.client_handler) as server:
+try:
+    server = socketserver.TCPServer(("0.0.0.0", 7654), remote.client_handler)
+    server.allow_reuse_address = True
     # Activate the server; this will keep running until you
     # interrupt the program with Ctrl-C
-    server.allow_reuse_address = True
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         server.shutdown()
         server.socket.close()
+except:
+    logging.debug("Another pgd is running...")
+    
 
 if pi is True:
     gpio433_thread.join()
