@@ -34,6 +34,8 @@ import psycopg2
 import sensor
 import platform
 import i2c
+import remote
+import socketserver
 
 
 # Setup default command line options
@@ -111,6 +113,25 @@ for (opt, val) in opts:
 
 ch.setLevel(verbosity)
 
+#
+# See if we're running on a Raspberry PI, since other platforms
+# don't have GPIO pins.
+#
+try:
+    file = open("/etc/issue", "r")
+except Exception as inst:
+    logging.error("Couldn't open /etc/issue: %r" % inst)
+issue = file.readlines()
+on = issue[0].split(' ')
+if on[0] == "Raspbian":
+    pi = True
+else:
+    pi = False
+logging.info("Running on %r" % on[0])
+
+#
+# Collect the data about the connected sensors
+#
 sensors = sensor.Sensors()
 sensors.dump()
 
@@ -123,8 +144,8 @@ ownet_thread = Thread(target=ownet.ownet_handler, args=(options, sensors))
 ownet_thread.start()
 
 # OWFS filesystem
-onewire_thread = Thread(target = onewire.onewire_handler, args = (options, ))
-onewire_thread.start()
+#onewire_thread = Thread(target = onewire.onewire_handler, args = (options, ))
+#onewire_thread.start()
 
 # rtl_433 filesystem
 rtl433_thread = Thread(target = rtl433.rtl433_handler, args = (options, sensors,))
@@ -135,19 +156,31 @@ rtlsdr_thread = Thread(target = rtlsdr.rtlsdr_handler, args = (options, sensors)
 rtlsdr_thread.start()
 
 # GPIO only works on a Raspberry PI
-#if platform.machine is "armv7l":
-import gpio433
-gpio433_thread = Thread(target = gpio433.gpio433_handler, args = (options, sensors))
-gpio433_thread.start()
+if pi is True:
+    import gpio433
+    gpio433_thread = Thread(target = gpio433.gpio433_handler, args = (options, sensors))
+    gpio433_thread.start()
 
-i2c_thread = Thread(target = i2c.ina219_handler, args = (options, sensors))
-i2c_thread.start()
+    i2c_thread = Thread(target = i2c.ina219_handler, args = (options, sensors))
+    i2c_thread.start()
 
-gpio433_thread.join()
-print("gpio433_thread finished...exiting")
+# NOTE that this only handles a single connection at a time
+with socketserver.TCPServer(("0.0.0.0", 7654), remote.client_handler) as server:
+    # Activate the server; this will keep running until you
+    # interrupt the program with Ctrl-C
+    server.allow_reuse_address = True
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        server.shutdown()
+        server.socket.close()
 
-i2c_thread.join()
-print("i2c_thread finished...exiting")
+if pi is True:
+    gpio433_thread.join()
+    print("gpio433_thread finished...exiting")
+
+    i2c_thread.join()
+    print("i2c_thread finished...exiting")
 
 #
 # Join the I/O threads as we're done.
@@ -155,8 +188,8 @@ print("i2c_thread finished...exiting")
 ownet_thread.join()
 print("ownet_thread finished...exiting")
 
-onewire_thread.join()
-print("onewire_thread finished...exiting")
+#onewire_thread.join()
+#print("onewire_thread finished...exiting")
 
 rtl433_thread.join()
 print("rtl433_thread finished...exiting")
