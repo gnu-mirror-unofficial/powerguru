@@ -24,28 +24,14 @@ import logging
 #import time
 #import psycopg2
 #from rtlsdr import RtlSdr
+from options import CmdOptions
+from postgresql import Postgresql
 
 
-def rtlsdr_handler(args):
-    logging.debug("Start rtl_sdr %r" % args)
+def rtlsdr_handler(sensors):
+    logging.debug("Start rtl_sdr...")
     #self.sdr = RtlSdr(1, True,"00000001")
 
-    # # Connect to a postgresql database
-    # try:
-    #     dbname = "powerguru"
-    #     connect = "dbname=" + dbname
-    #     dbshell = psycopg2.connect(connect)
-    #     if dbshell.closed == 0:
-    #         dbshell.autocommit = True
-    #         logging.info("Opened connection to %r" % dbname)
-            
-    #         dbcursor = dbshell.cursor()
-    #         if dbcursor.closed == 0:
-    #             logging.info("Opened cursor in %r" % dbname)
-                
-    # except Exception as e:
-    #     logging.warning("Couldn't connect to database: %r" % e)
-        
-
-    _sensors = list()
-
+    options = CmdOptions()
+    #db = Postgresql()
+    #db.dump()

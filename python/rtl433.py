@@ -29,33 +29,24 @@ import os
 import psycopg2
 import sensor
 import itertools, operator
+from options import CmdOptions
+from postgresql import Postgresql
 ON_POSIX = 'posix' in sys.builtin_module_names
 
-def rtl433_handler(options, sensors):
-    logging.debug("Start rtl_433 %r" % options)
+def rtl433_handler(sensors):
+    logging.debug("Start rtl_433...")
 
-    # Connect to a postgresql database
-    try:
-        dbname = "powerguru"
-        connect = "dbname=" + dbname
-        dbshell = psycopg2.connect(connect)
-        if dbshell.closed == 0:
-            dbshell.autocommit = True
-            logging.info("Opened connection to %r" % dbname)
-            dbcursor = dbshell.cursor()
-            if dbcursor.closed == 0:
-                logging.info("Opened cursor in %r" % dbname)
-
-    except Exception as e:
-        logging.warning("Couldn't connect to database: %r" % e)
+    options = CmdOptions()
+    db = Postgresql()
+    #db.dump()
 
     #ppp = Popen(cmd, stdout=PIPE, stderr=STDOUT, bufsize=1, close_fds=ON_POSIX)
-    cmd = [ 'rtl_433', '-F', 'csv', '-R', '40', '-T', '15']
+    cmd = [ 'rtl_433', '-F', 'csv', '-R', '40', '-T', '60']
     while True:
         ppp = Popen(cmd, stdout=PIPE, bufsize=0, close_fds=ON_POSIX)
         out, err = ppp.communicate()
         #out, err = ppp.communicate(timeout=0.5)
-        #print("FIXME0: %r" % retries)
+        #print("FIXME0: %r" % out)
         for line in out.splitlines():
             mapper = map
             #for line in ppp.readline():
@@ -84,17 +75,16 @@ def rtl433_handler(options, sensors):
             #else:
                 #sensor.sensors[temp['id']]['channel'] = temp['channel']
                 #sensor.sensors[temp['id']]['device'] = DeviceType.RTL433
-            sensors.dump()
+            #sensors.dump()
             # Convert from Celcius if needed
-            if (options['scale'] == 'F'):
+            if (options.get('scale') == 'F'):
                 temp['temperature'] = (float(temp['temperature']) * 1.8) + 32.0;
                 #temp['lowtemp'] =  (float(temp['lowtemp']) * 1.8) + 32.0;
                 #temp['hightemp'] =  (float(temp['hightemp']) * 1.8) + 32.0;
-            query = """INSERT INTO weather VALUES( '%s', %s, %s, %s, %s, '%s', '%s' )  ON CONFLICT DO NOTHING;; """ % (temp['id'], temp['temperature'], "0", "0",  temp['humidity'], options['scale'], temp['timestamp'])
+            query = """INSERT INTO weather VALUES( '%s', %s, %s, %s, %s, '%s', '%s' )  ON CONFLICT DO NOTHING;; """ % (temp['id'], temp['temperature'], "0", "0",  temp['humidity'], options.get('scale'), temp['timestamp'])
             logging.debug(query)
-            dbcursor.execute(query)
-        #time.sleep(30)
-        time.sleep(int(options['interval']))
+            db.query(query)
+        time.sleep(options.get('interval'))
  
     # _sensors = list()
 

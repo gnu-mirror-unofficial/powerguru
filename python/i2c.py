@@ -23,30 +23,21 @@ import logging
 import psycopg2
 from ina219 import INA219, DeviceRangeError
 import time
+from options import CmdOptions
+from postgresql import Postgresql
 
-def ina219_handler(options, sensors):
-    logging.debug("Start rtl_sdr %r" % options)
+
+def ina219_handler(sensors):
+    logging.debug("Start ina219...")
+
+    options = CmdOptions()
+    db = Postgresql()
+    #db.dump()
 
     SHUNT_OHMS = 0.1
     MAX_EXPECTED_AMPS = 2.0
     ina = INA219(SHUNT_OHMS, MAX_EXPECTED_AMPS)
     ina.configure(ina.RANGE_16V)
-
-    # Connect to a postgresql database
-    try:
-        dbname = "powerguru"
-        connect = "dbname=" + dbname
-        dbshell = psycopg2.connect(connect)
-        if dbshell.closed == 0:
-            dbshell.autocommit = True
-            logging.info("Opened connection to %r" % dbname)
-            
-            dbcursor = dbshell.cursor()
-            if dbcursor.closed == 0:
-                logging.info("Opened cursor in %r" % dbname)
-                
-    except Exception as e:
-        logging.warning("Couldn't connect to database: %r" % e)
 
     while True:
         try:
@@ -60,8 +51,6 @@ def ina219_handler(options, sensors):
         except DeviceRangeError as e:
             # Current out of device range with specified shunt resister
             print(e)
-        logging.debug(query)
-        dbcursor.execute(query)
-        time.sleep(100)
-        #time.sleep(options['interval'])
+        db.query(query)
+        time.sleep(options.get('interval'))
 
