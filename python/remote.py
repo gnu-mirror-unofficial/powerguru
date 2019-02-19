@@ -24,18 +24,28 @@ import socketserver
 from lxml import etree
 from lxml.etree import tostring
 import sensor
+from enum import Enum
+import triggers
+import psycopg2
 
 
 class client_handler(socketserver.BaseRequestHandler):
     """Create Server for client requests"""
-    
+
+    def setup(self, options=dict()):
+        print("SETUP"),
+
+    def server_activate(self):
+        print("ACTIVATE"),
+
+
     def handle(self):
         while True:
             # self.request is the TCP socket connected to the client
             self.data = self.request.recv(1024).strip()
             self.clientip = self.client_address[0]
             logging.info("{} wrote:".format(self.clientip))
-            #logging.debug(self.data)
+            # logging.debug(self.data)
             # If no data, the client dropped the network connection.
             # Return and this handler will ge restarted for the next
             # incoming connection.
@@ -55,24 +65,30 @@ class client_handler(socketserver.BaseRequestHandler):
             # These are the allowable top level XML tags
             if tag == "LIST":
                 logging.debug("LIST: %r" % xml.text)
-                # if no children, default to quering all sensors
+                # if no children, default to querying all sensors
                 if len(xml) == 0:
                     self.list_command(xml.text)
-                else:
-                    if xml[0].tag.upper() == "SENSORS":
+                elif xml[0].tag.upper() == "SENSORS":
                         self.list_command(xml[0].text)
+                # Don't do anything, just make  network connection
+                # is working. Mostly use for development
             elif tag == "NOP":
                 logging.debug("NOP: %r" % xml.text)
             elif tag == "HELO":
                 logging.debug("HELO: %r" % xml.text)
             elif tag == "POLL":
                 logging.debug("POLL: %r" % xml.text)
-            elif tag == "EVENT":
-                logging.debug("EVENT: %r" % xml.text)
-                self.event_command(xml.text)
+            elif tag == "TRIGGER":
+                logging.debug("TRIGGER: %r" % xml.text)
+                if len(xml) > 0:
+                    trigger = triggers.Triggers()
+                    trigger.fromXML(xml)
+                    trigger.dump()
+                    trigger.writeSQL()
+                    #self.event_command(xml.text)
             else:
                 logging.error("Tag %r not supported!" % tag)
-                #return
+                return
 
             if len(xml) > 0:
                 logging.debug("Has chidren")
@@ -92,7 +108,7 @@ class client_handler(socketserver.BaseRequestHandler):
         logging.debug("LIST command: %r" % text)
         if text is None or text.upper() == "ALL":
             xmldata = sensor.Sensors().makeXML()
-            logging.debug("XMLDATA: %r" % xmldata)
+            #logging.debug("XMLDATA: %r" % xmldata)
         else:
             if sensor.Sensors().get(text) != None:
                 xmldata = sensor.Sensors().get(text).makeXML()
@@ -100,6 +116,9 @@ class client_handler(socketserver.BaseRequestHandler):
                 logging.error("Bad sensor ID %r!" % text)
         self.request.sendall(xmldata.encode('utf-8'))
 
-    def event_command(self):
+    def event_command(self, event=""):
+        """ Handle events. Events are actions that we want to have
+        a timestamp for, so when looking at weather or power data,
+        we can see triggers for changes in the data."""
         logging.debug("EVENT command")
 
