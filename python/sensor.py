@@ -26,6 +26,8 @@ import psycopg2
 from datetime import datetime
 from enum import Enum
 
+# Types of sensors. These enums and their string values must match
+# the database schema's enum. See powerguru.sql for details.
 class SensorType(Enum):
     UNKNOWN = 0
     ACVOLTAGE = 1
@@ -39,6 +41,8 @@ class SensorType(Enum):
     UNSUPPORTED = 9
 sensorStrings= ('UNKNOWN', 'ACVOLTAGE', 'DCVOLTAGE', 'AUTH', 'BATTERY', 'POWER', 'CLOCK', 'TEMPERATURE', 'MOISTURE', 'UNSUPPORTED' )
 
+# Types of devices. These enums and their string values must match
+# the database schema's enum. See powerguru.sql for details.
 class DeviceType(Enum):
     UNKNOWN = 0
     ONEWIRE = 1
