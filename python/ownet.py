@@ -31,6 +31,8 @@ from postgresql import Postgresql
 
 
 def ownet_handler(sensors):
+    """Handler for the owserver protocol. This connects to a local
+    or remote owserver."""
     logging.debug("Start ownet...")
 
     options = CmdOptions()

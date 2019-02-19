@@ -34,6 +34,9 @@ from postgresql import Postgresql
 ON_POSIX = 'posix' in sys.builtin_module_names
 
 def rtl433_handler(sensors):
+    """This is a handler for sensors using wireless at 433Mhz,
+    commonly used by many wireless weather sensors. This requires
+    a working RTL-SDR radio dongle, and the rtl_433 utiity installed"""
     logging.debug("Start rtl_433...")
 
     options = CmdOptions()
@@ -48,7 +51,7 @@ def rtl433_handler(sensors):
         #out, err = ppp.communicate(timeout=0.5)
         #print("FIXME0: %r" % out)
         for line in out.splitlines():
-            mapper = map
+            #mapper = map
             #for line in ppp.readline():
             #print("FIXME: %r" % line)
             str = line.decode('utf8')

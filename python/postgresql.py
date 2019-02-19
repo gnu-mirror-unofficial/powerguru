@@ -33,7 +33,7 @@ class Postgresql(object):
         self.result = ""
 
     def connect(self):
-        """Connect to a postgresql server"""
+        """Connect to a local or remote postgresql server"""
 
         # Supported parameters for connect are: 
         # *database*: the database name (only as keyword argument)
@@ -59,7 +59,7 @@ class Postgresql(object):
                 logging.info("Opened cursor in %r %r" % (database, self.dbcursor))
 
     def query(self, query):
-        """Query a postgresql database"""
+        """Query a local or remote postgresql database"""
 
         logging.debug("postgresql.query(" + query + ")")
         #epdb.set_trace()
@@ -88,12 +88,14 @@ class Postgresql(object):
         return self.result
 
     def isConnected(self):
+        """Test to see if there is a working database connection"""
         if self.dbshell.closed == 0:
             return True
         else:
             return False
 
     def dump(self):
+        """Display all internal data"""
         print("Dumping data from postgresql class")
         print("\tDB server: %r" % self.options.get('dbserver'))
         print("\tDatabase: %r" % self.options.get('database'))
