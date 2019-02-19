@@ -36,47 +36,18 @@ import platform
 import i2c
 import remote
 import socketserver
+import os
+from options import CmdOptions
 
-
-# Setup default command line options
-options = dict()
-options['interval'] = "300"  # time interval to delay when polling for data
-options['owserver'] = "localhost"  # hostname of the owserver
-options['dbserver'] = "localhost"  # hostname of the database
-options['scale'] = "F"             # The scale, 'C' or 'F'
-
-# menu for --help
-def usage(argv):
-    print(argv[0] + ": options: ")
-    print("""\t--help(-h)   Help
-    \t--owserver(-w)    OW server [host[:port]], default '%s'
-    \t--dbserver(-d)    Database server [host]:port]], default '%s'
-    \t--interval(-i)    Set the time interval for device polling, default '%s'
-    \t--verbose(-v)     Enable verbosity
-    \t--scale(-s)       Set the temperature scale, 'F' or 'C', default '%s'
-    """ % (options['owserver'],
-           options['dbserver'],
-           options['interval'],
-           options['scale']))
-    quit()
-
-# Check command line arguments
-try:
-    (opts, val) = getopt.getopt(argv[1:], "h,w:,d:,s:,i:v,",
-           ["help", "owserver", "dbserver", "scale", "interval", "verbose"])
-except getopt.GetoptError as e:
-    logging.error('%r' % e)
-    usage(argv)
-    quit()
 
 # Setup a disk space log filemode. By default, everything
 # gets logged to the disk file
 logging.basicConfig(
-    filename='pgdpy.log',
-    filemode='w',
-    level=logging.DEBUG,
-    format= '[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
-     datefmt='%Y-%m-%d %H:%M:%S'
+    filename = 'pgdpy.log',
+    filemode = 'w',
+    level = logging.DEBUG,
+    format = '[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
+     datefmt = '%Y-%m-%d %H:%M:%S'
 )
 
 # Setup console logging, useful for debugging
@@ -92,26 +63,8 @@ ch.setFormatter(formatter)
 root.addHandler(ch)
 terminator = ch.terminator
 verbosity = logging.CRITICAL
-
-# process command line arguments, will override the defaults
-for (opt, val) in opts:
-    if opt == '--help' or opt == '-h':
-        usage(argv)
-    elif opt == "--owserver" or opt == '-w':
-        options['owserver'] = val
-    elif opt == "--interval" or opt == '-i':
-        options['interval'] = val
-    elif opt == "--dbserver" or opt == '-d':
-        options['dbserver'] = val
-    elif opt == "--verbose" or opt == '-v':
-        if verbosity == logging.INFO:
-            verbosity = logging.DEBUG
-            formatter = logging.Formatter('{%(filename)s:%(lineno)d} %(levelname)s - %(message)s')
-            ch.setFormatter(formatter)
-        if verbosity == logging.CRITICAL:
-            verbosity = logging.INFO
-
-ch.setLevel(verbosity)
+formatter = logging.Formatter('{%(filename)s:%(lineno)d} %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
 
 #
 # See if we're running on a Raspberry PI, since other platforms
@@ -129,6 +82,13 @@ else:
     pi = False
 logging.info("Running on %r" % on[0])
 
+# process command line arguments. This uses /proc, so we don't
+# have to pass anything in.
+opts = CmdOptions()
+opts.dump()
+
+ch.setLevel(opts.get('verbosity'))
+
 #
 # Collect the data about the connected sensors
 #
@@ -140,7 +100,7 @@ sensors.dump()
 #
 
 # OWFS network protocol
-ownet_thread = Thread(target=ownet.ownet_handler, args=(options, sensors))
+ownet_thread = Thread(target=ownet.ownet_handler, args=(sensors,))
 ownet_thread.start()
 
 # OWFS filesystem
@@ -148,21 +108,22 @@ ownet_thread.start()
 #onewire_thread.start()
 
 # rtl_433 filesystem
-rtl433_thread = Thread(target = rtl433.rtl433_handler, args = (options, sensors,))
+rtl433_thread = Thread(target = rtl433.rtl433_handler, args = (sensors,))
 rtl433_thread.start()
 
 # rtl_sdr
-rtlsdr_thread = Thread(target = rtlsdr.rtlsdr_handler, args = (options, sensors))
+rtlsdr_thread = Thread(target = rtlsdr.rtlsdr_handler, args = (sensors,))
 rtlsdr_thread.start()
 
 # GPIO only works on a Raspberry PI
 if pi is True:
     import gpio433
-    gpio433_thread = Thread(target = gpio433.gpio433_handler, args = (options, sensors))
+    gpio433_thread = Thread(target = gpio433.gpio433_handler, args = (sensors,))
     gpio433_thread.start()
 
-    i2c_thread = Thread(target = i2c.ina219_handler, args = (options, sensors))
+    i2c_thread = Thread(target = i2c.ina219_handler, args = (sensors,))
     i2c_thread.start()
+
 try:
     server = socketserver.TCPServer(("0.0.0.0", 7654), remote.client_handler)
     server.allow_reuse_address = True
