@@ -1,7 +1,8 @@
-subprocess
-psycopg2
-logging
-glob
-pyownet
-pyowfs
-matplotlib
+matplotlib==2.2.2
+pyownet==0.10.0
+proc==0.17
+numpy==1.14.5
+pi_ina219==1.2.0
+psycopg2==2.7.5
+lxml==4.2.5
+epdb==0.15.1
