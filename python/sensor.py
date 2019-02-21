@@ -1,23 +1,21 @@
 #!/usr/bin/python3
 
-# 
-#   Copyright (C) 2019 Free Software Foundation, Inc.
-# 
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+"""
+   Copyright (C) 2019 Free Software Foundation, Inc.
 
-# API documentation at: https://pyownet.readthedocs.io/en/latest/
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+"""
 
 import sys
 import epdb
@@ -25,6 +23,8 @@ import logging
 import psycopg2
 from datetime import datetime
 from enum import Enum
+from postgresql import Postgresql
+
 
 # Types of sensors. These enums and their string values must match
 # the database schema's enum. See powerguru.sql for details.
@@ -58,29 +58,16 @@ deviceStrings = ('UNNOWN', 'ONEWIRE', 'OWNET', 'RTL433', 'RTLSDR', 'USB', 'SERIA
 class Sensors(object):
     """Data about all the sensors"""
     def __init__(self, data=dict()):
+        self.active = False
         self.sensors = dict()
-        # Connect to a postgresql database
-        try:
-            dbname = "powerguru"
-            connect = "dbname=" + dbname
-            self.dbshell = psycopg2.connect(connect)
-            if self.dbshell.closed == 0:
-                self.dbshell.autocommit = True
-                logging.info("Opened connection to %r" % dbname)
-
-            self.dbcursor = self.dbshell.cursor()
-            if self.dbcursor.closed == 0:
-                logging.info("Opened cursor in %r" % dbname)
-
-        except Exception as e:
-            logging.warning("Couldn't connect to database: %r" % e)
+        self.db = Postgresql()
 
         # Get any existing sensor data
         query = """SELECT * FROM sensors;"""
         logging.debug(query)
-        self.dbcursor.execute(query)
-        logging.debug("Got %r sensor records" % self.dbcursor.rowcount)
-        for id,alias,location,device,sense,channel in self.dbcursor:
+        result = self.db.query(query)
+        logging.debug("Got %r sensor records: %r" % (self.db.rowcount, len(result)))
+        for id,alias,location,device,sense,channel in result:
             data = dict()
             if id is not None:
                 data['id'] = id
