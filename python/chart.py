@@ -1,23 +1,21 @@
 #!/usr/bin/python3
 
-# 
-#   Copyright (C) 2019 Free Software Foundation, Inc.
-# 
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+"""
+   Copyright (C) 2019 Free Software Foundation, Inc.
 
-# API documentation at: https://pyownet.readthedocs.io/en/latest/
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+"""
 
 import epdb
 import logging
@@ -36,41 +34,10 @@ import getopt
 import sys
 from sys import argv
 import sensor
-
-# http://initd.org/psycopg/docs/
-
-options = dict()
-options['dbserver'] = "localhost"  # hostname of the database
-options['dbname'] = "powerguru"  # hostname of the database
-options['interval'] = 100        # interval in seconds between data updates
-options['starttime'] = ""
-options['endtime'] = ""
-
-#import matplotlib
-#matplotlib.use('agg')
-
-# menu for --help
-def usage(argv):
-    print(argv[0] + ": options: ")
-    print("""\t--help(-h)   Help
-    \t--dbserver(-s)    Database server [host]:port]], default '%s'
-    \t--database(-d)    Database on server, default '%s'
-    \t--interval(-i)    Interval for data updates, default '%s'
-    \t--starttime(-t)   Use timestanps after this, default begining of data
-    \t--endtime(-e)     Use timestanps after this, default end of data
-    \t--verbose(-v)     Enable verbosity
-    """ %  (options['dbserver'], options['dbname'],  options['interval'])
-    )
-    quit()
-
-# Check command line arguments
-try:
-    (opts, val) = getopt.getopt(argv[1:], "h,d:,s:,,v,i:,t:,e:",
-           ["help", "database", "dbserver", "verbose", "interval", "starttime", "endtime"])
-except getopt.GetoptError as e:
-    logging.error('%r' % e)
-    usage(argv)
-    quit()
+import mpld3
+from mpld3 import plugins
+from options import CmdOptions
+from postgresql import Postgresql
 
 # Setup a disk space log filemode. By default, everything
 # gets logged to the disk file
@@ -81,6 +48,31 @@ logging.basicConfig(
     format= '[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
      datefmt='%Y-%m-%d %H:%M:%S'
 )
+
+#
+# Create local options class
+#
+class ChartOptions(CmdOptions):
+    """Command line options for this program"""
+
+    def __init__(self):
+        """Initialize additional command line options"""
+        super(ChartOptions, self).__init__()
+        self.options['starttime'] = ""
+        self.options['endtime'] = ""
+        self.options['web'] = False
+
+    def usage(self):
+        """Append additional help messages"""
+        print(argv[0] + ": options: ")
+        help = """
+        \t--starttime(-t)   Use timestanps after this, default begining of data
+        \t--endtime(-e)     Use timestanps after this, default end of data
+        \t--webpage(-w)     Enable HTML output for browser
+        """
+        super(ChartOptions, self).usage(help)
+
+opts = ChartOptions()
 
 # Setup console logging, useful for debugging
 # By default, print nothing to the console. There
@@ -93,78 +85,50 @@ formatter = logging.Formatter('%(message)s')
 #formatter = logging.Formatter('{%(filename)s:%(lineno)d} - %(message)s')
 ch.setFormatter(formatter)
 root.addHandler(ch)
-#terminator = ch.terminator
-verbosity = logging.CRITICAL
+ch.setLevel(opts.get('verbosity'))
 
-# process command line arguments, will override the defaults
-for (opt, val) in opts:
-    if opt == '--help' or opt == '-h':
-        usage(argv)
-    elif opt == "--starttime" or opt == '-t':
-        options['starttime'] = val
-    elif opt == "--endtime" or opt == '-e':
-        options['endtime'] = val
-    elif opt == "--dbserver" or opt == '-s':
-        options['dbserver'] = val
-    elif opt == "--interval" or opt == '-i':
-        options['interval'] = val
-    elif opt == "--database" or opt == '-d':
-        options['dbname'] = val
-    elif opt == "--verbose" or opt == '-v':
-        if verbosity == logging.INFO:
-            verbosity = logging.DEBUG
-            formatter = logging.Formatter('{%(filename)s:%(lineno)d} %(levelname)s - %(message)s')
-            ch.setFormatter(formatter)
-        if verbosity == logging.CRITICAL:
-            verbosity = logging.INFO
+#opts.dump()
+#epdb.set_trace()
 
-ch.setLevel(verbosity)
+# delta = 0
+# dbname = ""
+# connect = ""
+# if options['dbserver'] is "localhost":
+#     connect += " dbname='" + options['dbname'] + "'"
+# else:
+#     connect += "host='" + options['dbserver'] + "'"
+#     connect += " dbname='" + options['dbname'] + "'"
 
-delta = 0
-dbname = ""
-connect = ""
-if options['dbserver'] is "localhost":
-    connect += " dbname='" + options['dbname'] + "'"
-else:
-    connect += "host='" + options['dbserver'] + "'"
-    connect += " dbname='" + options['dbname'] + "'"
+# logging.debug(connect)
+# dbshell = psycopg2.connect(connect)
+# if dbshell.closed != 0:
+#     logging.error("Couldn't connect with %r" % connect)
+#     quit();
 
-logging.debug(connect)
-dbshell = psycopg2.connect(connect)
-if dbshell.closed != 0:
-    logging.error("Couldn't connect with %r" % connect)
-    quit();
+# dbshell.autocommit = True
+# logging.info("Opened connection to %r" % options['dbserver'])
 
-dbshell.autocommit = True
-logging.info("Opened connection to %r" % options['dbserver'])
+# dbcursor = dbshell.cursor()
+# if dbcursor.closed != 0:
+#     logging.error("Couldn't get a cursor from %r" % options['dbname'])
+#     quit();
 
-dbcursor = dbshell.cursor()
-if dbcursor.closed != 0:
-    logging.error("Couldn't get a cursor from %r" % options['dbname'])
-    quit();
-
-logging.info("Opened cursor in %r" % options['dbserver'])
+# logging.info("Opened cursor in %r" % options['dbserver'])
 
 # Get the data on each sensor
 sensors = sensor.Sensors()
 
+db = Postgresql()
+
 # Setup optional timestamp filter
 start = ""
 end = ""
-if options['starttime'] != "":
-    start = "AND timestamp>=%r" % options['starttime']
-elif options['endtime'] != "" and options['starttime'] != "":
-    end = " AND timestamp<=%r" % options['endtime']
-    if options['endtime'] != "" and options['starttime'] == "":
-        end = " AND timestamp<=%r" % options['endtime']
-
-# Create the subslots
-fig, (temp) = plt.subplots(1, 1, sharex=True)
-#fig, (temp, humidity) = plt.subplots(2, 1, sharex=True)
-#fig, (temp, dcvolts, amps) = plt.subplots(3, 1, sharex=True)
-plt.subplots_adjust(top=0.88, bottom=0.20, left=0.10, right=0.95, hspace=0.58,
-                    wspace=0.35)
-
+if opts.get('starttime') != "":
+    start = "AND timestamp>=%r" % opts.get('starttime')
+elif opts.get('endtime') != "" and opts.get('starttime') != "":
+    end = " AND timestamp<=%r" % opts.get('endtime')
+    if opts.get('endtime') != "" and opts.get('starttime') == "":
+        end = " AND timestamp<=%r" % opts.get('endtime')
 
 # https://matplotlib.org/gallery/color/named_colors.html
 colors = list()
@@ -181,48 +145,54 @@ colors.append("purple")
 colors.append("grey")
 colors.append("navy")
 
+# Create the subslots
+fig, (temp) = plt.subplots(1, 1, sharex=True)
+#fig, (temp, humidity) = plt.subplots(2, 1, sharex=True)
+#fig, (temp, dcvolts, amps) = plt.subplots(3, 1, sharex=True)
+#plt.subplots_adjust(top=0.88, bottom=0.20, left=0.10, right=0.95, hspace=0.58,wspace=0.35)
+
+#fig, (temp) = plt.subplots(1, 1, sharex=True)
+fig.suptitle('PowerGuru')
+fig.set_figwidth(18)
+
+class plotTemps(object):
+    """Class to create a plot of temperatures"""
+
+    def __init__(self):
+        cur = 0
+        temp = plt.subplot()
+        for id in sensors.getIDs(sensor.SensorType.TEMPERATURE):
+            x = list()
+            y = list()
+            query = "SELECT id,temperature,humidity,timestamp FROM weather WHERE (id='%s' %s %s) ORDER BY timestamp;" % (id, start, end)
+            logging.debug(query)
+            db.query(query)
+            logging.debug("Query returned %r records" % db.rowcount())
+
+            for model,temperature,humidity,timestamp in db.fetchResult():
+                #print("TEMP: %r, %r" % (temperature,timestamp))
+                x.append(timestamp)
+                y.append(temperature)
+
+            #sensors.dump()
+            temp.set_ylabel("Temperature in F")
+            temp.set_title("Temperature")
+            temp.grid(which='major', color='red')
+            temp.grid(which='minor', color='blue', linestyle='dashed')
+            temp.minorticks_on()
+            legend = temp.legend(loc='upper left', shadow=True)
+            sense = sensors.get(id)
+            if sense != None:
+                location = sense.get('location')
+            else:
+                location = id
+            temp.plot(x, y, color=colors[cur], label=location)
+            cur += 1
+
+
 def animate(i):
     logging.debug("Refreshing data...")
-    ids = list()
-    query = "SELECT DISTINCT id FROM weather"
-    logging.debug(query)
-    dbcursor.execute(query)
-    logging.debug("Query returned %r records" % dbcursor.rowcount)
-    for id in dbcursor:
-        print("ID: %r" % id)
-        ids.append(id)
-
-    cur = 0
-    for id in ids:
-        query = "SELECT id,temperature,humidity,timestamp FROM weather WHERE (id='%s' %s %s) ORDER BY timestamp;" % (id[0], start, end)
-        logging.debug(query)
-        dbcursor.execute(query)
-        logging.debug("Query returned %r records" % dbcursor.rowcount)
-
-        x = list()
-        y = list()
-        for model,temperature,humidity,timestamp in dbcursor:
-            #print("TEMP: %r, %r" % (temperature,timestamp))
-            x.append(timestamp)
-            y.append(temperature)
-
-        #sensors.dump()
-        #epdb.set_trace()
-        sense = sensors.get(id[0])
-        if sense != None:
-            location = sense.get('location')
-        else:
-            location = id[0]
-        fig.suptitle('PowerGuru')
-        temp.set_ylabel("Temperature in F")
-        temp.set_title("Temperature")
-        temp.grid(which='major', color='red')
-        temp.grid(which='minor', color='blue', linestyle='dashed')
-        temp.minorticks_on()
-        legend = temp.legend(loc='upper left', shadow=True)
-        temp.plot(x, y, color=colors[cur], label=location)
-        cur += 1
-
+    tplot = plotTemps()
     # xx = list()
     # yy = list()
     # zz = list()
@@ -270,14 +240,17 @@ def animate(i):
     # Get the time delta between data samples, as it's not worth updating there
     # the display till their in fresh data. Sample may be minutes or hours apart,
     # so o need to waste cpu cycles
-    query = "SELECT AGE(%r::timestamp, %r::timestamp);" % (x[1].strftime("%Y-%m-%d %H:%M:%S"), x[0].strftime("%Y-%m-%d %H:%M:%S"))
-    logging.debug(query)
-    dbcursor.execute(query)
-    delta = (dbcursor.fetchall())[0][0].total_seconds()
-    logging.debug("Query returned %r" % delta)
-    
+    #query = "SELECT AGE(%r::timestamp, %r::timestamp);" % (x[1].strftime("%Y-%m-%d %H:%M:%S"), x[0].strftime("%Y-%m-%d %H:%M:%S"))
+    #logging.debug(query)
+    #db.query(query)
+    #delta = (db.fetchResult())[0][0].total_seconds()
+    #logging.debug("Query returned %r" % delta)
+
 # The timeout is in miliseconds
 #seconds = 1000 * delta
-seconds = 1000 * options['interval']
+seconds = 1000 * opts.get('interval')
 ani = animation.FuncAnimation(fig, animate, interval=seconds)
-plt.show()
+if opts.get('web') is True:
+    mpld3.show(port=9999, open_browser=False)
+else:
+    plt.show()
