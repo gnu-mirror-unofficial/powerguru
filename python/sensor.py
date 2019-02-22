@@ -37,9 +37,9 @@ class SensorType(Enum):
     POWER = 5
     CLOCK = 6
     TEMPERATURE = 7
-    MOISTURE = 8
+    HUMIDITY = 8
     UNSUPPORTED = 9
-sensorStrings= ('UNKNOWN', 'ACVOLTAGE', 'DCVOLTAGE', 'AUTH', 'BATTERY', 'POWER', 'CLOCK', 'TEMPERATURE', 'MOISTURE', 'UNSUPPORTED' )
+sensorStrings= ('UNKNOWN', 'ACVOLTAGE', 'DCVOLTAGE', 'AUTH', 'BATTERY', 'POWER', 'CLOCK', 'TEMPERATURE', 'HUMIDITY', 'UNSUPPORTED' )
 
 # Types of devices. These enums and their string values must match
 # the database schema's enum. See powerguru.sql for details.
@@ -65,8 +65,10 @@ class Sensors(object):
         # Get any existing sensor data
         query = """SELECT * FROM sensors;"""
         logging.debug(query)
-        result = self.db.query(query)
-        logging.debug("Got %r sensor records: %r" % (self.db.rowcount, len(result)))
+        self.db.query(query)
+        result = self.db.fetchResult()
+
+        logging.debug("Got %r sensor records: %r" % (self.db.rowcount(), len(result)))
         for id,alias,location,device,sense,channel in result:
             data = dict()
             if id is not None:
@@ -78,7 +80,27 @@ class Sensors(object):
             if device is not None:
                 data['device'] = device
             if sense is not None:
-                data['sensor'] = sense
+                #('UNKNOWN'=0, 'ACVOLTAGE'=1, 'DCVOLTAGE'=2, 'AUTH'=3, 'BATTERY'=4, 'POWER'=5, 'CLOCK'=6, 'TEMPERATURE'=7, 'HUMIDITY'=8, 'UNSUPPORTED'=9)
+                if sense == "TEMPERATURE":
+                    data['sensor'] = SensorType.TEMPERATURE
+                elif sense == "UNKNOWN":
+                    data['sensor'] = SensorType.UNKNOWN
+                elif sense == "POWER":
+                    data['sensor'] = SensorType.POWER
+                elif sense == "BATTERY":
+                    data['sensor'] = SensorType.BATTERY
+                elif sense == "AUTH":
+                    data['sensor'] = SensorType.AUTH
+                elif sense == "CLOCK":
+                    data['sensor'] = SensorType.CLOCK
+                elif sense == "UNSUPPORTED":
+                    data['sensor'] = SensorType.UNSUPPORTED
+                elif sense == "HUMIDITY":
+                    data['sensor'] = SensorType.HUMIDITY
+                elif sense == "ACVOLTAGE":
+                    data['sensor'] = SensorType.ACVOLTAGE
+                elif sense == "DCVOLTAGE":
+                    data['sensor'] = SensorType.DCVOLTAGE
             if channel is not None:
                 data['channel'] = channel
             self.sensors[id] = SensorDevice(data)
@@ -88,6 +110,15 @@ class Sensors(object):
         for id,sensor in self.sensors.items():
             xml += sensor.makeXML()
         return xml
+
+    def getIDs(self, stype=SensorType.UNKNOWN, result=list()):
+        result.clear()
+        for id,sensor in self.sensors.items():
+            if type != None:
+                if sensor.get('sensor') == stype:
+                    result.append(id)
+        logging.debug("sensor.getIDs(%r entries)" % len(result))
+        return result
 
     def dump(self, result=""):
         logging.debug("Sensor.dump(%r entries)" % len(self.sensors))
