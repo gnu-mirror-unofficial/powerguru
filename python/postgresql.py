@@ -1,21 +1,21 @@
 #!/usr/bin/python3
 
-# 
-#   Copyright (C) 2017, 2018, 2019   Free Software Foundation, Inc.
-# 
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-# 
+"""
+   Copyright (C) 2019 Free Software Foundation, Inc.
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+"""
 
 import epdb
 import glob
@@ -27,6 +27,14 @@ from options import CmdOptions
 
 class Postgresql(object):
     """A class to work with a postgresql database"""
+
+    def rowcount(self):
+        return self.dbcursor.rowcount
+
+    def fetchResult(self):
+        #return self.dbcursor.fetchall()
+        return self.result
+
     def __init__(self):
         self.options = CmdOptions()
         self.connect()
@@ -67,6 +75,7 @@ class Postgresql(object):
             logging.error("Database %r is not connected!" % self.options.get('database'))
             return self.result
 
+        self.result = list()
         self.dbcursor.execute(query)
         try:
             self.result = self.dbcursor.fetchall()
@@ -74,6 +83,7 @@ class Postgresql(object):
             if e.pgcode != None:
                 logging.error("Query failed to fetch! %r" % e.pgcode)
 
+        #epdb.set_trace()
         #logging.debug("Returned %r rows from query: %r" % (self.dbcursor.rowcount, self.dbcursor.statusmessage))
         #if self.dbcursor.rowcount is None:
         parsed = query.split(' ')
