@@ -19,11 +19,17 @@
 
 AUTOMAKE_OPTIONS = 
 
-python_PYTHON = mergedb.py onewire.py ownet.py chart.py pgd.py
+APPS = mergedb.py chart.py pgd.py
+python_PYTHON =  onewire.py ownet.py setup.py $(APPS)
+EXTRA_DIST = requirements.txt
 
 install-exec-local:
+	@echo $(srcdir)
+	@echo $(top_srcdir)
 	$(mkinstalldirs) $(DESTDIR)$(pkgpythondir)
 	$(PYTHON) $(srcdir)/setup.py install \
 	--prefix $(DESTDIR)$(prefix) \
 	--record $(DESTDIR)$(pkgpythondir)/install_files.txt \
 	--verbose
+	$(mkinstalldirs) $(prefix)/bin
+	$(INSTALL_SCRIPT) $(APPS) $(prefix)/bin
