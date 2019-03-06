@@ -26,6 +26,7 @@ import time
 import os
 import psycopg2
 import sensor
+from datetime import datetime
 import itertools, operator
 from options import CmdOptions
 from postgresql import Postgresql
@@ -42,28 +43,52 @@ def rtl433_handler(sensors):
     #db.dump()
 
     #ppp = Popen(cmd, stdout=PIPE, stderr=STDOUT, bufsize=1, close_fds=ON_POSIX)
-    cmd = [ 'rtl_433', '-F', 'csv', '-R', '40', '-T', '60']
+    #cmd = [ 'rtl_433', '-F', 'csv:/tmp/rtl433.csv', '-s', time.sleep(options.get('interval'))]
+    cmd = [ 'rtl_433', '-F', 'csv:/tmp/rtl433.csv']
+    ppp = Popen(cmd, stdout=PIPE, bufsize=0, close_fds=ON_POSIX)
+    foo = open('/tmp/rtl433.csv', 'r+')
+    previous = dict()
     while True:
-        ppp = Popen(cmd, stdout=PIPE, bufsize=0, close_fds=ON_POSIX)
-        out, err = ppp.communicate()
-        #out, err = ppp.communicate(timeout=0.5)
+        out = sensor.follow(foo)
+        foo.truncate()
+        temp = dict()
         #print("FIXME0: %r" % out)
-        for line in out.splitlines():
-            #mapper = map
-            #for line in ppp.readline():
-            #print("FIXME: %r" % line)
-            str = line.decode('utf8')
-            tokens = str.split(',')
-            # this is just the csv header fields
+        for line in out:
+            #print("FIXME1: %r" % line)
+            tokens = line.split(',')
+            # Ignore the header in the csv file, which is the first line
             if tokens[0] == 'time':
                 continue
             temp = dict()
             temp['timestamp'] = tokens[0]
+            #epdb.set_trace()
+            # Different parsing for different devices
             temp['model'] = tokens[3]
-            temp['id'] = tokens[4]
-            temp['channel'] = tokens[6]
-            temp['temperature'] = tokens[7]
-            temp['humidity'] = tokens[8]
+            if temp['model'] == 'WT0124 Pool Thermometer':
+                # FIXME: use an array to convert a numberr to the file
+                # channel alpha numeric
+                temp['channel'] ='A'
+                temp['temperature'] = str(tokens[8])
+                temp['humidity'] = "0"
+                temp['id'] = tokens[10]
+            elif temp['model'] == 'Acurite tower sensor':
+                temp['id'] = tokens[5]
+                temp['channel'] = tokens[6]
+                temp['temperature'] = tokens[8]
+                temp['humidity'] = tokens[11]
+
+            # We don't want to record more samples than the specified interval,
+            FMT = "%Y-%m-%d %H:%M:%S"
+            if (temp['id'] in previous) is False:
+                previous[temp['id']] = datetime.now().strftime(FMT)
+            tdelta = datetime.strptime(temp['timestamp'], FMT) - datetime.strptime(previous[temp['id']], FMT)
+            #logging.debug("TDELTA: %r: %r == %r" % (tdelta.seconds, temp['timestamp'],
+            #                              previous[temp['id']]))
+            #epdb.set_trace()
+            if tdelta.seconds <= options.get('interval') and tdelta.days != -1:
+                #logging.debug("Not doing anything for %r!" % temp['id'])
+                continue
+            previous[temp['id']] = temp['timestamp']
             if sensors.get(temp['id']) is None:
                 print("New sensor %r found!" % temp['id'])
                 sense = sensor.SensorDevice()
@@ -78,6 +103,7 @@ def rtl433_handler(sensors):
                 #sensor.sensors[temp['id']]['device'] = DeviceType.RTL433
             #sensors.dump()
             # Convert from Celcius if needed
+            #epdb.set_trace()
             if (options.get('scale') == 'F'):
                 temp['temperature'] = (float(temp['temperature']) * 1.8) + 32.0;
                 #temp['lowtemp'] =  (float(temp['lowtemp']) * 1.8) + 32.0;
@@ -85,7 +111,7 @@ def rtl433_handler(sensors):
             query = """INSERT INTO weather VALUES( '%s', %s, %s, %s, %s, '%s', '%s' )  ON CONFLICT DO NOTHING;; """ % (temp['id'], temp['temperature'], "0", "0",  temp['humidity'], options.get('scale'), temp['timestamp'])
             logging.debug(query)
             db.query(query)
-        time.sleep(options.get('interval'))
+        ppp.truncate()
  
     # _sensors = list()
 
