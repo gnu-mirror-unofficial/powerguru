@@ -1,21 +1,23 @@
 #!/usr/bin/python3
 
-"""
-   Copyright (C) 2019 Free Software Foundation, Inc.
+#
+#   Copyright (C) 2018,2019 Free Software Foundation, Inc.
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 3 of the License, or
-  (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-"""
+## \file options.py Base class for command line option processing.
 
 import epdb
 import logging
@@ -97,9 +99,9 @@ class CmdOptions(object):
             if opt == '--help' or opt == '-h':
                 self.usage()
             elif opt == "--starttime" or opt == '-t':
-                self.options['endtime'] = val
-            elif opt == "--endtime" or opt == '-e':
                 self.options['starttime'] = val
+            elif opt == "--endtime" or opt == '-e':
+                self.options['endtime'] = val
             elif opt == "--owserver" or opt == '-o':
                 self.options['owserver'] = val
             elif opt == "--interval" or opt == '-i':
@@ -125,7 +127,10 @@ class CmdOptions(object):
 
     def get(self, key):
         """Get the value of a command line option."""
-        return self.options[key]
+        if (key in self.options):
+            return self.options[key]
+        else:
+            None
 
     def dump(self):
         """Display all the internal option data"""

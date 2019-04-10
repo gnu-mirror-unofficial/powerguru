@@ -1,30 +1,43 @@
 #!/usr/bin/python3
 
-"""
-   Copyright (C) 2019 Free Software Foundation, Inc.
+#
+#   Copyright (C) 2018,2019 Free Software Foundation, Inc.
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 3 of the License, or
-  (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-"""
+## \file sensor.py These class contain all the data about each sensor,
+##                 and methods to operate on that data.
 
 import sys
 import epdb
+import time
 import logging
 import psycopg2
 from datetime import datetime
 from enum import Enum
 from postgresql import Postgresql
 
+# Follow a file as it's writteb, like the unix utility tail
+def follow(thefile):
+    thefile.seek(0,2)
+    while True:
+        line = thefile.readline()
+        if not line:
+            time.sleep(0.1)
+            continue
+        yield line
 
 # Types of sensors. These enums and their string values must match
 # the database schema's enum. See powerguru.sql for details.
@@ -105,6 +118,9 @@ class Sensors(object):
                 data['channel'] = channel
             self.sensors[id] = SensorDevice(data)
 
+    def count(self):
+        return len(self.sensors)
+
     def makeXML(self, xml=""):
         """Create an XML string of all the sensor data"""
         for id,sensor in self.sensors.items():
@@ -128,7 +144,7 @@ class Sensors(object):
     def add(self, sensor):
         id = sensor.get('id')
         self.sensors[id] = sensor
-        self.dbcursor.execute(sensor.MakeSQL())
+        self.db.query(sensor.MakeSQL())
 
     def get(self, id):
         try:
@@ -196,8 +212,11 @@ class SensorDevice(object):
 
     def MakeSQL(self):
         """ Format the SQL query to add this sensor"""
-        device = deviceStrings[self.data['device']]
-        sense = sensorStrings[self.data['sensor']]
+        try:
+            device = deviceStrings[self.data['device']]
+            sense = sensorStrings[self.data['sensor']]
+        except:
+            return None
 
         if self.data['channel'] is not None:
             channel = self.data['channel']

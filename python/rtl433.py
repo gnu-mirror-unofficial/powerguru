@@ -1,21 +1,25 @@
 #!/usr/bin/python3
 
-"""
-   Copyright (C) 2019 Free Software Foundation, Inc.
+#
+#   Copyright (C) 2019 Free Software Foundation, Inc.
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 3 of the License, or
-  (at your option) any later version.
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-"""
+## \file rtl433.py This file use the rtl_433 utility to collect data
+##                 from wireless sensors using an RTL-SDR USB dongle.
 
 import sys
 from subprocess import PIPE, Popen, STDOUT
@@ -31,6 +35,7 @@ import itertools, operator
 from options import CmdOptions
 from postgresql import Postgresql
 ON_POSIX = 'posix' in sys.builtin_module_names
+
 
 def rtl433_handler(sensors):
     """This is a handler for sensors using wireless at 433Mhz,
@@ -48,9 +53,9 @@ def rtl433_handler(sensors):
     ppp = Popen(cmd, stdout=PIPE, bufsize=0, close_fds=ON_POSIX)
     foo = open('/tmp/rtl433.csv', 'r+')
     previous = dict()
+    foo.truncate()
     while True:
         out = sensor.follow(foo)
-        foo.truncate()
         temp = dict()
         #print("FIXME0: %r" % out)
         for line in out:
@@ -79,14 +84,18 @@ def rtl433_handler(sensors):
 
             # We don't want to record more samples than the specified interval,
             FMT = "%Y-%m-%d %H:%M:%S"
-            if (temp['id'] in previous) is False:
-                previous[temp['id']] = datetime.now().strftime(FMT)
-            tdelta = datetime.strptime(temp['timestamp'], FMT) - datetime.strptime(previous[temp['id']], FMT)
-            #logging.debug("TDELTA: %r: %r == %r" % (tdelta.seconds, temp['timestamp'],
-            #                              previous[temp['id']]))
+
+            try:
+                if ('id' in temp) is True:
+                    if (temp['id'] in previous) is False:
+                        previous[temp['id']] = datetime.now().strftime(FMT)
+                tdelta = datetime.strptime(temp['timestamp'], FMT) - datetime.strptime(previous[temp['id']], FMT)
+            #logging.debug("TDELTA: %r: %r == %r" % (tdelta.seconds, temp['timestamp'], previous[temp['id']]))
             #epdb.set_trace()
-            if tdelta.seconds <= options.get('interval') and tdelta.days != -1:
+                if tdelta.seconds <= options.get('interval') and tdelta.days != -1:
                 #logging.debug("Not doing anything for %r!" % temp['id'])
+                    continue
+            except:
                 continue
             previous[temp['id']] = temp['timestamp']
             if sensors.get(temp['id']) is None:

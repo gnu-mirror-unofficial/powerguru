@@ -1,21 +1,23 @@
 #!/usr/bin/python3
 
-"""
-   Copyright (C) 2019 Free Software Foundation, Inc.
+#
+#   Copyright (C) 2018,2019 Free Software Foundation, Inc.
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 3 of the License, or
-  (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-"""
+## \file postgresql.py Wrapper for the psycopg2 module
 
 import epdb
 import glob
@@ -66,7 +68,7 @@ class Postgresql(object):
             if self.dbcursor.closed == 0:
                 logging.info("Opened cursor in %r %r" % (database, self.dbcursor))
 
-    def query(self, query):
+    def query(self, query=""):
         """Query a local or remote postgresql database"""
 
         logging.debug("postgresql.query(" + query + ")")
@@ -76,8 +78,8 @@ class Postgresql(object):
             return self.result
 
         self.result = list()
-        self.dbcursor.execute(query)
         try:
+            self.dbcursor.execute(query)
             self.result = self.dbcursor.fetchall()
         except psycopg2.ProgrammingError as e:
             if e.pgcode != None:
@@ -93,8 +95,8 @@ class Postgresql(object):
         if self.dbcursor.statusmessage == "INSERT 0 1":
             logging.debug("Inserted into %r" % (table))
             self.result = self.dbcursor.statusmessage
-        elif self.dbcursor.statusmessage == "INSERT 0 0":
-            logging.debug("Already exists in database %r" % (table))
+#        elif self.dbcursor.statusmessage == "INSERT 0 0":
+#            logging.debug("Already exists in database %r" % (table))
         return self.result
 
     def isConnected(self):

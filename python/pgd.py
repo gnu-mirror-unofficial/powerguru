@@ -1,21 +1,23 @@
 #!/usr/bin/python3
 
-"""
-   Copyright (C) 2019 Free Software Foundation, Inc.
+#
+#   Copyright (C) 2018,2019 Free Software Foundation, Inc.
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 3 of the License, or
-  (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-"""
+## \file pgd.py Daemon to read sensors and data log it all.
 
 import epdb
 import logging
@@ -117,12 +119,15 @@ rtlsdr_thread.start()
 # GPIO only works on a Raspberry PI
 if pi is True:
     import gpio433
-    gpio433_thread = Thread(target = gpio433.gpio433_handler, args = (sensors,))
-    gpio433_thread.start()
+    #gpio433_thread = Thread(target = gpio433.gpio433_handler, args = (sensors,))
+    #gpio433_thread.start()
 
-    i2c_thread = Thread(target = i2c.ina219_handler, args = (sensors,))
-    i2c_thread.start()
+    #i2c_thread = Thread(target = i2c.ina219_handler, args = (sensors,))
+    #i2c_thread.start()
 
+    #import gpiots
+    #gpiots_thread = Thread(target = gpiots.gpiots_handler, args = (sensors,))
+    #gpiots_thread.start()
 try:
     server = socketserver.TCPServer(("0.0.0.0", 7654), remote.client_handler)
     server.allow_reuse_address = True
@@ -156,6 +161,6 @@ print("ownet_thread finished...exiting")
 rtl433_thread.join()
 print("rtl433_thread finished...exiting")
 
-rtlsdr_thread.join()
-print("rtlsdr_thread finished...exiting")
+#rtlsdr_thread.join()
+#print("rtlsdr_thread finished...exiting")
 
