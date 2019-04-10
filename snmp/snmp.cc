@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006 - 2018
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+//               2014, 2015, 2016, 2017, 2018, 2019
 //      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
@@ -80,7 +81,7 @@ SnmpClient::open(std::string init, std::string mibname)
     
     _pdu = snmp_pdu_create(SNMP_MSG_GET);
     
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 boost::system::error_code
@@ -89,7 +90,7 @@ SnmpClient::close(void)
     snmp_close(_handle);
     BOOST_LOG_SEV(lg, severity_level::warning) << __PRETTY_FUNCTION__
                                                << "ERROR: unimplemented!";
-    errc::make_error_code(errc::not_supported);
+    return errc::make_error_code(errc::not_supported);
 }
 
 struct snmp_pdu *
@@ -196,7 +197,7 @@ SnmpDaemon::master(bool background)
     snmp_shutdown("powerguru");
     SOCK_CLEANUP;
     
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 #if 0
@@ -219,7 +220,7 @@ SnmpDaemon::process(void)
         snmp_read(&readfds);
     }
     
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 #endif
 
