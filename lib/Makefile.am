@@ -41,8 +41,6 @@ libpguru_la_SOURCES = \
 	log.cc log.h \
 	console.cc console.h \
 	database.h
-#	tcputil.cc tcputil.h \
-#	tcpip.cc tcpip.h
 
 if BUILD_OUTBACK
 libpguru_la_SOURCES += msgs.cc msgs.h menuitem.cc menuitem.h
@@ -52,12 +50,6 @@ if BUILD_LIBXML
 libpguru_la_SOURCES += xml.cc xml.h commands.h commands.cc
 libpguru_la_CPPFLAGS += $(LIBXML_CPPFLAGS)
 libpguru_la_LIBDADD += $(LIBXML_LIBS)
-endif
-
-if BUILD_SNMP
-libpguru_la_SOURCES += snmp.cc snmp.h
-libpguru_la_CPPFLAGS += -I$(top_srcdir)/snmp
-libpguru_la_LIBDADD += $(SNMP_LIBS) ../snmp/libpgsnmp.la
 endif
 
 if BUILD_MARIADB

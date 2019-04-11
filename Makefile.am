@@ -131,6 +131,9 @@ if BUILD_CROSS
 	@echo "	Libc.so is from here: `${CXX} -print-file-name=libc.so`"
 endif
 
-clean:
-	@-$(RM) -fr powerguru_* pypowerguru_* \
-		powerguru-*dev powerguru*.bz2 *.sum *.log
+CLEANFILES = powerguru_* pypowerguru_* \
+	powerguru-*dev powerguru*.bz2 *.sum *.log
+
+# makefile for etags, used by emacs and vi
+tags:
+	etags `find -name \*.py -o -name \*.cc -o -name \*.h`

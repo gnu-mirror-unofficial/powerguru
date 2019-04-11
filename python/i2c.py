@@ -17,6 +17,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
+## \copyright GNU Public License.
 ## \file i2c.py Read data from an i2c sensor,. Currently only the
 ##              ina219 current sensor is support.
 

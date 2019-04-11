@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-
+## \copyright GNU Public License.
 ## \file rtl433.py This file use the rtl_433 utility to collect data
 ##                 from wireless sensors using an RTL-SDR USB dongle.
 

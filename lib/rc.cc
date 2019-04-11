@@ -35,18 +35,22 @@
 #include <boost/system/error_code.hpp>
 using namespace boost::system;
 
-RCinitFile::RCinitFile()
+RCinitFile::RCinitFile(void)
 {
+    DEBUGLOG_REPORT_FUNCTION;
 }
 
-RCinitFile::~RCinitFile()
+RCinitFile::~RCinitFile(void)
 {
+    DEBUGLOG_REPORT_FUNCTION;
 }
 
 // Look for a config file in the likely places.
 boost::system::error_code
-RCinitFile::load_files()
+RCinitFile::load_files(void)
 {
+    DEBUGLOG_REPORT_FUNCTION;
+
     char *home;
     std::string loadfile;
   
@@ -66,22 +70,25 @@ RCinitFile::load_files()
         return parse_file(loadfile);
     }
   
-    errc::make_error_code(errc::not_supported);
+    return errc::make_error_code(errc::not_supported);
 }
 
 // Parse the config file and set the variables.
 boost::system::error_code
-RCinitFile::parse_file(std::string &filespec)
+RCinitFile::parse_file(const std::string &filespec)
 {
+    DEBUGLOG_REPORT_FUNCTION;
+
     struct stat stats;
     std::string action;
     std::string variable;
     std::string value;
     std::ifstream in;
 
-    BOOST_LOG(lg) << "Seeing if " << filespec << " exists.";
+     BOOST_LOG(lg) << "Seeing if " << filespec << " exists.";
     if (filespec.size() == 0) {
-        errc::make_error_code(errc::not_supported);
+         _errorcode = errc::make_error_code(errc::not_supported);
+         return _errorcode;
     }
   
     if (stat(filespec.c_str(), &stats) == 0) {
@@ -89,7 +96,8 @@ RCinitFile::parse_file(std::string &filespec)
     
         if (!in) {
             BOOST_LOG(lg) << "ERROR: Couldn't open file: " << filespec;
-            errc::make_error_code(errc::not_supported);
+            _errorcode = errc::make_error_code(errc::not_supported);
+            return _errorcode;
         }
 
         // Read in each line and parse it
@@ -136,21 +144,24 @@ RCinitFile::parse_file(std::string &filespec)
         if (in) {
             in.close();
         }
-        errc::make_error_code(errc::not_supported);
+        _errorcode = errc::make_error_code(errc::not_supported);
+        return _errorcode;
     }  
 
     if (in) {
         in.close();
     }
-    errc::make_error_code(errc::success);
+    _errorcode = errc::make_error_code(errc::success);
+    return _errorcode;
 }
 
 // Write the changed settings to the config file
 boost::system::error_code
-RCinitFile::update_file(std::string &filespec)
+RCinitFile::update_file(const std::string &filespec)
 {
     std::cerr << __PRETTY_FUNCTION__ << "ERROR: unimplemented!" << std::endl;
-    errc::make_error_code(errc::not_supported);
+    _errorcode = errc::make_error_code(errc::not_supported);
+    return _errorcode;
 }
 
 // local Variables:

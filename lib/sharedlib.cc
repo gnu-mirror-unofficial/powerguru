@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006 - 2018
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+//               2014, 2015, 2016, 2017, 2018, 2019
 //      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
@@ -56,7 +57,7 @@ SharedLib::OpenLib (string &filespec, ErrCond &Err)
           case ENOENT:
               Err.SetMsg("Specified shared library doesn't exist");
               BOOST_LOG(lg) << "ERROR: Dynamic library, " << filespec << " doesn't exist!" << endl;
-              errc::make_error_code(errc::not_supported);
+              return errc::make_error_code(errc::not_supported);
               break;
         }
     }
@@ -77,7 +78,7 @@ SharedLib::OpenLib (string &filespec, ErrCond &Err)
 
     if (errors) {
         Err << "Couldn't initialize ltdl";
-        errc::make_error_code(errc::not_supported);
+        return errc::make_error_code(errc::not_supported);
     }
 
     BOOST_LOG(lg) << "Initialized ltdl" << endl;
@@ -94,7 +95,7 @@ SharedLib::OpenLib (string &filespec, ErrCond &Err)
     errors = lt_dladdsearchdir (abelmon);
     if (errors) {
         Err << lt_dlerror();
-        errc::make_error_code(errc::not_supported);
+        return errc::make_error_code(errc::not_supported);
     }
 
     BOOST_LOG(lg) << "Added " << abelmon << " to the search paths" << endl;
@@ -105,13 +106,13 @@ SharedLib::OpenLib (string &filespec, ErrCond &Err)
 
     if (dlhandle == NULL) {
         Err << lt_dlerror();
-        errc::make_error_code(errc::not_supported);
+        return errc::make_error_code(errc::not_supported);
     }
 
     dlname = filespec;
   
     BOOST_LOG(lg) << "Opened dynamic library " << filespec << endl;
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 entrypoint *
@@ -175,7 +176,7 @@ SharedLib::ScanDir (void) {
         // we get all the duplicates.
         entry = readdir(library_dir);
         if ((int)entry < 1)
-            errc::make_error_code(errc::success);
+            return errc::make_error_code(errc::success);
 
         //    handle = dlopen (entry->d_name, RTLD_NOW|RTLD_GLOBAL);
         dlhandle = lt_dlopen (entry->d_name);

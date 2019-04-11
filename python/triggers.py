@@ -16,6 +16,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
+## \copyright GNU Public License.
 ## \file triggers.py These classes add a trigger event timestamp
 ##                   into the database so we can relate the changes
 ##                   we see in the data to real world events. ie...

@@ -15,6 +15,10 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+/// \copyright GNU Public License.
+/// \file ownet.h Header file Ownet class, which is a wrapper for the owfs
+///               library to read Dallas Semiconductor 1 Wire sensors.
+
 #include <boost/algorithm/string.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
@@ -31,7 +35,7 @@ const int OWPORT = 4304;        ///< TCP/IP port for owserver
 const char *OWHOST = "localhost"; ///< Remote hostname for owserver
 
 /// \class Ownet
-/// Consruct a class for OWNet support
+/// Construct a class for OWNet support
 Ownet::Ownet(void)
     : _poll_sleep(300),
       _scale('F'),
@@ -39,18 +43,17 @@ Ownet::Ownet(void)
 {
 //    DEBUGLOG_REPORT_FUNCTION;
     
-    // Initialize the table of family types
-    initTable(_family);
+    initTable(_family);      ///< Initialize the table of family types
 }
 
 ///
-/// Consruct a class for OWNet support connected to a remote host
+/// Consrruct a class for OWNet support connected to a remote host
 /// @param host Hostname of the remote owserver
 Ownet::Ownet(std::string &host)
     : Ownet()
 {
 //    DEBUGLOG_REPORT_FUNCTION;
-    int retries = 2;
+    int retries = 3;
     if (host.find(':') == std::string::npos) {
         host += ":" + std::to_string(OWPORT);
     }
@@ -67,10 +70,17 @@ Ownet::Ownet(std::string &host)
                 << "Couldn't connect to owserver with " << argv;
             //return;
         } else {
-            BOOST_LOG(lg) << "Connected to owserver on host " << host;
+            BOOST_LOG_SEV(lg, severity_level::info)
+                << "Connected to owserver on host " << host;
             _owserver = true;
             break;
         }
+    }
+
+    if (retries <= 0) {
+        BOOST_LOG_SEV(lg, severity_level::error)
+            << "Giving up trying to connect to host " << host;
+        return;
     }
 
     // Setup ownet
@@ -112,10 +122,13 @@ Ownet::Ownet(std::string &host)
         std::lock_guard<std::mutex> guard(_mutex);
         _sensors[*it] = data;
         std::string device = *it;
+        // Note that this device string contains a terminating '/'.
         switch (data->type) {
           case TEMPERATURE:
           {
               BOOST_LOG(lg) << device << " is a thermometer";
+              //setValue("templow", 0);
+              //setValue("temphigh", 0);
               boost::shared_ptr<temperature_t> temp(getTemperature(device));
               if (temp) {
                   try {
@@ -146,6 +159,13 @@ Ownet::Ownet(std::string &host)
               }
               break;
           }
+          // DCVOLTAGE:
+          // AUTH:
+          // CLOCK:
+          // THERMCOUPLE:
+          // MOISTURE:
+          // UNSUPPORTED:
+          //   BOOST_LOG_SEV(lg, severity_level::warning) << "Unsupported"
         };
 
     }

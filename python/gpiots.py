@@ -17,6 +17,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
+## \copyright GNU Public License.
 ## \file gpiots.py Wrapper to read wireless 433Mhz data when using circuit
 ##                 board dedicated 433Mhz transceiver instead of an RTL-SDR
 ##                 USB radio dongle.

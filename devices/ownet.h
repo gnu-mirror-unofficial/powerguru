@@ -15,6 +15,10 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+/// \copyright GNU Public License.
+/// \file ownet.h Header file Ownet class, which is a wrapper for the owfs
+///               library to read Dallas Semiconductor 1 Wire sensors.
+
 #ifndef __OWNET_H__
 #define __OWNET_H__
 

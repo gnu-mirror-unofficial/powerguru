@@ -17,6 +17,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
+## \copyright GNU Public License.
 ## \file mergedb.py This file merges the data from a remote postgresql database
 ##                into a local one.
 

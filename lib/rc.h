@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+//               2014, 2015, 2016, 2017, 2018, 2019
 //      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
@@ -33,16 +34,16 @@ public:
     RCinitFile();
     ~RCinitFile();
     boost::system::error_code load_files();
-    boost::system::error_code parse_file(std::string &filespec);
-    boost::system::error_code update_file(std::string &filespec);
+    boost::system::error_code parse_file(const std::string &filespec);
+    boost::system::error_code update_file(const std::string &filespec);
 
     // Database config options
-    std::string dbhostGet()   { return _dbhost; }
-    std::string dbuserGet()   { return _dbuser; };
-    std::string dbpasswdGet() { return _dbpasswd; };
-    std::string dbnameGet()   { return _dbname; };
-    std::string devmodeGet()  { return _devmode; };
-    std::string deviceGet()   { return _device; };
+    std::string dbhostGet(void)   { return _dbhost; }
+    std::string dbuserGet(void)   { return _dbuser; };
+    std::string dbpasswdGet(void) { return _dbpasswd; };
+    std::string dbnameGet(void)   { return _dbname; };
+    std::string devmodeGet(void)  { return _devmode; };
+    std::string deviceGet(void)   { return _device; };
 
 private:
     std::string _filespec;
@@ -52,6 +53,7 @@ private:
     std::string _dbname;
     std::string _devmode;
     std::string _device;
+    boost::system::error_code _errorcode;
 }; 
 
 // __RC_H__

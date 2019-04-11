@@ -29,14 +29,6 @@ dnl AC_ARG_ENABLE(snmptest, [  --disable-snmptest       Do not try to compile an
     SNMP_LIBS="-L$libdir"
   fi
 
-dnl   if test "x$snmp_includes" != "x" ; then
-dnl     SNMP_CFLAGS="-I$snmp_includes"
-dnl   elif test "x$snmp_prefix" != "x" ; then
-dnl     SNMP_CFLAGS="-I$snmp_prefix/include"
-dnl   elif test "$prefix" != "xNONE"; then
-dnl     SNMP_CFLAGS="-I$prefix/include"
-dnl   fi
-
   AC_MSG_CHECKING(for NET-SNMP headers and flags)
   no_snmp=""
 

@@ -1,6 +1,5 @@
 // 
-// Copyright (C) 2018
-//      Free Software Foundation, Inc.
+// Copyright (C) 2018,2019 Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,6 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+/// \file commands.h Class to create and parse simple XML messages between
+///                  the client and the server.
 
 #ifndef __COMMANDS_H__
 #define __COMMANDS_H__
@@ -32,7 +34,7 @@
 class Commands 
 {
 public:
-    typedef enum { NOP, LIST, POLL, HELO, RESULT } cmd_t; 
+    typedef enum { NOP, LIST, POLL, HELO, RESULT, EVENT } cmd_t; 
     Commands();
     ~Commands();
     std::string &createNode(cmd_t cmd, const std::string &args,

@@ -17,6 +17,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
+## \copyright GNU Public License.
 ## \file pgd.py Daemon to read sensors and data log it all.
 
 import epdb

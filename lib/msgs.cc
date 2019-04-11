@@ -1,5 +1,6 @@
 // 
-// Copyright (C) 2005, 2006 - 2018
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+//               2014, 2015, 2016, 2017, 2018, 2019
 //      Free Software Foundation, Inc.
 // 
 // This program is free software; you can redistribute it and/or modify
@@ -97,7 +98,7 @@ Msgs::init(net_mode_e mode)
         if (createNetClient(hostname)) {
             BOOST_LOG(lg) << "Connected to server at " << hostname.c_str() << std::endl;
             init();                     // initialize the table of pointers
-            errc::make_error_code(errc::success);
+            return errc::make_error_code(errc::success);
         } else {
             BOOST_LOG(lg) << "ERROR: Couldn't create connection to server" << hostname.c_str()  << std::endl;
         }
@@ -109,7 +110,7 @@ Msgs::init(net_mode_e mode)
         BOOST_LOG(lg) << "ERROR: no mode specified! " << std::endl;
         _net_mode = NONET;
     }
-    errc::make_error_code(errc::not_supported);  
+    return errc::make_error_code(errc::not_supported);
 }
 
 // If a hostname is specifed, we force client mode.
@@ -132,11 +133,11 @@ Msgs::init(const std::string &hostname)
         init();                     // initialize the table of pointers
         _net_mode = CLIENT;
         writeNet(heloCreate(_version));
-        errc::make_error_code(errc::success);
+        return errc::make_error_code(errc::success);
     } else {
         BOOST_LOG(lg) << "ERROR: Couldn't create connection to server" << hostname  << std::endl;
     }
-    errc::make_error_code(errc::not_supported);
+    return errc::make_error_code(errc::not_supported);
 }
 
 boost::system::error_code
@@ -149,7 +150,7 @@ Msgs::init(net_mode_e mode, bool block)
         if (createNetClient(hostname)) {
             BOOST_LOG(lg) << "Connected to server at " << hostname.c_str() << std::endl;
             init();                     // initialize the table of pointers
-            errc::make_error_code(errc::success);
+            return errc::make_error_code(errc::success);
         } else {
             BOOST_LOG(lg) << "ERROR: Couldn't create connection to server" << hostname.c_str()  << std::endl;
         }
@@ -161,7 +162,7 @@ Msgs::init(net_mode_e mode, bool block)
         BOOST_LOG(lg) << "ERROR: no mode specified! " << std::endl;
         _net_mode = NONET;
     }
-    errc::make_error_code(errc::not_supported);
+    return errc::make_error_code(errc::not_supported);
 }
                
 boost::system::error_code
@@ -181,11 +182,11 @@ Msgs::init(bool block)
         BOOST_LOG(lg) << "New connection started for remote client." << std::endl;
         _net_mode = DAEMON;
         writeNet(heloCreate(_version));
-        errc::make_error_code(errc::success);
+        return errc::make_error_code(errc::success);
     } else {
         BOOST_LOG(lg) << "ERROR: Couldn't create a new connection!" << std::endl;
     }
-    errc::make_error_code(errc::not_supported);
+    return errc::make_error_code(errc::not_supported);
 }
 
   
@@ -267,7 +268,7 @@ Msgs::init(void)
         _cache[ "sell-amps"] = "444444444444";
     }
   
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 std::string &
@@ -309,7 +310,7 @@ Msgs::cacheAdd(const std::string &name, const std::string &str)
     _cache[name] = str;
 
     // FIXME: we should make sure this actually worked.
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 
@@ -436,9 +437,9 @@ Msgs::unimplementedProcess(XMLNode *xml)
     _body << ends;
 
     if (writeNet(_body.str())) {
-        errc::make_error_code(errc::not_supported);
+        return errc::make_error_code(errc::not_supported);
     } else {
-        errc::make_error_code(errc::success);
+        return errc::make_error_code(errc::success);
     }
 }
 
@@ -1025,15 +1026,15 @@ Msgs::statusProcess(XMLNode &node)
         }
     
         if (writeNet(str)) {
-            errc::make_error_code(errc::not_supported);
+            return errc::make_error_code(errc::not_supported);
         } else {
-            errc::make_error_code(errc::success);
+            return errc::make_error_code(errc::success);
         }
     }
 
     if (_net_mode == CLIENT) {
         if (strcmp(node->nameGet(),  "status") == 0) {
-            errc::make_error_code(errc::success);
+            return errc::make_error_code(errc::success);
         }
 
 #if 0
@@ -1053,10 +1054,10 @@ Msgs::statusProcess(XMLNode &node)
         cacheAdd(node->nameGet(), node->valueGet());
         BOOST_LOG(lg) << "tag \"" << node->nameGet() << "\" has a value of: " << node->valueGet() << std::endl;
     
-        errc::make_error_code(errc::success);
+        return errc::make_error_code(errc::success);
     }
   
-    errc::make_error_code(errc::not_supported);                 // FIXME: implement this method
+    return errc::make_error_code(errc::not_supported);                 // FIXME: implement this method
 }
 
 boost::system::error_code
@@ -1065,7 +1066,7 @@ Msgs::heloProcess(XMLNode &node)
     DEBUGLOG_REPORT_FUNCTION;
     BOOST_LOG(lg) << "WARNING: unimplemented method" << std::endl;
   
-    errc::make_error_code(errc::not_supported);                 // FIXME: implement this method
+    return errc::make_error_code(errc::not_supported);                 // FIXME: implement this method
 }
 
 boost::system::error_code
@@ -1097,9 +1098,9 @@ Msgs::metersProcess(XMLNode &node)
   
         std::string str = metersResponseCreate(node->valueGet(), value);
         if (writeNet(str)) {
-            errc::make_error_code(errc::not_supported);
+            return errc::make_error_code(errc::not_supported);
         } else {
-            errc::make_error_code(errc::success);
+            return errc::make_error_code(errc::success);
         }
     }
 
@@ -1108,7 +1109,7 @@ Msgs::metersProcess(XMLNode &node)
         // Process the result
     }
 
-    errc::make_error_code(errc::not_supported);
+    return errc::make_error_code(errc::not_supported);
 }
 
 boost::system::error_code
@@ -1126,18 +1127,18 @@ Msgs::serverProcess(XMLNode &node)
                        << "\" with a value of " << attr->valueGet() << std::endl;
             if (strcmp(attr->valueGet(), (const char *)_thisip.c_str()) != 0) {
                 BOOST_LOG(lg) << "WARNING: IP's don't match!!!!" << std::endl;
-                errc::make_error_code(errc::not_supported);
+                return errc::make_error_code(errc::not_supported);
             }
         }
     }
 
     if (strcmp(node->valueGet(), (const char *)_thishost.c_str()) != 0) {
         BOOST_LOG(lg) << "WARNING: Host's don't match!!!!" << std::endl;
-        errc::make_error_code(errc::not_supported);
+        return errc::make_error_code(errc::not_supported);
     }
 
     BOOST_LOG(lg) << "Host and IP data match" << std::endl;
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 boost::system::error_code
@@ -1156,7 +1157,7 @@ Msgs::clientProcess(XMLNode &node)
                            << "\" with a value of " << attr->valueGet() << std::endl;
                 if (strcmp(attr->valueGet(), (const char *)_remoteip.c_str()) != 0) {
                     BOOST_LOG(lg) << "WARNING: IP's don't match!!!!" << std::endl;
-                    errc::make_error_code(errc::not_supported);
+                    return errc::make_error_code(errc::not_supported);
                 }
             }
         }
@@ -1165,11 +1166,11 @@ Msgs::clientProcess(XMLNode &node)
     if (_remotehost.size() != 0) {
         if (strcmp(node->valueGet(), (const char *)_remotehost.c_str()) != 0) {
             BOOST_LOG(lg) << "WARNING: Host's don't match!!!!" << std::endl;
-            errc::make_error_code(errc::not_supported);
+            return errc::make_error_code(errc::not_supported);
         }
     }
 
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 // Process the top level header tag.
@@ -1197,7 +1198,7 @@ Msgs::powerguruProcess(XMLNode &node)
         }
     }
 
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 boost::system::error_code
@@ -1209,10 +1210,10 @@ Msgs::chargeAmpsProcess(XMLNode &node) {
       
     if (node->valueGet() <= 0) {
         BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
-        errc::make_error_code(errc::not_supported);
+        return errc::make_error_code(errc::not_supported);
     }
       
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 boost::system::error_code
@@ -1224,24 +1225,24 @@ Msgs::loadAmpsProcess(XMLNode &node) {
       
     if (node->valueGet() <= 0) {
         BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
-        //    errc::make_error_code(errc::not_supported);
+        //    return errc::make_error_code(errc::not_supported);
     }
   
     if (_net_mode == CLIENT) {
         BOOST_LOG(lg) << "Battery voltage is: " << node->valueGet() << std::endl;
     
-        errc::make_error_code(errc::success);
+        return errc::make_error_code(errc::success);
     }
 
 #if 0
     if (_net_mode == DAEMON) {
         std::string str = metersResponseCreate(node->valueGet(), _cache[node->nameGet()]);
     
-        errc::make_error_code(errc::success);
+        return errc::make_error_code(errc::success);
     }
 #endif
     
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 boost::system::error_code
@@ -1253,10 +1254,10 @@ Msgs::pvAmpsProcess(XMLNode &node) {
       
     if (node->valueGet() <= 0) {
         BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
-        errc::make_error_code(errc::not_supported);
+        return errc::make_error_code(errc::not_supported);
     }
       
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 boost::system::error_code
@@ -1268,10 +1269,10 @@ Msgs::pvVoltsProcess(XMLNode &node) {
       
     if (node->valueGet() <= 0) {
         BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
-        errc::make_error_code(errc::not_supported);
+        return errc::make_error_code(errc::not_supported);
     }
       
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 boost::system::error_code
@@ -1283,10 +1284,10 @@ Msgs::dailyKwhProcess(XMLNode &node) {
       
     if (node->valueGet() <= 0) {
         BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
-        errc::make_error_code(errc::not_supported);
+        return errc::make_error_code(errc::not_supported);
     }
       
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 boost::system::error_code
@@ -1298,10 +1299,10 @@ Msgs::hertzProcess(XMLNode &node) {
       
     if (node->valueGet() <= 0) {
         BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
-        errc::make_error_code(errc::not_supported);
+        return errc::make_error_code(errc::not_supported);
     }
       
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 boost::system::error_code
@@ -1313,24 +1314,24 @@ Msgs::batteryVoltsProcess(XMLNode &node) {
       
     if (node->valueGet() <= 0) {
         BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
-        //    errc::make_error_code(errc::not_supported);
+        //    return errc::make_error_code(errc::not_supported);
     }
 
     if (_net_mode == CLIENT) {
         BOOST_LOG(lg) << "Battery voltage is: " << node->valueGet() << std::endl;
     
-        errc::make_error_code(errc::success);
+        return errc::make_error_code(errc::success);
     }
 
 #if 0
     if (_net_mode == DAEMON) {
         std::string str = metersResponseCreate(node->valueGet(), _cache[node->nameGet()]);
     
-        errc::make_error_code(errc::success);
+        return errc::make_error_code(errc::success);
     }
 #endif
     
-    errc::make_error_code(errc::not_supported);
+    return errc::make_error_code(errc::not_supported);
 }
 
 boost::system::error_code
@@ -1342,10 +1343,10 @@ Msgs::buyAmpsProcess(XMLNode &node) {
       
     if (node->valueGet() <= 0) {
         BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
-        errc::make_error_code(errc::not_supported);
+        return errc::make_error_code(errc::not_supported);
     }
       
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 boost::system::error_code
@@ -1357,10 +1358,10 @@ Msgs::sellAmpsProcess(XMLNode &node) {
       
     if (node->valueGet() <= 0) {
         BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
-        errc::make_error_code(errc::not_supported);
+        return errc::make_error_code(errc::not_supported);
     }
       
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 boost::system::error_code
@@ -1372,10 +1373,10 @@ Msgs::acVoltsOutProcess(XMLNode &node) {
       
     if (node->valueGet() <= 0) {
         BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
-        errc::make_error_code(errc::not_supported);
+        return errc::make_error_code(errc::not_supported);
     }
       
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
   
 boost::system::error_code
@@ -1387,10 +1388,10 @@ Msgs::ac1InProcess(XMLNode &node) {
       
     if (node->valueGet() <= 0) {
         BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
-        errc::make_error_code(errc::not_supported);
+        return errc::make_error_code(errc::not_supported);
     }
       
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 boost::system::error_code
@@ -1402,10 +1403,10 @@ Msgs::ac2InProcess(XMLNode &node) {
       
     if (node->valueGet() <= 0) {
         BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
-        errc::make_error_code(errc::not_supported);
+        return errc::make_error_code(errc::not_supported);
     }
       
-    errc::make_error_code(errc::success);
+    return errc::make_error_code(errc::success);
 }
 
 boost::system::error_code
@@ -1418,9 +1419,9 @@ Msgs::findTag(std::string tag)
 
     _body << "<" << tag << ">";
     if ((pos = tag.find(_body.str(), 0)) != std::string::npos) {
-        errc::make_error_code(errc::success);
+        return errc::make_error_code(errc::success);
     }
-    errc::make_error_code(errc::not_supported);
+    return errc::make_error_code(errc::not_supported);
 }
 
 
@@ -1435,7 +1436,7 @@ Msgs::commandProcess(XMLNode &node)
       
     if (node->valueGet() <= 0) {
         BOOST_LOG(lg) << "ERROR: no value in messages!" << std::endl;
-        errc::make_error_code(errc::not_supported);
+        return errc::make_error_code(errc::not_supported);
     }
 
     _body.str("");
@@ -1457,23 +1458,23 @@ Msgs::commandProcess(XMLNode &node)
             str = responseCreate(RESPONSE, node->valueGet(), "foobar");
         }
         if (writeNet(str + "\r\n")) {
-            errc::make_error_code(errc::not_supported);
+            return errc::make_error_code(errc::not_supported);
         } else {
-            errc::make_error_code(errc::success);
+            return errc::make_error_code(errc::success);
         }
     }
 
     if (_net_mode == CLIENT) {
         if (strcmp(node->nameGet(), "command") == 0) {
-            errc::make_error_code(errc::success);
+            return errc::make_error_code(errc::success);
         }
         cacheAdd(node->nameGet(), node->valueGet());
         BOOST_LOG(lg) << "tag \"" << node->nameGet() << "\" has a value of: " << node->valueGet() << std::endl;
     
-        errc::make_error_code(errc::success);
+        return errc::make_error_code(errc::success);
     }
 
-    errc::make_error_code(errc::not_supported);  
+    return errc::make_error_code(errc::not_supported);  
 }
 
 // local Variables:

@@ -2,12 +2,12 @@
                    "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd"
 [
   <!ENTITY legal SYSTEM "legal.xml">
-  <!ENTITY appversion "0.1">
-  <!ENTITY manrevision "0.1">
+  <!ENTITY appversion "0.2">
+  <!ENTITY manrevision "0.2">
   <!ENTITY date "April 2005">
   <!ENTITY app "<application>PowerGuru</application>">
   <!ENTITY appname "Power Guru">
-  <!ENTITY version "2.0">
+  <!ENTITY version "3.0">
   <!ENTITY protodoc SYSTEM "protocol.xml"> 
   <!ENTITY maindoc SYSTEM "protocol.xml">
 ]

@@ -43,6 +43,22 @@ CREATE TYPE public.channel_type AS ENUM (
     'X'
 );
 
+DROP TYPE IF EXISTS trigger_type;
+CREATE TYPE public.trigger_type AS ENUM (
+    'FIRE_STARTED',
+    'FIRE_OUT',
+    'DOOR_OPEN',
+    'DOOR_CLOSED',
+    'WINDOW_OPEN',
+    'WINDOW_CLOSED',
+    'GENERIC',
+    'DEVICE_ON',
+    'DEVICE_OFF',
+    'HOME_LEAVE',
+    'HOME_ARRIVE',
+    'ADD_FIREWOOD'
+);
+
 DROP TYPE IF EXISTS volt_type;
 CREATE TYPE public.volt_type AS ENUM (
     'AC',
@@ -105,6 +121,14 @@ CREATE TABLE sensors (
   device device_type NOT NULL default 'ONEWIRE',
   sensor sensor_type NOT NULL default 'UNKNOWN',
   channel channel_type NOT NULL default 'A'
+);
+
+DROP TABLE IF EXISTS triggers;
+CREATE TABLE triggers (
+  id varchar(12) NOT NULL default '0',
+  name varchar(24) NOT NULL default '0',
+  trigger trigger_type NOT NULL default 'GENERIC',
+  "timestamp" timestamp without time zone UNIQUE
 );
 
 DROP TABLE IF EXISTS weather;

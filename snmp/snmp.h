@@ -1,5 +1,5 @@
 // 
-k// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
 // 2014, 2015, 2016, 2017, 2018, 2019 Free Software Foundation, Inc.
 
 // 
@@ -16,6 +16,9 @@ k// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+/// \file snmp.h Wrapper for net-snmp.
+/// \copyright GNU Public License.
 
 #ifndef __SNMP_H__
 #define __SNMP_H__ 1

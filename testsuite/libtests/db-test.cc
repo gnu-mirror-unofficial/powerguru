@@ -60,13 +60,12 @@ public:
 
         std::vector<std::string> items;
 
-        // family | id | alias | chips | type | timestamp 
+        // family | id | alias | type | timestamp 
         result.clear();
         boost::shared_ptr<onewire_t> one(new onewire_t);
         one->family = "24";
         one->id = "97C6697351AB";
         one->alias = "";
-        one->chips = "DS2415";
         one->type = CLOCK;
         formatQuery(one, result);
 
@@ -74,8 +73,7 @@ public:
         std::cerr << items[1] << std::endl;        
         if (items[0] == "'24'"
             && items[1] == " '97C6697351AB'"
-            && items[3] == " 'DS2415'"
-            && items[4] == " CLOCK"
+            && items[3] == " CLOCK"
         ) {
             runtest.pass("formatQuery(onewire_t)");
         } else {

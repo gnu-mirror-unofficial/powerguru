@@ -17,6 +17,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
+## \copyright GNU Public License.
 ## \file sensor.py These class contain all the data about each sensor,
 ##                 and methods to operate on that data.
 

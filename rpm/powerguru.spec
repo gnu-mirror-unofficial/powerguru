@@ -38,7 +38,7 @@ Powerguru is an program for monitoring, data logging, and controlling
 your inverter, charger controller, or power meter.
 
 %prep
-%setup -q -n powerguru-%{version}
+%setup -n powerguru-%{version}
 ./autogen.sh
 
 %build

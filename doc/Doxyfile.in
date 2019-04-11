@@ -945,6 +945,14 @@ EXCLUDE 		= @top_srcdir@/python/onewire.py \
 			@top_srcdir@/lib/snmp.h \
 			@top_srcdir@/lib/msgs.cc \
 			@top_srcdir@/lib/msgs.h \
+			@top_srcdir@/lib/gdb.h \
+			@top_srcdir@/snmp/outback.c \
+			@top_srcdir@/snmp/outback.h \
+			@top_srcdir@/snmp/xantrex.c \
+			@top_srcdir@/snmp/powerguru.c \
+			@top_srcdir@/client/outback.cc
+			@top_srcdir@/client/outback.cc
+			@top_srcdir@/snmp/xantrex.h \
 			@top_srcdir@/client/outback.cc
 			
 			

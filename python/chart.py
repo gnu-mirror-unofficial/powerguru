@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-
+## \copyright GNU Public License.
 ## \file chart.py This file plots the data from a postgresql database.
 
 import epdb

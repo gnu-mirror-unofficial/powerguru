@@ -76,6 +76,11 @@ else
    AC_DOCBOOK_STYLES
 fi
 
+# Debian/Ubuntu
+# STYLESDIR = /usr/share/xml/docbook/stylesheet/docbook-xsl
+# Fedora
+# STYLESDIR = /usr/share/sgml/docbook/xsl-stylesheets-1.79.2
+
 optional=""
 missing=""
 devices=""

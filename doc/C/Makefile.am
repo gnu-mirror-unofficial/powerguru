@@ -18,7 +18,10 @@
 include $(top_srcdir)/doc/xmldocs.make
 
 #STYLESDIR = @docbook_styles@
+# Debian/Ubuntu
 STYLESDIR = /usr/share/xml/docbook/stylesheet/docbook-xsl
+# Fedora
+# STYLESDIR = /usr/share/sgml/docbook/xsl-stylesheets-1.79.2
 EXTRA_DIST += \
 	powerguru.html \
 	pgd.1

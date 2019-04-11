@@ -15,10 +15,9 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-//
-// \brief Class for 1wire sensors
-// \copyright GNU Public License.
-//
+/// \copyright GNU Public License.
+/// \file onewire.h Class for 1wire sensors
+
 #ifndef __ONEWIRE_H__
 #define __ONEWIRE_H__
 
@@ -53,6 +52,7 @@ typedef struct onewire {
     std::string device;         ///< The full device name
     family_e    type;           ///< The type of 1wire sensor
     bool bus;                   ///< Whether the data is in owfs or not
+    bool active;                ///< Whether the device is active
 } onewire_t;
 
 /// \struct temperature_t

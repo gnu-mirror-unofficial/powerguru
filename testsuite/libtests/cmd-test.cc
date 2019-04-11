@@ -95,7 +95,7 @@ public:
         }
         str.erase();
 
-        // Test oarsing XML commands
+        // Test parsing XML commands
         XML xml;
         std::string testnop = "<command></command>\n";
         if (!xml.parseMem(testnop)) {

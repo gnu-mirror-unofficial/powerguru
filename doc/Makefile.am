@@ -19,8 +19,11 @@ if ENABLE_DOXYGEN
 
 .PHONY: apidoc
 
+files = chart.py mergdb.py pgd.py rtl433.py options.py sensor.py
 apidoc: 
-	$(DOXYGEN) $<
+	export EXCLUDE=$(top_srcdir)/python/onewire.py
+	$(shell) EXCLUDE=$(top_srcdir)/python/onewire.py $(DOXYGEN)
+#	$(DOXYGEN) $<
 
 clean-generic:
 	rm -Rf apidoc

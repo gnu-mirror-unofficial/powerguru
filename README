@@ -15,8 +15,8 @@ protocols.
 like the Rapberry PI or Aurdino, and many inexpensive GPIO, i2C, or
 USB sensors have changed everything.
 
-  If you've never done it, refactoring an od project is interesting. I
-hope I writ better C++ code now. In the years since this code was left
+  If you've never done it, refactoring an old project is interesting. I
+hope I write better C++ code now. In the years since this code was left
 to bit-rot, there are new C++ standards, better libraries, and
 different protocols. For one thing, the Boost libraries are awesome,
 and allowed me to drop lots of old crufty C++ wrappers around a C
@@ -44,3 +44,8 @@ Python version that does the same things. While developing Python on a
 Raspberry PI is pretty easy, most large IOT appliction are written in
 C++, and learning how to cross compile and remote debug is an
 important skill set to know.
+
+There's a few helper python scripts:
+mergedb.py - Merge data logged to a remote postgresql database to a
+	   local one 
+chart.py - Crudely plot the data. (work in progress)
