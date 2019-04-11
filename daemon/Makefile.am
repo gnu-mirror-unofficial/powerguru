@@ -21,8 +21,8 @@
 
 AUTOMAKE_OPTIONS = # dejagnu
 
-pgd_CPPFLAGS = -Wall -I$(top_srcdir)/lib -I$(top_srcdir)/devices
-pgd_CXXFLAGS = $(SYSROOT)
+pgd_CPPFLAGS = -Wall -I$(top_srcdir)/lib -I$(top_srcdir)/devices  -I$(top_srcdir)/snmp
+pgd_CXXFLAGS = $(SYSROOT) -I$(top_srcdir)/lib -I$(top_srcdir)/devices
 pgd_LDADD = ../devices/libpdev.la ../lib/libpguru.la -lboost_filesystem \
 	 -lboost_regex -lboost_system -lboost_log -lboost_log_setup \
 	-lpthread -lresolv -ldl
@@ -48,13 +48,3 @@ endif
 bin_PROGRAMS = pgd
 
 pgd_SOURCES = main.cc threads.cc
-# pgd_LDFLAGS += -export-dynamic -ldl
-
-# MUDFLAP_OPT = -fmudflap
-# MUDFLAP_LIB =  /usr/local/lib/libmudflap.so
-
-# Rebuild with GCC 4.x Mudflap support
-# mudflap:
-#	@echo "Rebuilding with GCC Mudflap support"
-#	$(MAKE) CXXFLAGS="$(CXXFLAGS) $(MUDFLAP_OPT)" LIBS="$(LIBS) $(MUDFLAP_LIB)"
-
