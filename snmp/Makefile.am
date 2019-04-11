@@ -20,25 +20,18 @@ AUTOMAKE_OPTIONS =
 noinst_LTLIBRARIES = libpgsnmp.la
 
 libpgsnmp_la_SOURCES = \
-	powerguru.h powerguru.c
+	powerguru.h powerguru.c \
+	snmp.cc snmp.h
 
-#	outback.cc outback.h \
-#	xantrex.cc xantrex.h
-
-#		ifTable.c \
-#		ifTable_data_get.c \
-#		ifTable_interface.c \
-#		ifTable_data_access.c \
-#		ifTable_data_set.c
-
-AM_CPPFLAGS = -I$(srcdir) -I.. $(SNMP_CPPFLAGS)
-libpgsnmp_la_LIBDADD =  $(SNMP_LIBS)
+AM_CPPFLAGS = -I$(srcdir) -I.. $(SNMP_CPPFLAGS) -I$(top_srcdir)/lib
+libpgsnmp_la_LIBDADD = $(SNMP_LIBS)
 
 generate-templates:
 	@echo "Generating templates from PowerGuru MIB for Xantrex"
 	@mib2c xantrex
 	@echo "Generating templates from PowerGuru MIB for Outback"
 	@mib2c outback
+
 
 # snmptranslate -M+. -mPOWERGURU-MIB -Tp -IR powerguru
 # mib2c -c mib2c.scalar.conf powerGuru
