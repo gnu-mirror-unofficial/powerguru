@@ -143,6 +143,7 @@ main(int argc, char *argv[])
 
           case 'h':
               usage (argv[0]);
+              exit;
               break;
           case 'w':
               // this string needs to include the port if it's
@@ -268,6 +269,7 @@ usage (const char *prog)
     // Display the Database options
     std::cerr << "Database Options:" << std::endl;
     std::cerr << "\t-m hostname\t\t\tSpecify Database hostname or IP" << std::endl;
+    exit(0);
 }
 
 // local Variables:
