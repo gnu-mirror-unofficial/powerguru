@@ -148,25 +148,27 @@ AM_CONDITIONAL(ENABLE_DOXYGEN, [ test x"$DOXYGEN" != x ])
 dnl The Raspberry PI is currently an ARMv6, whereas the cross compiler packages
 dnl one can download usually default to the ARMV7. If so, tweak the compiler
 dnl flags to generate an executable for the ARMv6.
-arch="`${CC} -v |& grep -o -- "--with-arch[[0-9\-]]*=[[a-z0-9\-]]*" | head -1 | cut -d '=' -f 2`"
-case ${arch} in
-     armv5te|armv7-a)
-        CXXFLAGS="${CXXFLAGS} -marm -mfpu=vfp -mfloat-abi=hard -pipe" ;;
-     armv6*)
-        CXXFLAGS="${CXXFLAGS} -pipe" ;;
-     *) ;;
-esac
-gcc_sysroot=""
-if test `uname -m` != ${arch}; then
+ops="`echo '' | ${CC} -v -E - 2>&1 | grep cc1`"
+cpu="`echo ${ops} | grep -o "mcpu=[[0-9a-z-]]*" | cut -d '=' -f 2`"
+fpu="`echo ${ops} | grep -o "fpu=[[0-9a-z-]]*" | cut -d '=' -f 2`"
+mach="`${CXX} -dumpmachine | cut -d '-' -f 1`"
+gcc_sysroot="`${CXX} -print-sysroot | sed -e 's:bin/../::'`"
+dnl The distro supplied packages have no sysroot
+if test x"${gcc_sysroot}" = x -a x"${mach}" != x'x86_64'; then
   cross_compiling=yes
-  gcc_sysroot="`${CXX} -print-sysroot | sed -e 's:bin/../::'`"
+  CXXFLAGS="${CXXFLAGS} -marm -mfpu=vfp -mfloat-abi=hard -pipe"
+fi
+dnl My custom built toolchains have a sysroot.
+if test x"${gcc_sysroot}" != x -a x"${gcc_sysroot}" != x'/'; then
+  cross_compiling=yes 
 fi
 AC_MSG_NOTICE([Default compiler architecture is: ${arch}])
 
 sysroot=""
 AC_ARG_WITH(sysroot,
   AC_HELP_STRING([--with-sysroot], [system rootfs directory for cross compiling]),
-  sysroot=${withval};
+  sysroot=${withval}
+  cross_compiling=yes
   )
 
 dnl Sanity check the sysroot for cross compiling to avoid other errors
@@ -185,10 +187,11 @@ if test x"${cross_compiling}" = xyes; then
   dnl If the user specifies a sysroot that isn't the default, add it to
   dnl the compilation
   if test x"${gcc_sysroot}" != x"${sysroot}" -a x"${sysroot}" != x; then
+    newhost="`echo ${host_alias} | sed -e 's:-pi.-:-:'`"
     SYSROOT+=" --sysroot=${sysroot}"
     CFLAGS+=" --sysroot=${sysroot}"
-    LDFLAGS+=" -Wl,-rpath=${sysroot}/usr/lib/${host_alias}"
-    LDFLAGS+=" -Wl,-rpath=${sysroot}/lib/${host_alias}"
+    LDFLAGS+=" -Wl,-rpath=${sysroot}/usr/lib/${newhost}"
+    LDFLAGS+=" -Wl,-rpath=${sysroot}/lib/${newhost}"
   else
     SYSROOT=""
 fi
@@ -317,7 +320,7 @@ AC_DEFINE([HAVE_IN_ADDR_T], [1], [ Has typedef in_addr_t])
 
 dnl Custom build sysroots often have manually compiled projects in
 dnl /usr/local to keep them separate from system installed ones.
-CPPFLAGS=" -I${sysroot:-${gcc_sysroot}}/usr/local/include"
+CPPFLAGS=" -I${sysroot:-${gcc_sysroot}}/usr/include"
 CFLAGS="${save_CFLAGS} -Wall"
 LDFLAGS="${save_LDFLAGS} -lnetsnmp -lnetsnmpagent"
 AC_MSG_CHECKING([For Net SNMP development files])
@@ -336,7 +339,8 @@ if test x"${has_snmp}" = x"yes"; then
   AC_SUBST(SNMP_LIBS)
   AC_SUBST(SNMP_CPPFLAGS)
 fi
-AM_CONDITIONAL(BUILD_SNMP, [ test x${has_snmp} = xyes ])
+dnl AM_CONDITIONAL(BUILD_SNMP, [ test x${has_snmp} = xyes ])
+AM_CONDITIONAL(BUILD_SNMP, [ test x${has_snmp} = xno ])
 
 dnl dnl OWFS
 LDFLAGS="${save_LDFLAGS} -l"
@@ -370,14 +374,12 @@ dnl These tests use the C++ compiler
 save_CC="${CC}"
 CC="${CXX}"
 AC_MSG_CHECKING([For Boost development files])
-AC_TRY_COMPILE([#include <boost/algorithm/string.hpp>], [
-  std::vector<std::string> results;
-  char *buf;
-  boost::split(results, buf, boost::is_any_of(","));
-  ],
-  has_boost=yes,
-  has_boost=no
-)
+dnl AC_TRY_COMPILE([#include <boost/algorithm/algorithm.hpp>], [
+dnl   using boost::algorithm;
+dnl   ],
+   has_boost=yes,
+dnl   has_boost=no
+dnl )
 if test x"${has_boost}" = x"no"; then
    AC_MSG_WARN([You should install the 'libboost-dev' package])
    optional="${optional} libboost-dev"
@@ -546,11 +548,11 @@ else
   echo "        Found libxml2, will configure XML support"
 fi
 
-if test x"${has_snmp}" != x"yes"; then
-  echo "        To use SNMP. install the net-snmp development package for your system"
-else
-  echo "        Found net-snmp. will configure SNMP support"
-fi
+dnl if test x"${has_snmp}" != x"yes"; then
+dnl   echo "        To use SNMP. install the net-snmp development package for your system"
+dnl else
+dnl   echo "        Found net-snmp. will configure SNMP support"
+dnl fi
 
 if test x"${build_outback}" = x"yes"; then
    echo "        Including Outback protocol"
